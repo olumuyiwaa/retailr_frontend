@@ -348,3 +348,48 @@ export interface BusinessUsage {
   ordersThisMonth: { used: number; limit: number };
   storageGb: { used: number; limit: number };
 }
+
+// ---------- site analytics ----------
+
+export type TrafficSource = "direct" | "whatsapp" | "instagram" | "facebook" | "search" | "other";
+export type DeviceKind = "mobile" | "desktop" | "tablet";
+
+export interface AnalyticsRange {
+  days: number;
+}
+
+export interface AnalyticsKpi {
+  value: number;
+  /** % change against the previous period of the same length. */
+  changePct: number;
+}
+
+export interface FunnelStep {
+  label: string;
+  count: number;
+}
+
+export interface SiteAnalytics {
+  days: number;
+  visitors: AnalyticsKpi;
+  sessions: AnalyticsKpi;
+  pageViews: AnalyticsKpi;
+  /** Orders (or sign-ups) per 100 sessions. */
+  conversionRate: AnalyticsKpi;
+  series: { label: string; visitors: number; pageViews: number }[];
+  funnel: FunnelStep[];
+  pages: { label: string; views: number }[];
+  sources: { source: TrafficSource; sessions: number }[];
+  devices: { device: DeviceKind; sessions: number }[];
+  countries: { country: string; sessions: number }[];
+}
+
+export interface BusinessAnalytics extends SiteAnalytics {
+  topProducts: { id: string; name: string; views: number; orders: number }[];
+}
+
+export interface PlatformAnalytics extends SiteAnalytics {
+  /** Traffic across every storefront on the platform. */
+  stores: { visitors: number; sessions: number; orders: number; conversionRate: number };
+  topStores: { id: string; name: string; slug: string; visitors: number; sessions: number; orders: number; conversionRate: number }[];
+}

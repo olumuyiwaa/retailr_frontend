@@ -15,9 +15,9 @@ A multi-tenant SaaS platform that lets small African businesses subscribe, get t
 | Super admin | `/admin/super/*` | The Retailr team |
 | Public storefront | `/s/<slug>` | Shoppers |
 
-**Business admin:** dashboard with setup checklist, KPIs and needs-attention panel; products (up to 6 photos with a cover image, size/colour variants with their own stock and price, and up to 10 custom details such as Material or Density, with suggested names for the business type); categories the business creates and manages itself, each with a cover picture (rename moves its products, delete leaves them uncategorised); orders (status updates, invoice link, send receipt); customers (filter by group); record a sale (in person, WhatsApp, Instagram or phone sales with custom prices, discount, paid/owing and walk-in or saved customers; stock updates immediately); reports (sales over time, by channel and payment method, best sellers, top customers, money still owed); customer groups (automatic rules like "spent over X" or hand-picked); messages (email, SMS or WhatsApp to everyone or a group, with {{first_name}} personalisation; demo only, nothing is delivered); discounts and coupons; team; billing and plan changes; store settings (logo, currency, storefront theme, profile).
+**Business admin:** dashboard with setup checklist, KPIs and needs-attention panel; products (up to 6 photos with a cover image, size/colour variants with their own stock and price, and up to 10 custom details such as Material or Density, with suggested names for the business type); categories the business creates and manages itself, each with a cover picture (rename moves its products, delete leaves them uncategorised); orders (status updates, invoice link, send receipt); customers (filter by group); record a sale (in person, WhatsApp, Instagram or phone sales with custom prices, discount, paid/owing and walk-in or saved customers; stock updates immediately); reports (sales over time, by channel and payment method, best sellers, top customers, money still owed); site analytics (visitors, visits, page views, conversion, a visit-to-order funnel, traffic sources, devices, countries, most visited pages and products); customer groups (automatic rules like "spent over X" or hand-picked); messages (email, SMS or WhatsApp to everyone or a group, with {{first_name}} personalisation; demo only, nothing is delivered); discounts and coupons; team; billing and plan changes; store settings (logo, currency, storefront theme, profile).
 
-**Super admin:** platform overview (MRR, churn, sign-ups, alerts); business approvals, suspend/reactivate; plans editor; subscriptions; invoices.
+**Super admin:** platform overview (MRR, churn, sign-ups, alerts); site analytics (marketing-site traffic and sign-up funnel, plus traffic and conversion across all stores, busiest stores); business approvals, suspend/reactivate; plans editor; subscriptions; invoices.
 
 **Storefront:** each business gets a store with its own logo, categories and a photo gallery on every product page (home, shop, product, cart, checkout, order confirmation, printable invoice/receipt). Owners pick a **theme** under Store settings, and the store switches instantly (see Themes below). Only `active` and `trial` businesses are live; suspended or pending ones show an unavailable page.
 
@@ -89,6 +89,10 @@ src/
 
 UI code never touches data directly. It calls typed async functions in `src/services/` (`auth`, `platform`, `business`, `store`), which read and write an in-memory database seeded from `src/mock/seed.ts` and mirrored to localStorage, with artificial latency. Every business-admin call is scoped by `businessId`, mirroring how the real API will authorise requests. To go live, replace the bodies of these functions with HTTP calls; the components should not need to change.
 
+### Site analytics
+
+`src/services/analytics.ts` generates plausible traffic history from the seed data (online orders and sign-ups always match the real tables) and adds the visits you make while using the demo, recorded by `StoreTracker` on storefronts and `MarketingTracker` on the landing and sign-up pages. Visitors are counted once per day per browser, visits once per tab session, and the traffic source comes from `utm_source` or the referrer (try `/s/adire-hub?utm_source=whatsapp`). With a real backend, replace this file with calls to an analytics API; the pages only use `getBusinessAnalytics` and `getPlatformAnalytics`.
+
 ## Roadmap
 
 - [x] Storefronts, admin dashboards, plans and subscriptions
@@ -98,6 +102,7 @@ UI code never touches data directly. It calls typed async functions in `src/serv
 - [x] Product variants and photo upload
 - [x] Customer groups and messaging
 - [x] Storefront themes, managed categories and product details
+- [x] Site analytics for businesses and the platform
 - [ ] More themes, and gating themes by plan
 - [ ] Payment gateways and delivery integrations
 - [ ] Subdomain routing and custom domains

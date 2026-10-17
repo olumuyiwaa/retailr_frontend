@@ -106,3 +106,28 @@ export function DonutChart({
   };
   return <ReactApexChart options={options} series={values} type="donut" height={height} />;
 }
+
+/** Two overlapping areas (e.g. visitors and page views) sharing one time axis. */
+export function TrafficChart({
+  labels,
+  series,
+  height = 300,
+}: {
+  labels: string[];
+  series: { name: string; data: number[]; color: string }[];
+  height?: number;
+}) {
+  const options: ApexOptions = {
+    colors: series.map((s) => s.color),
+    chart: { ...base(height), type: "area" },
+    stroke: { curve: "smooth", width: 2 },
+    fill: { type: "gradient", gradient: { opacityFrom: 0.3, opacityTo: 0 } },
+    dataLabels: { enabled: false },
+    markers: { size: 0 },
+    legend: { position: "top", horizontalAlign: "right", fontFamily: "Outfit, sans-serif", labels: { colors: "#667085" } },
+    grid: { yaxis: { lines: { show: true } }, xaxis: { lines: { show: false } }, borderColor: "#e4e7ec" },
+    xaxis: { categories: labels, axisBorder: { show: false }, axisTicks: { show: false }, tickAmount: Math.min(8, labels.length), labels: { rotate: 0, style: { colors: "#667085" } } },
+    yaxis: { labels: { style: { colors: ["#667085"] }, formatter: (v) => String(Math.round(v)) } },
+  };
+  return <ReactApexChart options={options} series={series.map((s) => ({ name: s.name, data: s.data }))} type="area" height={height} />;
+}

@@ -17,6 +17,7 @@ import { PreviewSliderProvider } from "../context/PreviewSliderContext";
 import PreviewSliderModal from "@/components/Common/PreviewSlider";
 
 import { StoreProvider } from "../context/StoreContext";
+import StoreTracker from "@/components/analytics/StoreTracker";
 import ScrollToTop from "@/components/Common/ScrollToTop";
 import PreLoader from "@/components/Common/PreLoader";
 import { ConfirmProvider } from "@/components/ui/confirm";
@@ -59,6 +60,7 @@ export default function RootLayout({
                 <ModalProvider>
                   <PreviewSliderProvider>
                     {storeSlug ? <ThemedChrome slot="header" fallback={<div className="h-[72px]" aria-hidden />} /> : <Header />}
+                    {storeSlug && <StoreTracker />}
                     {children}
                     <QuickViewModal />
                     <CartSidebarModal />

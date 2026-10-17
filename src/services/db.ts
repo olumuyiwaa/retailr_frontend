@@ -6,6 +6,21 @@
 import * as seed from "@/mock/seed";
 import type { AuthUser, Category } from "@/types/saas";
 
+/** Visits recorded live while the demo runs, added on top of the generated history. Keyed by business id or "platform", then by YYYY-MM-DD. */
+export type LiveDay = {
+  visitors: number;
+  sessions: number;
+  pageViews: number;
+  productViews: number;
+  addToCart: number;
+  checkouts: number;
+  sources: Record<string, number>;
+  devices: Record<string, number>;
+  countries: Record<string, number>;
+  pages: Record<string, number>;
+  products: Record<string, number>;
+};
+
 const STORAGE_KEY = "retailr:db:v2";
 const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v));
 
@@ -30,6 +45,7 @@ const fresh = () => ({
   invoices: clone(seed.invoices),
   products: clone(seed.products),
   categories: deriveCategories(seed.products),
+  analyticsLive: {} as Record<string, Record<string, LiveDay>>,
   orders: clone(seed.orders),
   customers: clone(seed.customers),
   coupons: clone(seed.coupons),
@@ -49,6 +65,7 @@ function load(): DB {
       const parsed = JSON.parse(raw);
       // basic shape check so a corrupted/old blob falls back to seed data
       if (parsed && Array.isArray(parsed.businesses) && Array.isArray(parsed.plans) && Array.isArray(parsed.users) && Array.isArray(parsed.coupons) && Array.isArray(parsed.customerGroups) && Array.isArray(parsed.messages)) {
+        if (!parsed.analyticsLive || typeof parsed.analyticsLive !== "object") parsed.analyticsLive = {};
         if (!Array.isArray(parsed.categories)) parsed.categories = deriveCategories(parsed.products ?? []);
         return parsed as DB;
       }

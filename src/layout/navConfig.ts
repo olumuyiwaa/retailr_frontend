@@ -34,6 +34,7 @@ export const navFor = (role: Role): NavSection[] =>
             { name: "Plans", path: "/admin/super/plans", icon: ListIcon },
             { name: "Subscriptions", path: "/admin/super/subscriptions", icon: TaskIcon },
             { name: "Invoices", path: "/admin/super/invoices", icon: FileIcon },
+            { name: "Site analytics", path: "/admin/super/analytics", icon: PieChartIcon },
           ],
         },
         {
@@ -55,6 +56,7 @@ export const navFor = (role: Role): NavSection[] =>
             { name: "Messages", path: "/admin/business/messages", icon: MailIcon },
             { name: "Discounts", path: "/admin/business/coupons", icon: DollarLineIcon },
             { name: "Reports", path: "/admin/business/reports", icon: PieChartIcon },
+            { name: "Site analytics", path: "/admin/business/analytics", icon: PieChartIcon },
           ],
         },
         {

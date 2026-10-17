@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import Logo from "./Logo";
+import MarketingTracker from "@/components/analytics/MarketingTracker";
 
 /** Content width shared by every marketing section so header, body and footer line up. */
 export const MARKETING_WIDTH = "mx-auto w-full max-w-[1360px] px-5 sm:px-8 lg:px-12";
@@ -24,6 +25,7 @@ export default function MarketingShell({ children }: { children: React.ReactNode
           </div>
         </div>
       </header>
+      <MarketingTracker />
       {children}
       <footer className="border-t border-gray-100 bg-gray-50">
         <div className={`${MARKETING_WIDTH} grid gap-10 py-12 sm:grid-cols-[1.5fr_1fr_1fr]`}>
