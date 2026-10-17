@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useAsync } from "@/hooks/useAsync";
 import { changePlan, getBilling } from "@/services/business";
-import { Card, CardHeader, ErrorNote, PageHeader, PageLoading } from "@/components/saas/Card";
+import { Card, CardHeader, ErrorNote, PageHeader, PageLoading, StatCard } from "@/components/saas/Card";
 import StatusBadge from "@/components/saas/StatusBadge";
 import { OutlineButton, PrimaryButton, UsageBar } from "@/components/saas/Form";
 import { money, shortDate } from "@/lib/format";
@@ -47,6 +47,21 @@ export default function BillingPage() {
       <PageHeader title="Billing & plan" subtitle="Manage your Retailr subscription." />
       {notice && <div role="status" className="mb-4 rounded-xl bg-success-50 px-4 py-3 text-sm text-success-700 dark:bg-success-500/10 dark:text-success-400">{notice}</div>}
       {actionError && <div className="mb-4"><ErrorNote message={actionError} /></div>}
+
+      <div className="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-4">
+        <StatCard label="Current plan" value={plan.name} hint={subscription ? (subscription.cycle === "yearly" ? "billed yearly" : "billed monthly") : undefined} />
+        <StatCard
+          label={subscription?.status === "trialing" ? "Trial ends" : "Next renewal"}
+          value={subscription && subscription.amount > 0 ? shortDate(subscription.status === "trialing" ? subscription.trialEndsAt ?? subscription.currentPeriodEnd : subscription.currentPeriodEnd) : "—"}
+          hint={subscription && subscription.amount > 0 ? `${money(subscription.amount)} per ${subscription.cycle === "yearly" ? "year" : "month"}` : "Free plan, no renewal"}
+        />
+        <StatCard label="Total paid" value={money(invoices.filter((i) => i.status === "paid").reduce((n, i) => n + i.amount, 0))} hint={`${invoices.filter((i) => i.status === "paid").length} paid invoices`} />
+        <StatCard
+          label="Outstanding"
+          value={money(invoices.filter((i) => (i.status === "pending" || i.status === "failed")).reduce((n, i) => n + i.amount, 0))}
+          hint={`${invoices.filter((i) => (i.status === "pending" || i.status === "failed")).length} unpaid invoices`}
+        />
+      </div>
 
       <div className="grid grid-cols-12 gap-4 md:gap-6">
         <Card className="col-span-12 xl:col-span-5">

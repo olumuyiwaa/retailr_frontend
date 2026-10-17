@@ -4,7 +4,7 @@ import { useBizMoney } from "@/hooks/useBizMoney";
 import { useAuth } from "@/app/context/AuthContext";
 import { useAsync } from "@/hooks/useAsync";
 import { getBusinessProfile, listOrders, markReceiptSent, updateOrderStatus } from "@/services/business";
-import { ErrorNote, PageHeader, PageLoading } from "@/components/saas/Card";
+import { ErrorNote, PageHeader, PageLoading, StatCard } from "@/components/saas/Card";
 import DataTable, { type Column } from "@/components/saas/DataTable";
 import StatusBadge, { label } from "@/components/saas/StatusBadge";
 import { inputCls, OutlineButton, PrimaryButton } from "@/components/saas/Form";
@@ -77,6 +77,16 @@ export default function OrdersPage() {
         subtitle={`${data.length} orders`}
         action={<Link href="/admin/business/sales/new" className="inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-3 text-sm font-medium text-white hover:bg-brand-600">Record a sale</Link>}
       />
+      <div className="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-4">
+        <StatCard label="Orders" value={String(data.length)} hint={`${data.filter((o) => o.status === "delivered").length} delivered`} />
+        <StatCard label="To process" value={String(data.filter((o) => o.status === "pending" || o.status === "processing").length)} hint={`${data.filter((o) => o.status === "shipped").length} on the way`} />
+        <StatCard label="Revenue" value={fmt(data.filter((o) => o.paymentStatus === "paid").reduce((n, o) => n + o.total, 0))} hint={`${data.filter((o) => o.paymentStatus === "paid").length} paid orders`} />
+        <StatCard
+          label="Awaiting payment"
+          value={fmt(data.filter((o) => o.paymentStatus === "unpaid" && o.status !== "cancelled").reduce((n, o) => n + o.total, 0))}
+          hint={`${data.filter((o) => o.paymentStatus === "unpaid" && o.status !== "cancelled").length} unpaid orders`}
+        />
+      </div>
       <DataTable
         rows={data}
         columns={columns}
