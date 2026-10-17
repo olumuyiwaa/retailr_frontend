@@ -4,8 +4,8 @@ import { useState } from "react";
 import { useBizMoney } from "@/hooks/useBizMoney";
 import { useAuth } from "@/app/context/AuthContext";
 import { useAsync } from "@/hooks/useAsync";
-import { deleteCoupon, listCoupons, saveCoupon, setCouponStatus } from "@/services/business";
-import { ErrorNote, PageHeader, PageLoading } from "@/components/saas/Card";
+import { deleteCoupon, listCoupons, listOrders, saveCoupon, setCouponStatus } from "@/services/business";
+import { ErrorNote, PageHeader, PageLoading, StatCard } from "@/components/saas/Card";
 import DataTable, { type Column } from "@/components/saas/DataTable";
 import StatusBadge from "@/components/saas/StatusBadge";
 import { Field, inputCls, OutlineButton, PrimaryButton } from "@/components/saas/Form";
@@ -26,6 +26,7 @@ export default function CouponsPage() {
   const fmt = useBizMoney();
   const bid = user!.businessId!;
   const { data, loading, error, reload } = useAsync(() => listCoupons(bid), [bid]);
+  const { data: orders } = useAsync(() => listOrders(bid), [bid]);
   const [editing, setEditing] = useState<Coupon | "new" | null>(null);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -92,6 +93,20 @@ export default function CouponsPage() {
     <>
       <PageHeader title="Discounts" subtitle="Coupon codes your customers can use at checkout." action={<PrimaryButton onClick={() => { setFormError(null); setEditing("new"); }}>+ New coupon</PrimaryButton>} />
       {rowError && <div className="mb-4"><ErrorNote message={rowError} /></div>}
+      {(() => {
+        const live = data.filter((x) => effective(x) === "active");
+        const used = (orders ?? []).filter((o) => o.couponCode);
+        const given = used.reduce((n, o) => n + (o.discount ?? 0), 0);
+        const top = [...data].sort((a, b) => b.usedCount - a.usedCount)[0];
+        return (
+          <div className="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-4">
+            <StatCard label="Coupons" value={String(data.length)} hint={`${data.filter((x) => x.status === "disabled").length} disabled`} />
+            <StatCard label="Active now" value={String(live.length)} hint={`${data.filter((x) => effective(x) === "expired").length} expired`} />
+            <StatCard label="Times used" value={String(data.reduce((n, x) => n + x.usedCount, 0))} hint={top && top.usedCount > 0 ? `Most used: ${top.code}` : "No uses yet"} />
+            <StatCard label="Discount given" value={fmt(given)} hint={`across ${used.length} order${used.length === 1 ? "" : "s"}`} />
+          </div>
+        );
+      })()}
       <DataTable rows={data} columns={columns} rowKey={(x) => x.id} />
 
       <Modal isOpen={editing !== null} onClose={() => setEditing(null)} className="max-w-[480px] p-6 sm:p-8 m-4">
