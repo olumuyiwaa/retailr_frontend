@@ -3,7 +3,7 @@ import { useBizMoney } from "@/hooks/useBizMoney";
 import { useAuth } from "@/app/context/AuthContext";
 import { useAsync } from "@/hooks/useAsync";
 import { getGroupMembers, listCustomers, listGroups } from "@/services/business";
-import { ErrorNote, PageHeader, PageLoading } from "@/components/saas/Card";
+import { ErrorNote, PageHeader, PageLoading, StatCard } from "@/components/saas/Card";
 import DataTable, { type Column } from "@/components/saas/DataTable";
 import { initials, shortDate } from "@/lib/format";
 import type { Customer } from "@/types/saas";
@@ -40,9 +40,20 @@ export default function CustomersPage() {
   const data = all?.customers;
   if (loading) return <PageLoading />;
   if (error || !data) return <ErrorNote message={error ?? "Could not load customers."} onRetry={reload} />;
+  const cutoff = Date.now() - 30 * 86400000;
+  const newCount = data.filter((c) => new Date(c.joinedAt).getTime() >= cutoff).length;
+  const repeat = data.filter((c) => c.orders >= 2).length;
+  const buyers = data.filter((c) => c.orders > 0);
+  const revenue = data.reduce((n, c) => n + c.totalSpent, 0);
   return (
     <>
       <PageHeader title="Customers" subtitle={`${data.length} customers`} />
+      <div className="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-4">
+        <StatCard label="Customers" value={String(data.length)} hint={`${buyers.length} have ordered`} />
+        <StatCard label="New this month" value={String(newCount)} hint="joined in the last 30 days" />
+        <StatCard label="Repeat customers" value={String(repeat)} hint={buyers.length ? `${Math.round((repeat / buyers.length) * 100)}% of buyers` : "No orders yet"} />
+        <StatCard label="Avg. spend" value={fmt(buyers.length ? revenue / buyers.length : 0)} hint="per customer who ordered" />
+      </div>
       <DataTable
         rows={data}
         columns={columns}

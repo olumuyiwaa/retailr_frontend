@@ -5,7 +5,7 @@ import { useBizCurrency, useBizMoney } from "@/hooks/useBizMoney";
 import { useAuth } from "@/app/context/AuthContext";
 import { useAsync } from "@/hooks/useAsync";
 import { createCategory, deleteProduct, getBusinessProfile, listCategories, listProducts, MAX_PRODUCT_IMAGES, MAX_PRODUCT_SPECS, saveProduct, type ProductInput } from "@/services/business";
-import { ErrorNote, PageHeader, PageLoading } from "@/components/saas/Card";
+import { ErrorNote, PageHeader, PageLoading, StatCard } from "@/components/saas/Card";
 import DataTable, { type Column } from "@/components/saas/DataTable";
 import StatusBadge from "@/components/saas/StatusBadge";
 import { Field, inputCls, OutlineButton, PrimaryButton } from "@/components/saas/Form";
@@ -181,6 +181,16 @@ export default function ProductsPage() {
         subtitle={`${data.length} products in your catalogue`}
         action={<PrimaryButton onClick={() => open("new")}>+ Add product</PrimaryButton>}
       />
+      <div className="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-4">
+        <StatCard label="Products" value={String(data.length)} hint={`${data.filter((p) => p.status === "draft").length} in draft`} />
+        <StatCard label="Active" value={String(data.filter((p) => p.status === "active").length)} hint="visible on your store" />
+        <StatCard
+          label="Low or out of stock"
+          value={String(data.filter((p) => p.status !== "draft" && p.stock <= 6).length)}
+          hint={`${data.filter((p) => p.status !== "draft" && p.stock === 0).length} out of stock`}
+        />
+        <StatCard label="Stock value" value={fmt(data.reduce((n, p) => n + p.price * p.stock, 0))} hint={`${data.reduce((n, p) => n + p.stock, 0)} units on hand`} />
+      </div>
       {rowError && <div className="mb-4"><ErrorNote message={rowError} /></div>}
       <DataTable
         rows={data}
