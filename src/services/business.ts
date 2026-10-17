@@ -529,6 +529,37 @@ export async function listCustomers(businessId: string): Promise<Customer[]> {
   return db.customers.filter((c) => c.businessId === businessId);
 }
 
+export interface CustomerDetail {
+  customer: Customer;
+  orders: Order[];
+  groups: string[];
+  avgOrder: number;
+  lastOrderAt?: string;
+  address?: string;
+}
+
+export async function getCustomerDetail(businessId: string, customerId: string): Promise<CustomerDetail> {
+  await delay(200);
+  const customer = db.customers.find((c) => c.id === customerId && c.businessId === businessId);
+  if (!customer) throw new ServiceError("Customer not found.");
+  const orders = db.orders
+    .filter((o) => o.businessId === businessId && o.customerId === customer.id)
+    .map((o) => ({ ...o }))
+    .sort((a, b) => b.placedAt.localeCompare(a.placedAt));
+  const paid = orders.filter((o) => o.paymentStatus === "paid");
+  const groups = db.customerGroups
+    .filter((g) => g.businessId === businessId && membersOf(businessId, g).some((m) => m.id === customer.id))
+    .map((g) => g.name);
+  return {
+    customer: { ...customer },
+    orders,
+    groups,
+    avgOrder: paid.length ? paid.reduce((n, o) => n + o.total, 0) / paid.length : 0,
+    lastOrderAt: orders[0]?.placedAt,
+    address: orders.find((o) => o.shippingAddress)?.shippingAddress,
+  };
+}
+
 // ---------- team ----------
 
 export async function listTeam(businessId: string): Promise<TeamMember[]> {
