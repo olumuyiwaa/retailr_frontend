@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useAsync } from "@/hooks/useAsync";
 import { listInvoices, type InvoiceRow } from "@/services/platform";
-import { ErrorNote, PageHeader, PageLoading } from "@/components/saas/Card";
+import { ErrorNote, PageHeader, PageLoading, StatCard } from "@/components/saas/Card";
 import DataTable, { type Column } from "@/components/saas/DataTable";
 import StatusBadge, { label } from "@/components/saas/StatusBadge";
 import { money, shortDate } from "@/lib/format";
@@ -26,6 +26,12 @@ export default function InvoicesPage() {
   return (
     <>
       <PageHeader title="Invoices" subtitle="Subscription billing across the platform." />
+      <div className="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-4">
+        <StatCard label="Invoices" value={String(data.length)} hint={`${data.filter((i) => i.status === "paid").length} paid`} />
+        <StatCard label="Collected" value={money(data.filter((i) => i.status === "paid").reduce((n, i) => n + i.amount, 0))} hint="paid invoices" />
+        <StatCard label="Outstanding" value={money(data.filter((i) => i.status === "pending").reduce((n, i) => n + i.amount, 0))} hint={`${data.filter((i) => i.status === "pending").length} pending`} />
+        <StatCard label="Failed or refunded" value={String(data.filter((i) => i.status === "failed" || i.status === "refunded").length)} hint={`${money(data.filter((i) => i.status === "failed").reduce((n, i) => n + i.amount, 0))} failed`} />
+      </div>
       <DataTable
         rows={data}
         columns={columns}

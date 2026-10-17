@@ -3,7 +3,7 @@ import { formatCurrency, toUsd } from "@/lib/money";
 import Link from "next/link";
 import { useAsync } from "@/hooks/useAsync";
 import { listBusinesses, type BusinessRow } from "@/services/platform";
-import { ErrorNote, PageHeader, PageLoading } from "@/components/saas/Card";
+import { ErrorNote, PageHeader, PageLoading, StatCard } from "@/components/saas/Card";
 import DataTable, { type Column } from "@/components/saas/DataTable";
 import StatusBadge, { label } from "@/components/saas/StatusBadge";
 import { money, shortDate } from "@/lib/format";
@@ -42,6 +42,12 @@ export default function BusinessesPage() {
   return (
     <>
       <PageHeader title="Businesses" subtitle={`${data.length} businesses on the platform`} />
+      <div className="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-4">
+        <StatCard label="Businesses" value={String(data.length)} hint={`${data.filter((b) => b.status === "pending").length} awaiting approval`} />
+        <StatCard label="Live stores" value={String(data.filter((b) => b.status === "active" || b.status === "trial").length)} hint={`${data.filter((b) => b.status === "trial").length} on trial`} />
+        <StatCard label="Suspended or cancelled" value={String(data.filter((b) => b.status === "suspended" || b.status === "cancelled").length)} hint={`${data.filter((b) => b.status === "suspended").length} suspended`} />
+        <StatCard label="Monthly recurring revenue" value={money(data.reduce((n, b) => n + b.mrr, 0))} hint={`${data.filter((b) => b.mrr > 0).length} paying businesses`} />
+      </div>
       <DataTable
         rows={data}
         columns={columns}
