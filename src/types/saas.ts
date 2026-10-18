@@ -100,6 +100,29 @@ export interface Subscription {
   currentPeriodEnd: string;
   trialEndsAt?: string;
   cancelledAt?: string;
+  /** Platform discount code applied to this subscription; `amount` is already net of it. */
+  couponCode?: string;
+  /** What the code takes off each billing period, in USD. */
+  discount?: number;
+}
+
+/** A discount the platform gives businesses on their Retailr subscription. Amounts are in USD. */
+export interface PlanCoupon {
+  id: string;
+  code: string;
+  type: CouponType;
+  /** percent: 1-100, fixed: USD off each billing period */
+  value: number;
+  /** Limit to these plans; empty or missing means every paid plan. */
+  planIds?: string[];
+  /** Limit to one business; missing means anyone can use it. */
+  businessId?: string;
+  maxUses?: number;
+  usedCount: number;
+  expiresAt?: string;
+  status: CouponStatus;
+  note?: string;
+  createdAt: string;
 }
 
 export type InvoiceStatus = "paid" | "pending" | "failed" | "refunded";

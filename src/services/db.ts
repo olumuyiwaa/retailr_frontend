@@ -49,6 +49,7 @@ const fresh = () => ({
   orders: clone(seed.orders),
   customers: clone(seed.customers),
   coupons: clone(seed.coupons),
+  planCoupons: clone(seed.planCoupons),
   customerGroups: clone(seed.customerGroups),
   messages: clone(seed.messages),
   team: clone(seed.team),
@@ -66,6 +67,7 @@ function load(): DB {
       // basic shape check so a corrupted/old blob falls back to seed data
       if (parsed && Array.isArray(parsed.businesses) && Array.isArray(parsed.plans) && Array.isArray(parsed.users) && Array.isArray(parsed.coupons) && Array.isArray(parsed.customerGroups) && Array.isArray(parsed.messages)) {
         if (!parsed.analyticsLive || typeof parsed.analyticsLive !== "object") parsed.analyticsLive = {};
+        if (!Array.isArray(parsed.planCoupons)) parsed.planCoupons = clone(seed.planCoupons);
         if (!Array.isArray(parsed.categories)) parsed.categories = deriveCategories(parsed.products ?? []);
         return parsed as DB;
       }

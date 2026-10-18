@@ -8,6 +8,8 @@ import { listPlans } from "@/services/platform";
 import MarketingShell, { MARKETING_WIDTH } from "@/components/saas/MarketingShell";
 import { Field, inputCls, OutlineButton, PrimaryButton } from "@/components/saas/Form";
 import CurrencySwitcher from "@/components/saas/CurrencySwitcher";
+import { validatePlanCoupon } from "@/services/planCoupons";
+import { planCouponLabel } from "@/lib/planCoupon";
 import { planAmount, planPriceLabel, useCurrency } from "@/lib/currency";
 
 const CATEGORIES = ["Fashion & Textiles", "Food & Groceries", "Beauty & Wellness", "Crafts & Decor", "Coffee & Tea", "Jewellery", "Other"];
@@ -27,9 +29,20 @@ function SignupFlow() {
     businessName: "", category: CATEGORIES[0], country: "", city: "", phone: "",
     planId: params.get("plan") ?? "plan_growth",
     cycle: (params.get("cycle") === "yearly" ? "yearly" : "monthly") as "monthly" | "yearly",
+    couponCode: params.get("code") ?? "",
   });
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const [codeNote, setCodeNote] = useState<{ ok: boolean; text: string } | null>(null);
+  const checkCode = async () => {
+    try {
+      const c = await validatePlanCoupon(form.couponCode, form.planId);
+      setCodeNote({ ok: true, text: `${c.code} applied: ${planCouponLabel(c)}.` });
+    } catch (e) {
+      setCodeNote({ ok: false, text: e instanceof Error ? e.message : "Could not check that code." });
+    }
+  };
 
   const next = () => {
     setError(null);
@@ -111,7 +124,7 @@ function SignupFlow() {
               {plans?.filter((p) => p.isActive).map((p) => (
                 <label key={p.id} className={`flex cursor-pointer items-center justify-between gap-4 rounded-xl border p-4 ${form.planId === p.id ? "border-brand-500 bg-brand-25" : "border-gray-200"}`}>
                   <span className="flex items-center gap-3">
-                    <input type="radio" name="plan" checked={form.planId === p.id} onChange={() => setForm((f) => ({ ...f, planId: p.id }))} />
+                    <input type="radio" name="plan" checked={form.planId === p.id} onChange={() => { setCodeNote(null); setForm((f) => ({ ...f, planId: p.id })); }} />
                     <span>
                       <span className="block font-semibold">{p.name}</span>
                       <span className="block text-xs text-gray-500">{p.limits.products === -1 ? "Unlimited" : p.limits.products} products · {p.limits.staff} team members</span>
@@ -121,6 +134,16 @@ function SignupFlow() {
                 </label>
               ))}
             </div>
+            {(plans?.find((p) => p.id === form.planId)?.priceMonthly ?? 0) > 0 && (
+              <div className="mt-5">
+                <label htmlFor="couponCode" className="mb-1.5 block text-sm font-medium text-gray-700">Discount code <span className="font-normal text-gray-400">(optional)</span></label>
+                <div className="flex gap-2">
+                  <input id="couponCode" value={form.couponCode} onChange={(e) => { setForm((f) => ({ ...f, couponCode: e.target.value })); setCodeNote(null); }} placeholder="e.g. LAUNCH20" className="h-11 w-full rounded-lg border border-gray-300 px-4 text-sm uppercase" />
+                  <OutlineButton type="button" onClick={checkCode} disabled={!form.couponCode.trim()}>Apply</OutlineButton>
+                </div>
+                {codeNote && <p role="status" className={`mt-2 text-sm ${codeNote.ok ? "text-success-600" : "text-error-600"}`}>{codeNote.text}</p>}
+              </div>
+            )}
           </>
         )}
       </div>

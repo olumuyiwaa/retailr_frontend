@@ -23,6 +23,7 @@ import type { Category,
   TeamMember,
   TimeSeriesPoint,
 } from "@/types/saas";
+import { priceWithCoupon } from "./planCoupons";
 import { db, delay, ServiceError, uid } from "./db";
 
 const DAY = 86400000;
@@ -639,17 +640,29 @@ export async function getBilling(businessId: string): Promise<BillingInfo> {
 export async function changePlan(
   businessId: string,
   planId: string,
-  cycle: "monthly" | "yearly"
+  cycle: "monthly" | "yearly",
+  couponCode?: string
 ): Promise<void> {
   await delay(700);
   const biz = db.businesses.find((b) => b.id === businessId);
   const plan = db.plans.find((p) => p.id === planId);
   const sub = db.subscriptions.find((s) => s.businessId === businessId);
   if (!biz || !plan || !sub) throw new ServiceError("Could not change plan.");
+  // validate the code first so a bad one changes nothing; a code from an earlier plan doesn't carry over unless re-entered
+  let priced = { amount: 0, discount: 0, couponCode: undefined as string | undefined };
+  const carry = !couponCode && sub.planId === plan.id ? sub.couponCode : undefined; // same plan, new cycle: keep the discount if it still works
+  try {
+    priced = priceWithCoupon(couponCode ?? carry, plan, cycle, businessId, sub.couponCode);
+  } catch (e) {
+    if (couponCode) throw e;
+    priced = priceWithCoupon(undefined, plan, cycle);
+  }
   biz.planId = plan.id;
   sub.planId = plan.id;
   sub.cycle = cycle;
-  sub.amount = cycle === "yearly" ? plan.priceYearly : plan.priceMonthly;
+  sub.amount = priced.amount;
+  sub.couponCode = priced.couponCode;
+  sub.discount = priced.couponCode ? priced.discount : undefined;
   if (sub.amount === 0) {
     sub.status = "active";
     sub.trialEndsAt = undefined;

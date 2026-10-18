@@ -13,6 +13,7 @@ const columns: Column<SubscriptionRow>[] = [
     render: (s) => <Link href={`/admin/super/businesses/${s.businessId}`} className="font-medium text-gray-800 hover:text-brand-500 dark:text-white/90">{s.businessName}</Link>,
   },
   { key: "plan", header: "Plan", sortValue: (s) => s.planName, render: (s) => s.planName },
+  { key: "disc", header: "Discount", render: (s) => (s.couponCode ? <span title={`Saves ${money(s.discount ?? 0)} per ${s.cycle === "yearly" ? "year" : "month"}`}><span className="font-mono text-theme-xs">{s.couponCode}</span></span> : "—") },
   { key: "cycle", header: "Billing", render: (s) => (s.cycle === "yearly" ? "Yearly" : "Monthly") },
   { key: "amount", header: "Amount", sortValue: (s) => s.amount, render: (s) => money(s.amount) },
   { key: "status", header: "Status", sortValue: (s) => s.status, render: (s) => <StatusBadge status={s.status} /> },

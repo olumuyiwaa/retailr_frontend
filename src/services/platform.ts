@@ -5,12 +5,13 @@ import type {
   BusinessStatus,
   Invoice,
   Plan,
+  PlanCoupon,
   PlatformOverview,
   Subscription,
   TimeSeriesPoint,
 } from "@/types/saas";
 import { monthLabel } from "@/lib/format";
-import { db, delay, ServiceError } from "./db";
+import { db, delay, ServiceError, uid } from "./db";
 
 const monthlyValue = (s: Subscription) => (s.cycle === "yearly" ? s.amount / 12 : s.amount);
 
@@ -178,4 +179,56 @@ export async function savePlan(plan: Plan): Promise<Plan> {
   if (i === -1) db.plans.push(plan);
   else db.plans[i] = plan;
   return plan;
+}
+
+// ---------- subscription discounts ----------
+
+export type PlanCouponRow = PlanCoupon & { businessName?: string; planNames: string[]; redeemed: number; discountPerMonth: number };
+export type PlanCouponInput = Pick<PlanCoupon, "code" | "type" | "value" | "planIds" | "businessId" | "maxUses" | "expiresAt" | "note">;
+
+export async function listPlanCoupons(): Promise<PlanCouponRow[]> {
+  await delay();
+  return db.planCoupons.map((c) => {
+    const subs = db.subscriptions.filter((s) => s.couponCode === c.code && s.status !== "cancelled");
+    return {
+      ...c,
+      businessName: c.businessId ? db.businesses.find((b) => b.id === c.businessId)?.name : undefined,
+      planNames: (c.planIds ?? []).map((id) => db.plans.find((p) => p.id === id)?.name ?? id),
+      redeemed: db.subscriptions.filter((s) => s.couponCode === c.code).length,
+      discountPerMonth: subs.reduce((n, s) => n + (s.cycle === "yearly" ? (s.discount ?? 0) / 12 : s.discount ?? 0), 0),
+    };
+  });
+}
+
+export async function savePlanCoupon(id: string | null, input: PlanCouponInput): Promise<PlanCoupon> {
+  await delay(400);
+  const code = input.code.trim().toUpperCase();
+  if (!/^[A-Z0-9-]{3,20}$/.test(code)) throw new ServiceError("Use 3–20 letters, numbers or dashes for the code.");
+  if (!(input.value > 0)) throw new ServiceError("Enter a discount greater than zero.");
+  if (input.type === "percent" && input.value > 100) throw new ServiceError("A percentage can't be more than 100.");
+  if (input.maxUses != null && !(input.maxUses >= 1)) throw new ServiceError("Max uses must be at least 1.");
+  if (db.planCoupons.some((c) => c.code === code && c.id !== id)) throw new ServiceError("There is already a code with that name.");
+  const clean = { ...input, code, planIds: input.planIds?.length ? input.planIds : undefined, businessId: input.businessId || undefined, note: input.note?.trim() || undefined };
+  if (id) {
+    const c = db.planCoupons.find((x) => x.id === id);
+    if (!c) throw new ServiceError("Discount not found.");
+    Object.assign(c, clean);
+    return { ...c };
+  }
+  const c: PlanCoupon = { id: uid("pcp"), ...clean, usedCount: 0, status: "active", createdAt: new Date().toISOString() };
+  db.planCoupons.unshift(c);
+  return { ...c };
+}
+
+export async function setPlanCouponStatus(id: string, status: PlanCoupon["status"]): Promise<void> {
+  await delay(250);
+  const c = db.planCoupons.find((x) => x.id === id);
+  if (!c) throw new ServiceError("Discount not found.");
+  c.status = status;
+}
+
+export async function deletePlanCoupon(id: string): Promise<void> {
+  await delay(250);
+  const i = db.planCoupons.findIndex((x) => x.id === id);
+  if (i >= 0) db.planCoupons.splice(i, 1);
 }

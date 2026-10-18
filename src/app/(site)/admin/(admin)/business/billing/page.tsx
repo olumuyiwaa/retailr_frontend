@@ -4,12 +4,15 @@ import { useState } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useAsync } from "@/hooks/useAsync";
 import { changePlan, getBilling } from "@/services/business";
+import { validatePlanCoupon } from "@/services/planCoupons";
+import { planCouponLabel, planDiscountUsd } from "@/lib/planCoupon";
+import type { PlanCoupon } from "@/types/saas";
 import { Card, CardHeader, ErrorNote, PageHeader, PageLoading, StatCard } from "@/components/saas/Card";
 import StatusBadge from "@/components/saas/StatusBadge";
-import { OutlineButton, PrimaryButton, UsageBar } from "@/components/saas/Form";
+import { Field, inputCls, OutlineButton, PrimaryButton, UsageBar } from "@/components/saas/Form";
 import { money, shortDate } from "@/lib/format";
 import CurrencySwitcher from "@/components/saas/CurrencySwitcher";
-import { planAmount, planPriceLabel, useCurrency } from "@/lib/currency";
+import { formatCurrency, planAmount, planPriceLabel, useCurrency } from "@/lib/currency";
 
 export default function BillingPage() {
   const { user } = useAuth();
@@ -21,10 +24,36 @@ export default function BillingPage() {
   const [busyPlan, setBusyPlan] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [codeInput, setCodeInput] = useState("");
+  const [coupon, setCoupon] = useState<PlanCoupon | null>(null);
+  const [codeError, setCodeError] = useState<string | null>(null);
+  const [checking, setChecking] = useState(false);
 
   if (loading) return <PageLoading />;
   if (error || !data) return <ErrorNote message={error ?? "Could not load billing."} onRetry={reload} />;
   const { plan, subscription, usage, invoices, plans } = data;
+
+  const applyCode = async () => {
+    setCodeError(null);
+    setChecking(true);
+    try {
+      // validated against the cheapest paid plan it could work on; each card re-checks its own plan below
+      const paid = plans.filter((p) => p.priceMonthly > 0);
+      let found: PlanCoupon | null = null;
+      let lastErr = "That discount code isn't valid.";
+      for (const p of paid) {
+        try { found = await validatePlanCoupon(codeInput, p.id, bid); break; } catch (e) { lastErr = e instanceof Error ? e.message : lastErr; }
+      }
+      if (!found) throw new Error(lastErr);
+      setCoupon(found);
+    } catch (e) {
+      setCoupon(null);
+      setCodeError(e instanceof Error ? e.message : "Could not check that code.");
+    } finally {
+      setChecking(false);
+    }
+  };
+  const couponFor = (planId: string) => (coupon && (!coupon.planIds?.length || coupon.planIds.includes(planId)) ? coupon : null);
 
   const choose = async (planId: string, name: string) => {
     if (!(await confirm({ title: `Switch to the ${name} plan?`, message: `You'll be on the ${name} plan, billed ${cycle}.`, confirmLabel: "Switch plan" }))) return;
@@ -32,7 +61,9 @@ export default function BillingPage() {
     setActionError(null);
     setNotice(null);
     try {
-      await changePlan(bid, planId, cycle);
+      await changePlan(bid, planId, cycle, couponFor(planId)?.code);
+      setCoupon(null);
+      setCodeInput("");
       setNotice(`You're now on the ${name} plan.`);
       reload();
     } catch (e) {
@@ -73,7 +104,8 @@ export default function BillingPage() {
             </div>
             {subscription && (
               <p className="text-theme-sm text-gray-500">
-                {subscription.amount === 0 ? "Free plan" : `${money(subscription.amount)} / ${subscription.cycle === "yearly" ? "year" : "month"}`} ·{" "}
+                {subscription.amount === 0 ? "Free plan" : `${money(subscription.amount)} / ${subscription.cycle === "yearly" ? "year" : "month"}`}
+                {subscription.couponCode ? ` (code ${subscription.couponCode}, saves ${money(subscription.discount ?? 0)})` : ""} ·{" "}
                 {subscription.amount === 0 ? "no renewal" : subscription.status === "trialing" ? `trial ends ${shortDate(subscription.trialEndsAt ?? subscription.currentPeriodEnd)}` : `renews ${shortDate(subscription.currentPeriodEnd)}`}
               </p>
             )}
@@ -102,14 +134,28 @@ export default function BillingPage() {
               </div>
             }
           />
+          <div className="px-5 pt-4 sm:px-6">
+            <Field label="Discount code">
+              <div className="flex gap-2">
+                <input value={codeInput} onChange={(e) => { setCodeInput(e.target.value); setCoupon(null); setCodeError(null); }} placeholder="Have a code?" className={`${inputCls} uppercase`} />
+                <OutlineButton type="button" onClick={applyCode} disabled={checking || !codeInput.trim()}>{checking ? "Checking…" : "Apply"}</OutlineButton>
+              </div>
+            </Field>
+            {coupon && <p role="status" className="mt-2 text-theme-sm text-success-600">{coupon.code} applied: {planCouponLabel(coupon)}{coupon.planIds?.length ? " on the plans marked below" : ""}.</p>}
+            {codeError && <p role="alert" className="mt-2 text-theme-sm text-error-600">{codeError}</p>}
+          </div>
           <div className="grid grid-cols-1 gap-3 p-5 sm:grid-cols-2 sm:p-6">
             {plans.map((p) => {
+              const cp = couponFor(p.id);
+              const listUsd = cycle === "yearly" ? p.priceYearly : p.priceMonthly;
+              const ratio = cp && listUsd > 0 ? 1 - planDiscountUsd(cp, listUsd) / listUsd : 1;
               const current = p.id === plan.id && subscription?.cycle === cycle;
               return (
                 <div key={p.id} className={`flex flex-col rounded-xl border p-4 ${p.id === plan.id ? "border-brand-500" : "border-gray-200 dark:border-gray-800"}`}>
                   <p className="font-semibold text-gray-800 dark:text-white/90">{p.name}</p>
                   <p className="mt-1 text-2xl font-bold text-gray-800 dark:text-white/90">
-                    {planPriceLabel(p, cycle, currency)}
+                    {cp && ratio < 1 && <span className="mr-2 text-base font-normal text-gray-400 line-through">{planPriceLabel(p, cycle, currency)}</span>}
+                    {cp && ratio < 1 ? formatCurrency(planAmount(p, cycle, currency) * ratio, currency) : planPriceLabel(p, cycle, currency)}
                     {planAmount(p, "monthly", "USD") > 0 && <span className="text-sm font-normal text-gray-500"> /{cycle === "yearly" ? "yr" : "mo"}</span>}
                   </p>
                   <p className="mt-2 flex-1 text-theme-xs text-gray-500">

@@ -1,6 +1,7 @@
 import type { AuthUser, Business, Subscription } from "@/types/saas";
 import { DEMO_PASSWORD } from "@/mock/seed";
 import { currencyForCountry } from "@/lib/money";
+import { priceWithCoupon } from "./planCoupons";
 import { db, delay, ServiceError, uid } from "./db";
 
 export async function login(email: string, password: string): Promise<AuthUser> {
@@ -32,6 +33,8 @@ export interface RegisterPayload {
   phone: string;
   planId: string;
   cycle: "monthly" | "yearly";
+  /** Optional platform discount code. */
+  couponCode?: string;
 }
 
 export async function registerBusiness(p: RegisterPayload): Promise<AuthUser> {
@@ -48,6 +51,8 @@ export async function registerBusiness(p: RegisterPayload): Promise<AuthUser> {
   while (db.businesses.some((b) => b.slug === slug)) slug = `${baseSlug}-${n++}`;
 
   const free = plan.priceMonthly === 0;
+  // check the code before anything is created, so a bad code doesn't leave a half-made account
+  const priced = priceWithCoupon(free ? undefined : p.couponCode, plan, p.cycle);
   const now = new Date();
   const biz: Business = {
     id: uid("biz"),
@@ -76,7 +81,8 @@ export async function registerBusiness(p: RegisterPayload): Promise<AuthUser> {
     planId: plan.id,
     status: free ? "active" : "trialing",
     cycle: p.cycle,
-    amount: p.cycle === "yearly" ? plan.priceYearly : plan.priceMonthly,
+    amount: priced.amount,
+    ...(priced.couponCode ? { couponCode: priced.couponCode, discount: priced.discount } : {}),
     startedAt: now.toISOString(),
     currentPeriodEnd: trialEnds,
     trialEndsAt: free ? undefined : trialEnds,

@@ -3,6 +3,7 @@
 // run. Dates are relative to "now" so charts always show recent activity.
 
 import type {
+  PlanCoupon,
   Business,
   Coupon,
   CustomerGroup,
@@ -580,4 +581,12 @@ export const demoAccounts = [
     role: "business_admin" as const,
     businessId: businesses[1].id,
   },
+];
+
+/** Discounts the platform offers businesses on their subscription. */
+export const planCoupons: PlanCoupon[] = [
+  { id: "pcp_launch20", code: "LAUNCH20", type: "percent", value: 20, usedCount: 3, maxUses: 100, expiresAt: daysAhead(60), status: "active", note: "Launch offer for new sign-ups", createdAt: daysAgo(30) },
+  { id: "pcp_growth15", code: "GROWTH15", type: "percent", value: 15, planIds: ["plan_growth"], usedCount: 1, status: "active", note: "Growth plan promo", createdAt: daysAgo(20) },
+  { id: "pcp_save10", code: "SAVE10", type: "fixed", value: 10, usedCount: 0, maxUses: 25, expiresAt: daysAhead(30), status: "active", createdAt: daysAgo(5) },
+  { id: "pcp_early", code: "EARLYBIRD", type: "percent", value: 30, usedCount: 12, maxUses: 12, status: "active", note: "Founding customers", createdAt: daysAgo(90) },
 ];
