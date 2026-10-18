@@ -2,7 +2,7 @@
 
 A multi-tenant SaaS platform that lets small African businesses subscribe, get their own online storefront and run it from a simple admin. Think Bumpa-style commerce for sellers: products, orders, customers, discounts, invoices and billing, with local-currency pricing.
 
-> **Status:** frontend prototype. All data is mocked in the browser (no backend yet), so the whole product can be explored and demoed end to end. A NestJS + Prisma API is planned next.
+> **Status:** frontend prototype. All data is mocked in the browser (no backend yet), so the whole product can be explored and demoed end to end. A NestJS + Prisma + PostgreSQL API is planned next; its spec (data model, endpoints and business rules) is in [`docs/backend`](docs/backend/README.md).
 
 ## What's in it
 
@@ -106,7 +106,7 @@ UI code never touches data directly. It calls typed async functions in `src/serv
 - [ ] More themes, and gating themes by plan
 - [ ] Payment gateways and delivery integrations
 - [ ] Subdomain routing and custom domains
-- [ ] NestJS + Prisma backend
+- [ ] NestJS + Prisma backend (spec and Prisma schema ready in `docs/backend`)
 - [ ] Working global search and notifications
 
 ## Credits
