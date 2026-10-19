@@ -20,7 +20,7 @@ export default function StoreInvoice({ orderId }: { orderId: string }) {
   useEffect(() => {
     if (!storeId) return;
     let cancelled = false;
-    getOrderForConfirmation(storeId, orderId)
+    getOrderForConfirmation(orderId)
       .then((o) => { if (!cancelled) { setOrder(o); setState("ready"); } })
       .catch(() => { if (!cancelled) setState("missing"); });
     return () => { cancelled = true; };

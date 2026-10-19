@@ -75,7 +75,7 @@ export function StoreProvider({ slug, children }: { slug?: string; children: Rea
     (async () => {
       try {
         const s = await getStoreBySlug(slug);
-        const [rows, cats] = await Promise.all([listStoreProducts(s.id), listStoreCategories(s.id)]);
+        const [rows, cats] = await Promise.all([listStoreProducts(slug), listStoreCategories(slug)]);
         if (cancelled) return;
         setStore(s);
         setProducts(rows.map(toTemplateProduct));

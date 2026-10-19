@@ -68,7 +68,7 @@ export default function StoreCheckout() {
     setCouponBusy(true);
     setCouponMsg(null);
     try {
-      setCoupon(await validateCoupon(store.id, couponInput, total));
+      setCoupon(await validateCoupon(store.slug, couponInput, total));
       setCouponInput("");
     } catch (err) {
       setCoupon(null);
@@ -89,7 +89,7 @@ export default function StoreCheckout() {
     setBusy(true);
     try {
       const order = await placeOrder({
-        businessId: store.id,
+        slug: store.slug,
         customer: { name: `${f.firstName.trim()} ${f.lastName.trim()}`, email: f.email, phone: f.phone },
         shippingAddress: `${f.address.trim()}, ${f.city.trim()}, ${f.country.trim()}`,
         notes: f.notes,
@@ -99,7 +99,7 @@ export default function StoreCheckout() {
       });
       dispatch(removeAllItemsFromCart());
       ctx.reload(); // refresh stock levels shown in the store
-      router.push(href(`/order/${order.id}`));
+      router.push(href(`/order/${order.publicToken}`));
     } catch (err) {
       setError(err instanceof Error ? err.message : "We couldn't place your order. Please try again.");
       setBusy(false);

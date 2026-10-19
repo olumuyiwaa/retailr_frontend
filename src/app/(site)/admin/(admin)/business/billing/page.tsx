@@ -1,9 +1,9 @@
 "use client";
 import { useConfirm } from "@/components/ui/confirm";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useAsync } from "@/hooks/useAsync";
-import { changePlan, getBilling } from "@/services/business";
+import { changePlan, getBilling, verifyPayment } from "@/services/business";
 import { validatePlanCoupon } from "@/services/planCoupons";
 import { planCouponLabel, planDiscountUsd } from "@/lib/planCoupon";
 import type { PlanCoupon } from "@/types/saas";
@@ -29,6 +29,33 @@ export default function BillingPage() {
   const [codeError, setCodeError] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
 
+  // coming back from the payment page: ask the API how the payment ended (it can take a moment to settle)
+  useEffect(() => {
+    const ref = new URLSearchParams(window.location.search).get("reference");
+    if (!ref) return;
+    let cancelled = false;
+    const clean = () => window.history.replaceState(null, "", window.location.pathname);
+    (async () => {
+      setNotice("Confirming your payment…");
+      for (let i = 0; i < 15 && !cancelled; i++) {
+        try {
+          const r = await verifyPayment(ref);
+          if (r.status === "paid") { setNotice("Payment received. Your plan is active."); clean(); reload(); return; }
+          if (r.status === "failed") { setNotice(null); setActionError("Your payment didn't go through. You haven't been charged. Please try again."); clean(); return; }
+        } catch (e) {
+          setNotice(null);
+          setActionError(e instanceof Error ? e.message : "We couldn't confirm your payment.");
+          clean();
+          return;
+        }
+        await new Promise((r) => setTimeout(r, 4000));
+      }
+      if (!cancelled) { setNotice("We're still waiting for your bank. Your plan will update as soon as the payment is confirmed."); clean(); }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   if (loading) return <PageLoading />;
   if (error || !data) return <ErrorNote message={error ?? "Could not load billing."} onRetry={reload} />;
   const { plan, subscription, usage, invoices, plans } = data;
@@ -42,7 +69,7 @@ export default function BillingPage() {
       let found: PlanCoupon | null = null;
       let lastErr = "That discount code isn't valid.";
       for (const p of paid) {
-        try { found = await validatePlanCoupon(codeInput, p.id, bid); break; } catch (e) { lastErr = e instanceof Error ? e.message : lastErr; }
+        try { found = await validatePlanCoupon(codeInput, p.id); break; } catch (e) { lastErr = e instanceof Error ? e.message : lastErr; }
       }
       if (!found) throw new Error(lastErr);
       setCoupon(found);
@@ -61,7 +88,8 @@ export default function BillingPage() {
     setActionError(null);
     setNotice(null);
     try {
-      await changePlan(bid, planId, cycle, couponFor(planId)?.code);
+      const r = await changePlan(bid, planId, cycle, couponFor(planId)?.code);
+      if (r.redirected) return; // on the way to the payment page
       setCoupon(null);
       setCodeInput("");
       setNotice(`You're now on the ${name} plan.`);
@@ -78,6 +106,12 @@ export default function BillingPage() {
       <PageHeader title="Billing & plan" subtitle="Manage your Retailr subscription." />
       {notice && <div role="status" className="mb-4 rounded-xl bg-success-50 px-4 py-3 text-sm text-success-700 dark:bg-success-500/10 dark:text-success-400">{notice}</div>}
       {actionError && <div className="mb-4"><ErrorNote message={actionError} /></div>}
+      {subscription?.status === "past_due" && data.payments?.enabled && (
+        <div role="alert" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-warning-50 px-4 py-3 text-sm text-warning-700 dark:bg-warning-500/10 dark:text-orange-400">
+          <span>Your last payment didn&apos;t go through. Pay now to keep your store running without interruption.</span>
+          <PrimaryButton onClick={() => choose(plan.id, plan.name)} disabled={busyPlan !== null}>Pay now</PrimaryButton>
+        </div>
+      )}
 
       <div className="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-4">
         <StatCard label="Current plan" value={plan.name} hint={subscription ? (subscription.cycle === "yearly" ? "billed yearly" : "billed monthly") : undefined} />

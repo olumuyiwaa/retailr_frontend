@@ -2,7 +2,7 @@
 
 A multi-tenant SaaS platform that lets small African businesses subscribe, get their own online storefront and run it from a simple admin. Think Bumpa-style commerce for sellers: products, orders, customers, discounts, invoices and billing, with local-currency pricing.
 
-> **Status:** frontend prototype. All data is mocked in the browser (no backend yet), so the whole product can be explored and demoed end to end. A NestJS + Prisma + PostgreSQL API is planned next; its spec (data model, endpoints and business rules) is in the [retailr repo](https://github.com/olumuyiwaa/retailr).
+> **Status:** connected to the [Retailr API](https://github.com/olumuyiwaa/retailr) (NestJS + Prisma + PostgreSQL). Set `NEXT_PUBLIC_API_URL` to its `/api/v1` address (see `.env.example`); there is no mock data any more.
 
 ## What's in it
 
@@ -50,7 +50,7 @@ Requires Node 18.18+ (Node 20+ recommended).
 
 ### Demo accounts
 
-Go to `/admin/login` and pick an account (password for all: `demo1234`).
+Start the API first (see its README: run the migrations and `npm run seed` to create the plans and the super admin). Then sign up at `/get-started`, or sign in at `/admin/login` as the seeded super admin.
 
 | Role | Email |
 | --- | --- |
@@ -78,16 +78,17 @@ src/
     saas/                 admin UI kit (cards, tables, dashboard widgets, pricing)
     Store/                Classic theme storefront components
   themes/                 storefront themes (registry, classic, showcase, atelier)
-  services/               async "API" layer over the mock database
-  mock/seed.ts            deterministic seed data
+  services/               typed functions the screens call; each one is an HTTP call to the API
+  lib/api.ts              fetch client: session tokens, refresh-and-retry, error messages, paging
+  lib/upload.ts           image uploads (picked photos go to the API's upload URLs)
   types/saas.ts           shared domain types
   lib/                    currency, formatting, store theming, detail-name presets
   redux/                  cart state
 ```
 
-### How the mock backend works
+### How the data layer works
 
-UI code never touches data directly. It calls typed async functions in `src/services/` (`auth`, `platform`, `business`, `store`), which read and write an in-memory database seeded from `src/mock/seed.ts` and mirrored to localStorage, with artificial latency. Every business-admin call is scoped by `businessId`, mirroring how the real API will authorise requests. To go live, replace the bodies of these functions with HTTP calls; the components should not need to change.
+UI code never calls `fetch` directly. It calls typed async functions in `src/services/` (`auth`, `platform`, `business`, `store`, `analytics`, `plans`, `planCoupons`), which call the API through `src/lib/api.ts`. The business-admin functions still take a `businessId` first argument so the screens read as before, but the API works out the business from your sign-in and the argument is not sent. Sessions are an access token plus a rotating refresh token kept in localStorage; a 401 triggers one refresh and a retry, and a failed refresh signs you out. Visitor tracking is batched and sent to `/track` (browsers announcing themselves as headless or bots are ignored by the API). Plan payments redirect to the payment page and come back to `/admin/business/billing?reference=...`, which confirms the payment with the API. Team invites arrive by email and open `/admin/accept-invite?token=...`.
 
 ### Site analytics
 

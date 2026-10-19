@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useAsync } from "@/hooks/useAsync";
-import { listPlans } from "@/services/platform";
+import { listPlans } from "@/services/plans";
 import CurrencySwitcher from "./CurrencySwitcher";
 import { formatCurrency, planAmount, planPriceLabel, useCurrency } from "@/lib/currency";
 

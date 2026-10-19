@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthProvider, homeFor, useAuth } from "@/app/context/AuthContext";
 import { useAsync } from "@/hooks/useAsync";
-import { listPlans } from "@/services/platform";
+import { listPlans } from "@/services/plans";
 import MarketingShell, { MARKETING_WIDTH } from "@/components/saas/MarketingShell";
 import { Field, inputCls, OutlineButton, PrimaryButton } from "@/components/saas/Form";
 import CurrencySwitcher from "@/components/saas/CurrencySwitcher";

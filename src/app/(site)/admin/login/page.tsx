@@ -1,17 +1,12 @@
 "use client";
-import { useConfirm } from "@/components/ui/confirm";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { homeFor, useAuth } from "@/app/context/AuthContext";
-import { DEMO_PASSWORD } from "@/mock/seed";
-import { demoAccounts } from "@/mock/seed";
 import Logo from "@/components/saas/Logo";
-import { resetDemoData } from "@/services/db";
 
 export default function LoginPage() {
   const { user, ready, signIn } = useAuth();
-  const confirm = useConfirm();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,11 +28,6 @@ export default function LoginPage() {
       setError(err instanceof Error ? err.message : "Could not sign in.");
       setBusy(false);
     }
-  };
-
-  const quick = (em: string) => {
-    setEmail(em);
-    setPassword(DEMO_PASSWORD);
   };
 
   const field =
@@ -77,25 +67,6 @@ export default function LoginPage() {
             <Link href="/get-started" className="font-medium text-brand-500 hover:text-brand-600">Start your free trial</Link>
           </p>
 
-          <div className="mt-8 rounded-xl border border-dashed border-gray-300 p-4 dark:border-gray-700">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Demo accounts · password {DEMO_PASSWORD}</p>
-              <button type="button" onClick={async () => { if (await confirm({ title: "Reset demo data?", message: "Everything you've added or changed goes back to the original demo data.", confirmLabel: "Reset", tone: "danger" })) { resetDemoData(); window.location.reload(); } }} className="text-xs text-gray-400 underline hover:text-gray-600">Reset demo data</button>
-            </div>
-            <div className="mt-3 flex flex-col gap-2">
-              {demoAccounts.map((a) => (
-                <button
-                  key={a.email}
-                  type="button"
-                  onClick={() => quick(a.email)}
-                  className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 text-left text-sm hover:bg-gray-100 dark:bg-white/5 dark:hover:bg-white/10"
-                >
-                  <span className="text-gray-700 dark:text-gray-300">{a.email}</span>
-                  <span className="text-xs text-gray-400">{a.role === "super_admin" ? "Super admin" : "Business admin"}</span>
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
       <div className="hidden bg-brand-950 p-12 lg:flex lg:flex-col lg:justify-center">
