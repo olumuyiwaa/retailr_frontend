@@ -9,6 +9,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useSidebar } from "@/app/context/SidebarContext";
 import { homeFor, useAuth } from "@/app/context/AuthContext";
 import Spinner from "@/components/saas/Spinner";
+import { canOpen } from "@/layout/navConfig";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const { isExpanded, isHovered, isMobileOpen } = useSidebar();
@@ -27,6 +28,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         const inBusiness = pathname.startsWith("/admin/business");
         if ((user.role === "super_admin" && inBusiness) || (user.role === "business_admin" && inSuper)) {
             router.replace(homeFor(user.role));
+        } else if (user.role === "business_admin" && !canOpen(pathname, user.teamRole)) {
+            router.replace(homeFor(user.role)); // not for this team role
         } else if (pathname === "/admin") {
             router.replace(homeFor(user.role));
         }

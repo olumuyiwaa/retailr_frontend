@@ -104,7 +104,7 @@ export default function CustomersPage() {
   const columns = makeColumns(fmt, (c) => setViewing(c.id));
   const bid = user!.businessId!;
   const { data: all, loading, error, reload } = useAsync(async () => {
-    const [customers, groups] = await Promise.all([listCustomers(bid), listGroups(bid)]);
+    const [customers, groups] = await Promise.all([listCustomers(bid), listGroups(bid).catch(() => [])]); // groups are for managers and owners
     const members = Object.fromEntries(await Promise.all(groups.map(async (g) => [g.id, new Set((await getGroupMembers(bid, g.id)).map((c) => c.id))] as const)));
     return { customers, groups, members };
   }, [bid]);

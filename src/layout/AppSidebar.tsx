@@ -14,7 +14,7 @@ const AppSidebar: React.FC = () => {
   const showText = isExpanded || isHovered || isMobileOpen;
 
   if (!user) return null;
-  const sections = navFor(user.role);
+  const sections = navFor(user.role, user.teamRole);
   const rootPaths = ["/admin/super", "/admin/business"];
   const isActive = (path: string) =>
     rootPaths.includes(path) ? pathname === path : pathname === path || pathname.startsWith(path + "/");

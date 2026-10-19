@@ -90,8 +90,8 @@ export default function TeamPage() {
           <Field label="Email"><input name="email" type="email" className={inputCls} /></Field>
           <Field label="Role">
             <select name="role" className={inputCls} defaultValue="staff">
-              <option value="manager">Manager — products, orders, customers</option>
-              <option value="staff">Staff — orders only</option>
+              <option value="manager">Manager — products, orders, customers, marketing, reports</option>
+              <option value="staff">Staff — orders, sales, customers (no catalogue changes)</option>
             </select>
           </Field>
           {formError && <ErrorNote message={formError} />}

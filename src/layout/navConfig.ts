@@ -1,5 +1,5 @@
 import type React from "react";
-import type { Role } from "@/types/saas";
+import type { AuthUser, Role } from "@/types/saas";
 import {
   BoxCubeIcon,
   BoxIcon,
@@ -15,6 +15,29 @@ import {
   UserCircleIcon,
 } from "@/icons";
 
+export type TeamRole = NonNullable<AuthUser["teamRole"]>;
+const RANK: Record<TeamRole, number> = { staff: 1, manager: 2, owner: 3 };
+
+/** The lowest team role that may open each business page (the API enforces the same rules). */
+const MIN_ROLE: [string, TeamRole][] = [
+  ["/admin/business/products", "manager"],
+  ["/admin/business/categories", "manager"],
+  ["/admin/business/groups", "manager"],
+  ["/admin/business/messages", "manager"],
+  ["/admin/business/coupons", "manager"],
+  ["/admin/business/reports", "manager"],
+  ["/admin/business/analytics", "manager"],
+  ["/admin/business/team", "owner"],
+  ["/admin/business/billing", "owner"],
+  ["/admin/business/settings", "owner"],
+];
+
+/** Whether someone with this team role may open `path`. Anything not listed is open to the whole team. */
+export function canOpen(path: string, teamRole: TeamRole = "owner"): boolean {
+  const rule = MIN_ROLE.find(([p]) => path === p || path.startsWith(p + "/"));
+  return !rule || RANK[teamRole] >= RANK[rule[1]];
+}
+
 export type NavItem = {
   name: string;
   path: string;
@@ -23,8 +46,8 @@ export type NavItem = {
 
 export type NavSection = { title: string; items: NavItem[] };
 
-export const navFor = (role: Role): NavSection[] =>
-  role === "super_admin"
+export const navFor = (role: Role, teamRole?: TeamRole): NavSection[] => {
+  const sections: NavSection[] = role === "super_admin"
     ? [
         {
           title: "Platform",
@@ -69,3 +92,5 @@ export const navFor = (role: Role): NavSection[] =>
           ],
         },
       ];
+  return role === "super_admin" ? sections : sections.map((sec) => ({ ...sec, items: sec.items.filter((i) => canOpen(i.path, teamRole)) })).filter((sec) => sec.items.length > 0);
+};

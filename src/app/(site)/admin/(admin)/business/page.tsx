@@ -24,7 +24,7 @@ export default function BusinessDashboard() {
   const bid = user!.businessId!;
   const { data, loading, error, reload } = useAsync(
     async () => {
-      const [overview, profile, billing] = await Promise.all([getBusinessOverview(bid), getBusinessProfile(bid), getBilling(bid)]);
+      const [overview, profile, billing] = await Promise.all([getBusinessOverview(bid), getBusinessProfile(bid), getBilling(bid).catch(() => null)]); // only owners may open billing
       return { overview, profile, billing };
     },
     [bid]
@@ -33,7 +33,7 @@ export default function BusinessDashboard() {
   if (error || !data) return <ErrorNote message={error ?? "Could not load dashboard."} onRetry={reload} />;
 
   const { overview: o, profile, billing } = data;
-  const sub = billing.subscription;
+  const sub = billing?.subscription;
   const statusData = o.ordersByStatus.filter((s) => s.count > 0);
   const attention = o.pendingOrders + o.unpaidOrders + o.outOfStock;
 

@@ -315,6 +315,8 @@ export interface AuthUser {
   email: string;
   role: Role;
   businessId?: string; // set for business_admin
+  /** A business admin's role on the team; decides which screens they see. */
+  teamRole?: "owner" | "manager" | "staff";
 }
 
 export interface TimeSeriesPoint {
