@@ -17,7 +17,7 @@ interface StoreContextValue {
   /** Cover picture per category name (only for categories that have one). */
   categoryImages: Record<string, string>;
   status: "loading" | "ready" | "unavailable" | "error";
-  /** Prefix a storefront path with this store's base URL, e.g. "/shop" -> "/s/adire-hub/shop". */
+  /** Prefix a storefront path with this store's base URL, e.g. "/shop" -> "/s/<slug>/shop". */
   href: (path: string) => string;
   /** Formats an amount in this store's currency. */
   fmt: (n: number) => string;

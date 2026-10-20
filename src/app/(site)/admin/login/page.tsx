@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { homeFor, useAuth } from "@/app/context/AuthContext";
 import Logo from "@/components/saas/Logo";
+import { DEMO_ENABLED, DEMO_LOGINS, DEMO_STORE_HREF } from "@/lib/demo";
 
 export default function LoginPage() {
   const { user, ready, signIn } = useAuth();
@@ -61,6 +62,23 @@ export default function LoginPage() {
               {busy ? "Signing in…" : "Sign in"}
             </button>
           </form>
+
+          {DEMO_ENABLED && (
+            <div className="mt-8 rounded-xl border border-dashed border-gray-300 p-4 dark:border-gray-700">
+              <p className="text-sm font-medium text-gray-800 dark:text-white/90">Just looking? Try the Scentora demo shop</p>
+              <p className="mt-1 text-theme-xs text-gray-500 dark:text-gray-400">A perfume store with sample products, customers and orders. Pick a role to see what each team member can do.</p>
+              <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                {DEMO_LOGINS.map((d) => (
+                  <button key={d.role} type="button" disabled={busy} title={d.note} onClick={(e) => submit(e, d.email, d.password)}
+                    className="rounded-lg border border-gray-200 px-3 py-2 text-left text-sm font-medium text-gray-700 hover:border-brand-300 hover:bg-brand-50 disabled:opacity-60 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5">
+                    {d.role}
+                    <span className="block text-theme-xs font-normal text-gray-500">{d.note}</span>
+                  </button>
+                ))}
+              </div>
+              <Link href={DEMO_STORE_HREF} className="mt-3 inline-block text-theme-xs font-medium text-brand-500 hover:text-brand-600">Browse the demo storefront</Link>
+            </div>
+          )}
 
           <p className="mt-6 text-sm text-gray-500 dark:text-gray-400">
             New to Retailr?{" "}

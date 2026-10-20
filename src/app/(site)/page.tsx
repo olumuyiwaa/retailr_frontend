@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { DEMO_ENABLED, DEMO_STORE_HREF } from "@/lib/demo";
 import MarketingShell, { MARKETING_WIDTH } from "@/components/saas/MarketingShell";
 import PricingCards from "@/components/saas/PricingCards";
 import ThemeThumb from "@/components/saas/ThemeThumb";
@@ -61,12 +62,14 @@ export default function LandingPage() {
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Link href="/get-started" className="rounded-lg bg-white px-6 py-3.5 text-center text-sm font-semibold text-brand-700 hover:bg-brand-50">Start your free trial</Link>
-              <Link href="/s/adire-hub" className="rounded-lg px-6 py-3.5 text-center text-sm font-semibold text-white ring-1 ring-inset ring-white/30 hover:bg-white/10">Browse a demo store</Link>
+              {DEMO_ENABLED && <Link href={DEMO_STORE_HREF} className="rounded-lg px-6 py-3.5 text-center text-sm font-semibold text-white ring-1 ring-inset ring-white/30 hover:bg-white/10">Browse a demo store</Link>}
             </div>
-            <p className="mt-5 text-sm text-brand-100/70">
-              Want to look around first?{" "}
-              <Link href="/admin/login" className="font-medium text-white underline underline-offset-4 hover:text-brand-100">Open the demo dashboard</Link>
-            </p>
+            {DEMO_ENABLED && (
+              <p className="mt-5 text-sm text-brand-100/70">
+                Want to look around first?{" "}
+                <Link href="/admin/login" className="font-medium text-white underline underline-offset-4 hover:text-brand-100">Open the demo dashboard</Link>
+              </p>
+            )}
           </div>
           <HeroMock />
         </div>
@@ -115,7 +118,7 @@ export default function LandingPage() {
             ))}
           </div>
           <p className="mt-8 text-center text-sm">
-            <Link href="/s/adire-hub" className="font-medium text-brand-600 underline underline-offset-4 hover:text-brand-700">See a live demo store</Link>
+            {DEMO_ENABLED && <Link href={DEMO_STORE_HREF} className="font-medium text-brand-600 underline underline-offset-4 hover:text-brand-700">See a live demo store</Link>}
           </p>
         </div>
       </section>
@@ -182,7 +185,7 @@ export default function LandingPage() {
           <p className="mx-auto mt-4 max-w-xl text-brand-100/80">Set up your store today and start taking orders this week.</p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link href="/get-started" className="rounded-lg bg-white px-7 py-3.5 text-sm font-semibold text-brand-700 hover:bg-brand-50">Start your free trial</Link>
-            <Link href="/admin/login" className="rounded-lg px-7 py-3.5 text-sm font-semibold ring-1 ring-inset ring-white/30 hover:bg-white/10">Try the demo dashboard</Link>
+            {DEMO_ENABLED && <Link href="/admin/login" className="rounded-lg px-7 py-3.5 text-sm font-semibold ring-1 ring-inset ring-white/30 hover:bg-white/10">Try the demo dashboard</Link>}
           </div>
         </div>
       </section>

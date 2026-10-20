@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import { DEMO_ENABLED, DEMO_STORE_HREF } from "@/lib/demo";
 import Logo from "./Logo";
 import MarketingTracker from "@/components/analytics/MarketingTracker";
 
@@ -47,7 +48,7 @@ export default function MarketingShell({ children }: { children: React.ReactNode
             <ul className="mt-3 space-y-2 text-sm text-gray-500">
               <li><Link href="/get-started" className="hover:text-brand-500">Start free trial</Link></li>
               <li><Link href="/admin/login" className="hover:text-brand-500">Sign in</Link></li>
-              <li><Link href="/s/adire-hub" className="hover:text-brand-500">Demo store</Link></li>
+              {DEMO_ENABLED && <li><Link href={DEMO_STORE_HREF} className="hover:text-brand-500">Demo store</Link></li>}
             </ul>
           </div>
         </div>
