@@ -66,7 +66,8 @@ function Funnel({ steps }: { steps: SiteAnalytics["funnel"] }) {
     <ol className="space-y-3">
       {steps.map((s, i) => {
         const prev = i === 0 ? null : steps[i - 1].count;
-        const stepPct = prev ? Math.round((s.count / prev) * 100) : null;
+        // events (product views, carts) and orders aren't counted per visit, so a step can exceed the one before it; don't show a >100% "conversion"
+        const stepPct = prev && s.count <= prev ? Math.round((s.count / prev) * 100) : null;
         return (
           <li key={s.label}>
             <div className="mb-1.5 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 text-theme-sm">
