@@ -211,7 +211,7 @@ export default function BillingPage() {
         <Card className="col-span-12">
           <CardHeader title="Billing history" />
           {invoices.length === 0 ? (
-            <p className="px-6 pb-6 pt-4 text-theme-sm text-gray-500">No invoices yet — you're still on your free trial.</p>
+            <p className="px-6 pb-6 pt-4 text-theme-sm text-gray-500">No invoices yet — you&apos;re still on your free trial.</p>
           ) : (
             <ul className="divide-y divide-gray-100 px-5 pb-3 pt-3 dark:divide-gray-800 sm:px-6">
               {invoices.map((i) => (

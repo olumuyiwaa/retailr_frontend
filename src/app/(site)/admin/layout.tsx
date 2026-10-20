@@ -1,6 +1,5 @@
 "use client";
 import { Outfit } from "next/font/google";
-import "flatpickr/dist/flatpickr.css";
 import { SidebarProvider } from "@/app/context/SidebarContext";
 import { ThemeProvider } from "@/app/context/ThemeContext";
 import { AuthProvider } from "@/app/context/AuthContext";

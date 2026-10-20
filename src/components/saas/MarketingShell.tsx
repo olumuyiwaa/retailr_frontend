@@ -14,11 +14,11 @@ export default function MarketingShell({ children }: { children: React.ReactNode
         <div className={`${MARKETING_WIDTH} flex h-16 items-center justify-between lg:h-[72px]`}>
           <Link href="/"><Logo /></Link>
           <nav className="hidden items-center gap-8 text-sm font-medium text-gray-600 md:flex">
-            <a href="/#features" className="hover:text-brand-500">Features</a>
-            <a href="/#themes" className="hover:text-brand-500">Themes</a>
-            <a href="/#how" className="hover:text-brand-500">How it works</a>
-            <a href="/#pricing" className="hover:text-brand-500">Pricing</a>
-            <a href="/#faq" className="hover:text-brand-500">FAQ</a>
+            <Link href="/#features" className="hover:text-brand-500">Features</Link>
+            <Link href="/#themes" className="hover:text-brand-500">Themes</Link>
+            <Link href="/#how" className="hover:text-brand-500">How it works</Link>
+            <Link href="/#pricing" className="hover:text-brand-500">Pricing</Link>
+            <Link href="/#faq" className="hover:text-brand-500">FAQ</Link>
           </nav>
           <div className="flex items-center gap-3 text-sm font-medium">
             <Link href="/admin/login" className="px-3 py-2 text-gray-600 hover:text-brand-500">Sign in</Link>
@@ -37,10 +37,10 @@ export default function MarketingShell({ children }: { children: React.ReactNode
           <div>
             <h2 className="text-sm font-semibold text-gray-800">Product</h2>
             <ul className="mt-3 space-y-2 text-sm text-gray-500">
-              <li><a href="/#features" className="hover:text-brand-500">Features</a></li>
-              <li><a href="/#themes" className="hover:text-brand-500">Themes</a></li>
-              <li><a href="/#pricing" className="hover:text-brand-500">Pricing</a></li>
-              <li><a href="/#faq" className="hover:text-brand-500">FAQ</a></li>
+              <li><Link href="/#features" className="hover:text-brand-500">Features</Link></li>
+              <li><Link href="/#themes" className="hover:text-brand-500">Themes</Link></li>
+              <li><Link href="/#pricing" className="hover:text-brand-500">Pricing</Link></li>
+              <li><Link href="/#faq" className="hover:text-brand-500">FAQ</Link></li>
             </ul>
           </div>
           <div>

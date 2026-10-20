@@ -191,7 +191,7 @@ export default function BusinessDashboard() {
           <div className="col-span-12 space-y-4 md:space-y-6 xl:col-span-4">
             <Panel title="Needs attention">
               {attentionRows.length === 0 ? (
-                <PanelEmpty>You're all caught up.</PanelEmpty>
+                <PanelEmpty>You&apos;re all caught up.</PanelEmpty>
               ) : (
                 <ul className="space-y-2">
                   {attentionRows.map((r) => (
