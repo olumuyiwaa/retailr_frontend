@@ -69,15 +69,15 @@ function Funnel({ steps }: { steps: SiteAnalytics["funnel"] }) {
         const stepPct = prev ? Math.round((s.count / prev) * 100) : null;
         return (
           <li key={s.label}>
-            <div className="mb-1.5 flex items-baseline justify-between gap-3 text-theme-sm">
-              <span className="text-gray-700 dark:text-gray-300">{s.label}</span>
-              <span className="font-medium text-gray-800 dark:text-white/90">
+            <div className="mb-1.5 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 text-theme-sm">
+              <span className="min-w-0 break-words text-gray-700 dark:text-gray-300">{s.label}</span>
+              <span className="whitespace-nowrap font-medium text-gray-800 dark:text-white/90">
                 {s.count.toLocaleString()}
-                {stepPct !== null && <span className="ml-2 text-theme-xs font-normal text-gray-400">{stepPct}% of previous step</span>}
+                {stepPct !== null && <span className="ml-2 text-theme-xs font-normal text-gray-400">{stepPct}% of previous</span>}
               </span>
             </div>
-            <div className="h-7 rounded-md bg-gray-100 dark:bg-gray-800">
-              <div className="h-7 rounded-md bg-brand-500/90" style={{ width: `${Math.max(2, (s.count / top) * 100)}%`, opacity: 1 - i * 0.12 }} />
+            <div className="h-7 overflow-hidden rounded-md bg-gray-100 dark:bg-gray-800">
+              <div className="h-7 rounded-md bg-brand-500/90" style={{ width: `${Math.min(100, Math.max(2, (s.count / top) * 100))}%`, opacity: 1 - i * 0.12 }} />
             </div>
           </li>
         );
