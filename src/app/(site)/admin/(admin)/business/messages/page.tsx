@@ -12,9 +12,8 @@ import type { MessageChannel } from "@/types/saas";
 const CHANNELS: { id: MessageChannel; label: string; hint: string }[] = [
   { id: "email", label: "Email", hint: "Subject and message" },
   { id: "sms", label: "SMS", hint: "Short text, up to 480 characters" },
-  { id: "whatsapp", label: "WhatsApp", hint: "Chat message" },
 ];
-const CHANNEL_LABEL: Record<MessageChannel, string> = { email: "Email", sms: "SMS", whatsapp: "WhatsApp" };
+const CHANNEL_LABEL: Record<MessageChannel, string> = { email: "Email", sms: "SMS" };
 
 export default function MessagesPage() {
   const { user } = useAuth();
@@ -61,7 +60,7 @@ export default function MessagesPage() {
     setSending(true);
     try {
       const m = await sendMessage(bid, { channel, subject, body, audience: audience === "all" ? { type: "all" } : { type: "group", groupId: audience } });
-      setSent(`Sent to ${m.recipientCount} ${m.recipientCount === 1 ? "customer" : "customers"}.`);
+      setSent(`Sending to ${m.recipientCount} ${m.recipientCount === 1 ? "customer" : "customers"}. Check the history below for the result.`);
       setBody("Hi {{first_name}}, ");
       setSubject("");
       reload();
@@ -77,7 +76,7 @@ export default function MessagesPage() {
       <PageHeader title="Messages" subtitle="Send updates and offers to your customers." />
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-5">
         <Card className="xl:col-span-3">
-          <CardHeader title="New message" subtitle="Demo only: nothing is actually delivered yet." />
+          <CardHeader title="New message" subtitle="Emails and texts go out to each customer, with their name filled in." />
           <form onSubmit={submit} className="space-y-4 p-5 sm:p-6">
             <div role="radiogroup" aria-label="Channel" className="grid grid-cols-3 gap-2">
               {CHANNELS.map((c) => (
@@ -134,7 +133,7 @@ export default function MessagesPage() {
                   </div>
                   {m.subject && <p className="mt-1 text-theme-sm font-semibold text-gray-800 dark:text-white/90">{m.subject}</p>}
                   <p className="mt-0.5 line-clamp-2 break-words text-theme-sm text-gray-600 dark:text-gray-400">{m.body}</p>
-                  <p className="mt-1 text-theme-xs text-gray-400">{m.recipientCount} recipients</p>
+                  <p className="mt-1 text-theme-xs text-gray-400">{m.recipientCount} recipients{m.delivered + m.failed > 0 ? ` · ${m.delivered} sent${m.failed ? `, ${m.failed} failed` : ""}` : " · sending…"}</p>
                 </li>
               ))}
             </ul>

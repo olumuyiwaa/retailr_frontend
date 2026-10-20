@@ -280,7 +280,7 @@ export interface CustomerGroup {
   createdAt: string;
 }
 
-export type MessageChannel = "email" | "sms" | "whatsapp";
+export type MessageChannel = "email" | "sms";
 
 export interface Audience {
   type: "all" | "group";
@@ -296,6 +296,9 @@ export interface Message {
   body: string;
   audienceLabel: string;
   recipientCount: number;
+  /** How many were handed to the mail or SMS provider, and how many could not be sent. Filled in a few seconds after sending. */
+  delivered: number;
+  failed: number;
   sentAt: string;
 }
 
