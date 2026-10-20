@@ -156,7 +156,7 @@ export async function changePlan(_b: string, planId: string, cycle: "monthly" | 
 export const getBusinessProfile = (_b: string) => api.get<Business>("/business/profile");
 export async function updateBusinessProfile(
   _b: string,
-  patch: Partial<Pick<Business, "name" | "description" | "phone" | "country" | "city" | "brandColor" | "category" | "currency" | "theme">> & {
+  patch: Partial<Pick<Business, "name" | "description" | "phone" | "country" | "city" | "brandColor" | "category" | "currency" | "theme" | "paymentMethods" | "bankDetails">> & {
     /** picked file as a data URL to set, null to remove, undefined to leave unchanged */
     logo?: string | null;
   }

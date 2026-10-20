@@ -10,6 +10,7 @@ import { CURRENCIES } from "@/lib/money";
 import { setBizCurrency } from "@/hooks/useBizMoney";
 import { fileToDataUrl } from "@/lib/image";
 import ThemePicker from "@/components/saas/ThemePicker";
+import PaymentOptions from "@/components/saas/PaymentOptions";
 import type { Currency } from "@/types/saas";
 
 const CATEGORIES = ["Fashion & Textiles", "Food & Groceries", "Beauty & Wellness", "Crafts & Decor", "Coffee & Tea", "Jewellery", "Other"];
@@ -171,6 +172,7 @@ export default function StoreSettingsPage() {
         <CardHeader title="Storefront theme" subtitle="Change how your store looks to shoppers. Your products and settings stay the same." />
         <ThemePicker businessId={bid} current={data.theme} />
       </Card>
+      <PaymentOptions businessId={bid} business={data} />
       <Card className="mb-6 max-w-5xl">
         <CardHeader title="Store currency" subtitle="Prices on your storefront, invoices and reports use this currency." />
         <form onSubmit={saveCurrency} className="space-y-3 p-5 sm:p-6">

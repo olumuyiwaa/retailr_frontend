@@ -10,12 +10,12 @@ import { removeAllItemsFromCart, selectTotalPrice } from "@/redux/features/cart-
 import { AppDispatch, useAppSelector } from "@/redux/store";
 import { useSelector } from "react-redux";
 import { placeOrder, validateCoupon } from "@/services/store";
-import type { PaymentMethod } from "@/types/saas";
+import type { StorePaymentMethod } from "@/types/saas";
 
 const input =
   "rounded-xl border border-[color:var(--line)] bg-white placeholder:text-dark-5 w-full py-3 px-4 text-dark outline-none duration-200 focus:border-[color:var(--brand)] focus:ring-2 focus:ring-blue/20";
 
-const METHODS: { id: PaymentMethod; title: string; hint: string }[] = [
+const METHODS: { id: StorePaymentMethod; title: string; hint: string }[] = [
   { id: "cod", title: "Pay on delivery", hint: "Pay in cash when your order arrives." },
   { id: "bank", title: "Direct bank transfer", hint: "The business will contact you with their bank details." },
   { id: "card", title: "Card (demo)", hint: "Demo only — no real payment is taken." },
@@ -33,7 +33,7 @@ export default function StoreCheckout() {
     firstName: "", lastName: "", email: "", phone: "",
     address: "", city: "", country: ctx?.store?.country ?? "", notes: "",
   });
-  const [payment, setPayment] = useState<PaymentMethod>("cod");
+  const [chosen, setChosen] = useState<StorePaymentMethod>("cod");
   const [couponInput, setCouponInput] = useState("");
   const [coupon, setCoupon] = useState<{ code: string; discount: number } | null>(null);
   const [couponMsg, setCouponMsg] = useState<string | null>(null);
@@ -43,6 +43,10 @@ export default function StoreCheckout() {
 
   if (!ctx?.store) return null;
   const { store, href, fmt } = ctx;
+  // the owner decides which options the store offers (older API responses don't say, so offer everything)
+  const offered = store.paymentMethods ?? METHODS.map((m) => m.id);
+  const methods = METHODS.filter((m) => offered.includes(m.id));
+  const payment = methods.some((m) => m.id === chosen) ? chosen : methods[0]?.id;
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setF((v) => ({ ...v, [k]: e.target.value }));
 
@@ -84,6 +88,7 @@ export default function StoreCheckout() {
     if (!f.firstName.trim() || !f.lastName.trim()) return setError("Please enter your first and last name.");
     if (!/^\S+@\S+\.\S+$/.test(f.email.trim())) return setError("Please enter a valid email address.");
     if (f.phone.replace(/\D/g, "").length < 7) return setError("Please enter a valid phone number.");
+    if (!payment) return setError("This store isn't taking orders online right now. Please contact the business.");
     if (!f.address.trim() || !f.city.trim() || !f.country.trim()) return setError("Please enter your full delivery address.");
 
     setBusy(true);
@@ -224,14 +229,14 @@ export default function StoreCheckout() {
                   </div>
                   <div className="p-4 sm:p-8.5">
                     <div className="flex flex-col gap-3" role="radiogroup" aria-label="Payment method">
-                      {METHODS.map((m) => (
+                      {methods.map((m) => (
                         <label key={m.id} className="flex cursor-pointer select-none items-start gap-4">
                           <input
                             type="radio"
                             name="payment"
                             value={m.id}
                             checked={payment === m.id}
-                            onChange={() => setPayment(m.id)}
+                            onChange={() => setChosen(m.id)}
                             className="sr-only"
                           />
                           <span
@@ -244,7 +249,10 @@ export default function StoreCheckout() {
                             }`}
                           >
                             <span className="block text-dark">{m.title}</span>
-                            <span className="block text-custom-sm text-dark-4">{m.hint}</span>
+                            <span className="block text-custom-sm text-dark-4">{m.id === "bank" && store.bankDetails ? "Transfer to the account below; the business confirms your order once it arrives." : m.hint}</span>
+                            {m.id === "bank" && store.bankDetails && payment === "bank" && (
+                              <span className="mt-2 block whitespace-pre-line rounded-lg bg-white/70 px-3 py-2 text-custom-sm font-medium text-dark">{store.bankDetails}</span>
+                            )}
                           </span>
                         </label>
                       ))}

@@ -67,6 +67,9 @@ export interface Business {
   logo?: string;
   /** Currency the store sells in; product prices are entered in it. */
   currency: Currency;
+  paymentMethods?: StorePaymentMethod[];
+  /** Shown to shoppers who choose bank transfer. */
+  bankDetails?: string;
   description: string;
   status: BusinessStatus;
   planId: string;
@@ -183,6 +186,8 @@ export type OrderStatus =
 export type PaymentStatus = "paid" | "unpaid" | "refunded";
 
 export type PaymentMethod = "cod" | "bank" | "card" | "cash" | "pos";
+/** The ways a shopper can pay at a storefront checkout; the store owner chooses which are offered. */
+export type StorePaymentMethod = "cod" | "bank" | "card";
 
 /** Where a sale came from. Online = the storefront; the rest are recorded by the merchant. */
 export type SalesChannel = "online" | "in_store" | "whatsapp" | "instagram" | "phone" | "other";
@@ -252,6 +257,8 @@ export interface PublicStore {
   theme?: string;
   logo?: string;
   currency: Currency;
+  paymentMethods?: StorePaymentMethod[];
+  bankDetails?: string;
 }
 
 export interface Customer {
