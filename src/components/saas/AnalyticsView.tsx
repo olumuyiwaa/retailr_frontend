@@ -2,7 +2,7 @@
 import React from "react";
 import type { SiteAnalytics } from "@/types/saas";
 import { Card, CardHeader, EmptyState, StatCard } from "./Card";
-import { TrafficChart } from "./Charts";
+import { DonutChart, TrafficChart } from "./Charts";
 import { compact } from "@/lib/format";
 import type { AnalyticsDays } from "@/services/analytics";
 
@@ -37,9 +37,8 @@ const SOURCE_LABELS: Record<string, string> = { direct: "Direct", whatsapp: "Wha
 const DEVICE_LABELS: Record<string, string> = { mobile: "Phone", desktop: "Computer", tablet: "Tablet" };
 
 /** A ranked list with proportional bars. */
-export function BarList({ rows, empty = "No data yet", showShare = false }: { rows: { label: string; value: number; hint?: string }[]; empty?: string; showShare?: boolean }) {
+export function BarList({ rows, empty = "No data yet" }: { rows: { label: string; value: number; hint?: string }[]; empty?: string }) {
   const max = Math.max(1, ...rows.map((r) => r.value));
-  const total = rows.reduce((n, r) => n + r.value, 0);
   if (rows.length === 0) return <EmptyState title={empty} />;
   return (
     <ul className="space-y-3.5">
@@ -49,7 +48,6 @@ export function BarList({ rows, empty = "No data yet", showShare = false }: { ro
             <span className="min-w-0 truncate text-gray-700 dark:text-gray-300">{r.label}</span>
             <span className="shrink-0 font-medium text-gray-800 dark:text-white/90">
               {compact(r.value)}
-              {showShare && total > 0 && <span className="ml-1.5 inline-block w-10 text-right font-normal text-gray-400">{Math.round((r.value / total) * 100)}%</span>}
               {r.hint && <span className="ml-1.5 font-normal text-gray-400">{r.hint}</span>}
             </span>
           </div>
@@ -62,29 +60,55 @@ export function BarList({ rows, empty = "No data yet", showShare = false }: { ro
   );
 }
 
+/** Whole numbers for the headline; one decimal under 10% so small rates don't read as 0%. */
+const pct = (n: number) => (n >= 10 || n === 0 ? `${Math.round(n)}%` : `${n.toFixed(1)}%`);
+
 function Funnel({ steps }: { steps: SiteAnalytics["funnel"] }) {
-  const top = Math.max(1, steps[0]?.count ?? 1);
+  const top = steps[0]?.count ?? 0;
+  const last = steps[steps.length - 1];
+  // the last step (orders, sign-ups) isn't always counted per tracked visit, so only quote a rate that makes sense
+  const overall = top > 0 && last && last.count <= top ? (last.count / top) * 100 : null;
   return (
-    <ol className="space-y-4">
-      {steps.map((s, i) => {
-        // later steps aren't always counted per visit (e.g. orders placed outside a tracked visit), so only show a share when it makes sense
-        const share = i > 0 && s.count <= top ? Math.round((s.count / top) * 100) : null;
-        return (
-          <li key={s.label}>
-            <div className="mb-1.5 flex items-baseline justify-between gap-3 text-theme-sm">
-              <span className="min-w-0 truncate text-gray-700 dark:text-gray-300">{s.label}</span>
-              <span className="shrink-0 whitespace-nowrap font-medium text-gray-800 dark:text-white/90">
-                {s.count.toLocaleString()}
-                {share !== null && <span className="ml-1.5 inline-block w-14 text-right text-theme-xs font-normal text-gray-400">{share}% of visits</span>}
-              </span>
-            </div>
-            <div className="h-3 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
-              <div className="h-3 rounded-full bg-brand-500" style={{ width: `${Math.min(100, Math.max(s.count > 0 ? 2 : 0, (s.count / top) * 100))}%` }} />
-            </div>
-          </li>
-        );
-      })}
-    </ol>
+    <div>
+      {overall !== null && (
+        <p className="mb-5 text-theme-sm text-gray-500 dark:text-gray-400">
+          <span className="mr-1.5 text-2xl font-semibold text-gray-800 dark:text-white/90">{pct(overall)}</span>
+          of visits ended in “{last.label.toLowerCase()}”
+        </p>
+      )}
+      <ol>
+        {steps.map((s, i) => {
+          const prev = i === 0 ? null : steps[i - 1].count;
+          const continued = prev && s.count <= prev ? Math.round((s.count / prev) * 100) : null;
+          const width = top > 0 ? Math.min(100, Math.max(s.count > 0 ? 3 : 0, (s.count / top) * 100)) : 0;
+          return (
+            <li key={s.label}>
+              {i > 0 && (
+                <div className="flex h-7 items-center gap-2 pl-3 text-theme-xs text-gray-400" aria-hidden={continued === null}>
+                  {continued !== null && (
+                    <>
+                      <span className="h-full w-px bg-gray-200 dark:bg-gray-700" />
+                      <span>{continued}% continue</span>
+                      {s.count < (prev ?? 0) && <span className="text-gray-300 dark:text-gray-600">·</span>}
+                      {s.count < (prev ?? 0) && <span>{((prev ?? 0) - s.count).toLocaleString()} drop off</span>}
+                    </>
+                  )}
+                </div>
+              )}
+              <div className="flex items-center gap-3">
+                <div className="relative h-11 min-w-0 flex-1 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
+                  <div className="h-full rounded-lg bg-brand-500" style={{ width: `${width}%`, opacity: 1 - i * 0.14 }} />
+                  <span className="absolute inset-y-0 left-3 flex items-center text-theme-sm font-medium text-gray-800 mix-blend-normal dark:text-white/90">
+                    <span className="rounded bg-white/80 px-1.5 py-0.5 backdrop-blur-sm dark:bg-gray-900/70">{s.label}</span>
+                  </span>
+                </div>
+                <span className="w-14 shrink-0 text-right text-base font-semibold text-gray-800 dark:text-white/90">{s.count.toLocaleString()}</span>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
   );
 }
 
@@ -137,7 +161,7 @@ export default function AnalyticsView({
         <Card>
           <CardHeader title="Most visited pages" subtitle="Page views in this period" />
           <div className="p-5 sm:p-6">
-            <BarList showShare rows={data.pages.map((p) => ({ label: p.label, value: p.views }))} />
+            <BarList rows={data.pages.map((p) => ({ label: p.label, value: p.views }))} />
           </div>
         </Card>
       </div>
@@ -146,19 +170,27 @@ export default function AnalyticsView({
         <Card>
           <CardHeader title="Where visitors come from" subtitle="Visits by source" />
           <div className="p-5 sm:p-6">
-            <BarList showShare rows={data.sources.map((x) => ({ label: SOURCE_LABELS[x.source] ?? x.source, value: x.sessions }))} />
+            {data.sources.length === 0 ? (
+              <EmptyState title="No data yet" />
+            ) : (
+              <DonutChart labels={data.sources.map((s) => SOURCE_LABELS[s.source] ?? s.source)} values={data.sources.map((s) => s.sessions)} height={280} />
+            )}
           </div>
         </Card>
         <Card>
           <CardHeader title="Devices" subtitle="Visits by device" />
           <div className="p-5 sm:p-6">
-            <BarList showShare rows={data.devices.map((x) => ({ label: DEVICE_LABELS[x.device] ?? x.device, value: x.sessions }))} />
+            {data.devices.length === 0 ? (
+              <EmptyState title="No data yet" />
+            ) : (
+              <DonutChart labels={data.devices.map((d) => DEVICE_LABELS[d.device] ?? d.device)} values={data.devices.map((d) => d.sessions)} height={280} colors={["#465fff", "#f79009", "#98a2b3"]} />
+            )}
           </div>
         </Card>
         <Card>
           <CardHeader title="Countries" subtitle="Visits by country" />
           <div className="p-5 sm:p-6">
-            <BarList showShare rows={data.countries.map((c) => ({ label: c.country, value: c.sessions }))} />
+            <BarList rows={data.countries.map((c) => ({ label: c.country, value: c.sessions }))} />
           </div>
         </Card>
       </div>
