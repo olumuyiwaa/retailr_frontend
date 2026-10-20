@@ -10,6 +10,7 @@ import { removeAllItemsFromCart, selectTotalPrice } from "@/redux/features/cart-
 import { AppDispatch, useAppSelector } from "@/redux/store";
 import { useSelector } from "react-redux";
 import { placeOrder, validateCoupon } from "@/services/store";
+import { track } from "@/services/analytics";
 import type { PaymentMethod } from "@/types/saas";
 
 const input =
@@ -97,6 +98,7 @@ export default function StoreCheckout() {
         couponCode: coupon?.code,
         items: items.map((i) => ({ productId: i.productId ?? i.id, variantId: i.variantId, qty: i.quantity })),
       });
+      track(store.id, { type: "order" }); // lets site analytics count this visit as one that ordered
       dispatch(removeAllItemsFromCart());
       ctx.reload(); // refresh stock levels shown in the store
       router.push(href(`/order/${order.publicToken}`));
