@@ -2,7 +2,7 @@
 import React from "react";
 import type { SiteAnalytics } from "@/types/saas";
 import { Card, CardHeader, EmptyState, StatCard } from "./Card";
-import { DonutChart, TrafficChart } from "./Charts";
+import { TrafficChart } from "./Charts";
 import { compact } from "@/lib/format";
 import type { AnalyticsDays } from "@/services/analytics";
 
@@ -37,8 +37,9 @@ const SOURCE_LABELS: Record<string, string> = { direct: "Direct", whatsapp: "Wha
 const DEVICE_LABELS: Record<string, string> = { mobile: "Phone", desktop: "Computer", tablet: "Tablet" };
 
 /** A ranked list with proportional bars. */
-export function BarList({ rows, empty = "No data yet" }: { rows: { label: string; value: number; hint?: string }[]; empty?: string }) {
+export function BarList({ rows, empty = "No data yet", showShare = false }: { rows: { label: string; value: number; hint?: string }[]; empty?: string; showShare?: boolean }) {
   const max = Math.max(1, ...rows.map((r) => r.value));
+  const total = rows.reduce((n, r) => n + r.value, 0);
   if (rows.length === 0) return <EmptyState title={empty} />;
   return (
     <ul className="space-y-3.5">
@@ -48,6 +49,7 @@ export function BarList({ rows, empty = "No data yet" }: { rows: { label: string
             <span className="min-w-0 truncate text-gray-700 dark:text-gray-300">{r.label}</span>
             <span className="shrink-0 font-medium text-gray-800 dark:text-white/90">
               {compact(r.value)}
+              {showShare && total > 0 && <span className="ml-1.5 inline-block w-10 text-right font-normal text-gray-400">{Math.round((r.value / total) * 100)}%</span>}
               {r.hint && <span className="ml-1.5 font-normal text-gray-400">{r.hint}</span>}
             </span>
           </div>
@@ -63,22 +65,21 @@ export function BarList({ rows, empty = "No data yet" }: { rows: { label: string
 function Funnel({ steps }: { steps: SiteAnalytics["funnel"] }) {
   const top = Math.max(1, steps[0]?.count ?? 1);
   return (
-    <ol className="space-y-3">
+    <ol className="space-y-4">
       {steps.map((s, i) => {
-        const prev = i === 0 ? null : steps[i - 1].count;
-        // events (product views, carts) and orders aren't counted per visit, so a step can exceed the one before it; don't show a >100% "conversion"
-        const stepPct = prev && s.count <= prev ? Math.round((s.count / prev) * 100) : null;
+        // later steps aren't always counted per visit (e.g. orders placed outside a tracked visit), so only show a share when it makes sense
+        const share = i > 0 && s.count <= top ? Math.round((s.count / top) * 100) : null;
         return (
           <li key={s.label}>
-            <div className="mb-1.5 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 text-theme-sm">
-              <span className="min-w-0 break-words text-gray-700 dark:text-gray-300">{s.label}</span>
-              <span className="whitespace-nowrap font-medium text-gray-800 dark:text-white/90">
+            <div className="mb-1.5 flex items-baseline justify-between gap-3 text-theme-sm">
+              <span className="min-w-0 truncate text-gray-700 dark:text-gray-300">{s.label}</span>
+              <span className="shrink-0 whitespace-nowrap font-medium text-gray-800 dark:text-white/90">
                 {s.count.toLocaleString()}
-                {stepPct !== null && <span className="ml-2 text-theme-xs font-normal text-gray-400">{stepPct}% of previous</span>}
+                {share !== null && <span className="ml-1.5 inline-block w-14 text-right text-theme-xs font-normal text-gray-400">{share}% of visits</span>}
               </span>
             </div>
-            <div className="h-7 overflow-hidden rounded-md bg-gray-100 dark:bg-gray-800">
-              <div className="h-7 rounded-md bg-brand-500/90" style={{ width: `${Math.min(100, Math.max(2, (s.count / top) * 100))}%`, opacity: 1 - i * 0.12 }} />
+            <div className="h-3 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+              <div className="h-3 rounded-full bg-brand-500" style={{ width: `${Math.min(100, Math.max(s.count > 0 ? 2 : 0, (s.count / top) * 100))}%` }} />
             </div>
           </li>
         );
@@ -136,7 +137,7 @@ export default function AnalyticsView({
         <Card>
           <CardHeader title="Most visited pages" subtitle="Page views in this period" />
           <div className="p-5 sm:p-6">
-            <BarList rows={data.pages.map((p) => ({ label: p.label, value: p.views }))} />
+            <BarList showShare rows={data.pages.map((p) => ({ label: p.label, value: p.views }))} />
           </div>
         </Card>
       </div>
@@ -145,27 +146,19 @@ export default function AnalyticsView({
         <Card>
           <CardHeader title="Where visitors come from" subtitle="Visits by source" />
           <div className="p-5 sm:p-6">
-            {data.sources.length === 0 ? (
-              <EmptyState title="No data yet" />
-            ) : (
-              <DonutChart labels={data.sources.map((s) => SOURCE_LABELS[s.source] ?? s.source)} values={data.sources.map((s) => s.sessions)} height={280} />
-            )}
+            <BarList showShare rows={data.sources.map((x) => ({ label: SOURCE_LABELS[x.source] ?? x.source, value: x.sessions }))} />
           </div>
         </Card>
         <Card>
           <CardHeader title="Devices" subtitle="Visits by device" />
           <div className="p-5 sm:p-6">
-            {data.devices.length === 0 ? (
-              <EmptyState title="No data yet" />
-            ) : (
-              <DonutChart labels={data.devices.map((d) => DEVICE_LABELS[d.device] ?? d.device)} values={data.devices.map((d) => d.sessions)} height={280} colors={["#465fff", "#f79009", "#98a2b3"]} />
-            )}
+            <BarList showShare rows={data.devices.map((x) => ({ label: DEVICE_LABELS[x.device] ?? x.device, value: x.sessions }))} />
           </div>
         </Card>
         <Card>
           <CardHeader title="Countries" subtitle="Visits by country" />
           <div className="p-5 sm:p-6">
-            <BarList rows={data.countries.map((c) => ({ label: c.country, value: c.sessions }))} />
+            <BarList showShare rows={data.countries.map((c) => ({ label: c.country, value: c.sessions }))} />
           </div>
         </Card>
       </div>
