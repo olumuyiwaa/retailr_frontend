@@ -7,9 +7,10 @@ export type TrackEvent =
   | { type: "page"; page: string }
   | { type: "product"; productId: string }
   | { type: "add_to_cart" }
-  | { type: "checkout" };
+  | { type: "checkout" }
+  | { type: "order" };
 
-type WireEvent = { type: "page" | "product" | "add_to_cart" | "checkout"; path?: string; productId?: string; source?: TrafficSource; device?: DeviceKind; country?: string };
+type WireEvent = { type: "page" | "product" | "add_to_cart" | "checkout" | "order"; path?: string; productId?: string; source?: TrafficSource; device?: DeviceKind; country?: string };
 
 const rid = () => (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 12)}`).replace(/-/g, "");
 const stored = (store: Storage, key: string) => {
