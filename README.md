@@ -17,6 +17,8 @@ A multi-tenant SaaS platform that lets small African businesses subscribe, get t
 
 **Business admin:** dashboard with setup checklist, KPIs and needs-attention panel; products (up to 6 photos with a cover image, size/colour variants with their own stock and price, and up to 10 custom details such as Material or Density, with suggested names for the business type); categories the business creates and manages itself, each with a cover picture (rename moves its products, delete leaves them uncategorised); orders (status updates, invoice link, send receipt); customers (filter by group); record a sale (in person, WhatsApp, Instagram or phone sales with custom prices, discount, paid/owing and walk-in or saved customers; stock updates immediately); reports (sales over time, by channel and payment method, best sellers, top customers, money still owed); site analytics (visitors, visits, page views, conversion, a visit-to-order funnel, traffic sources, devices, countries, most visited pages and products); customer groups (automatic rules like "spent over X" or hand-picked); messages (email or SMS to everyone or a group, with {{first_name}} and {{store}} personalisation; the history shows how many were sent and how many failed); discounts and coupons; team; billing and plan changes (with a discount-code box); store settings (logo, currency, storefront theme, profile, and which payment options checkout offers: pay on delivery, bank transfer with your account details, or the card demo).
 
+**Notifications:** the bell in the admin header shows new orders (whole team), low and sold-out stock (owner and managers) and, for super admins, new business sign-ups, refreshed every 30 seconds. Under it, a switch turns on browser push for this device (`public/sw.js` is the service worker); the API needs VAPID keys for that, see its `docs/DEPLOY.md`. Push works on HTTPS, and on iPhone and iPad only once the site is added to the home screen.
+
 **Super admin:** platform overview (MRR, churn, sign-ups, alerts); site analytics (marketing-site traffic and sign-up funnel, plus traffic and conversion across all stores, busiest stores); business approvals, suspend/reactivate; plans editor; subscriptions; invoices; subscription discounts (percentage or fixed USD codes, optionally limited to certain plans or one business, with a use limit and expiry; businesses enter them at sign-up or when changing plan, and the discount comes off every billing period while they stay on that plan).
 
 **Storefront:** each business gets a store with its own logo, categories and a photo gallery on every product page (home, shop, product, cart, checkout, order confirmation, printable invoice/receipt). Owners pick a **theme** under Store settings, and the store switches instantly (see Themes below). Only `active` and `trial` businesses are live; suspended or pending ones show an unavailable page.
@@ -112,7 +114,8 @@ UI code never calls `fetch` directly. It calls typed async functions in `src/ser
 - [ ] Subdomain routing and custom domains
 - [x] NestJS + Prisma backend (the retailr repo)
 - [x] Header search to jump to any admin page (⌘K)
-- [ ] Search across orders, customers and products, and real notifications (the bell is empty for now)
+- [x] Notifications for admins: new orders, low and sold-out stock, and new sign-ups for the platform, in the bell and as browser push
+- [ ] Search across orders, customers and products
 
 ## Credits
 
