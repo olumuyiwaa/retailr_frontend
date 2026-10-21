@@ -54,6 +54,7 @@ export const toTemplateProduct = (p: StoreProductRow): Product => ({
   stock: p.kind === "service" ? undefined : p.status === "out_of_stock" ? 0 : p.stock,
   kind: p.kind,
   durationMins: p.durationMins,
+  bookable: p.bookable,
   color: p.imageColor,
   imgs: (() => {
     const all = p.images?.length ? p.images : p.image ? [p.image] : [];

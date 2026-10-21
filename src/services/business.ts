@@ -1,6 +1,7 @@
 // Business admin services. The API works out which business you are from your sign-in, so the businessId arguments are kept only so
 // the screens read the same as before: they are not sent.
 import type {
+  Booking, BookingSettings, BookingStatus,
   Audience, Business, BusinessOverview, BusinessUsage, Category, Coupon, Customer, CustomerGroup, GroupRuleType, Invoice, Message,
   MessageChannel, Order, OrderStatus, PaymentMethod, Plan, Product, SalesChannel, Subscription, TeamMember, TimeSeriesPoint,
 } from "@/types/saas";
@@ -31,6 +32,8 @@ export const MAX_PRODUCT_SPECS = 10;
 
 export type ProductInput = Pick<Product, "name" | "sku" | "category" | "description" | "price" | "stock" | "status"> & {
   kind?: Product["kind"];
+  bookable?: boolean;
+  maxConcurrent?: number;
   /** Minutes a service takes; null clears it. */
   durationMins?: number | null;
   /** Photos (picked files as data URLs, or already-uploaded URLs), cover first. Omit to leave unchanged; [] removes all. */
@@ -220,3 +223,16 @@ export interface MessageInput {
   audience: Audience;
 }
 export const sendMessage = (_b: string, input: MessageInput) => api.post<Message>("/business/messages", input);
+
+// ---------- bookings ----------
+
+export const listBookings = (q: { status?: BookingStatus; from?: string; to?: string; q?: string } = {}) => {
+  const p = new URLSearchParams();
+  for (const [k, v] of Object.entries(q)) if (v) p.set(k, v);
+  return api.get<Booking[]>(`/business/bookings${p.size ? `?${p}` : ""}`);
+};
+export const setBookingStatus = (id: string, status: Exclude<BookingStatus, "pending">) => api.patch<Booking>(`/business/bookings/${id}/status`, { status });
+export const createBooking = (b: { productId: string; variantId?: string; startsAt: string; customer: { name: string; email?: string; phone?: string }; notes?: string }) =>
+  api.post<Booking>("/business/bookings", b);
+export const getBookingSettings = () => api.get<BookingSettings>("/business/booking-settings");
+export const saveBookingSettings = (s: Pick<BookingSettings, "timezone" | "hours" | "noticeHours" | "autoConfirm">) => api.put<BookingSettings>("/business/booking-settings", s);

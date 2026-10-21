@@ -9,6 +9,8 @@ const MAP: Record<string, Color> = {
   suspended: "error", cancelled: "light", past_due: "error",
   // orders
   processing: "info", shipped: "primary", delivered: "success", refunded: "light",
+  // bookings
+  confirmed: "success", completed: "success", no_show: "warning",
   // payments / invoices
   paid: "success", unpaid: "warning", failed: "error",
   // products

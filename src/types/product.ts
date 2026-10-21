@@ -17,6 +17,7 @@ export type Product = {
   /** undefined = no stock limit (services). */
   stock?: number;
   kind?: "product" | "service";
+  bookable?: boolean;
   durationMins?: number;
   color?: string; // placeholder tile colour when a product has no photo
   sku?: string;

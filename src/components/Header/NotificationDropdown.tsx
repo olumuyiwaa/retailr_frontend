@@ -12,6 +12,8 @@ const KIND: Record<NotificationKind, { label: string; tone: string }> = {
   new_order: { label: "Order", tone: "bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400" },
   low_stock: { label: "Stock", tone: "bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-orange-400" },
   out_of_stock: { label: "Stock", tone: "bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-400" },
+  new_booking: { label: "Booking", tone: "bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400" },
+  booking_cancelled: { label: "Booking", tone: "bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-orange-400" },
   new_business: { label: "Sign-up", tone: "bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500" },
 };
 

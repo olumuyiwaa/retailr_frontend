@@ -110,7 +110,9 @@ UI code never calls `fetch` directly. It calls typed async functions in `src/ser
 - [x] Subscription payments (Paystack and Flutterwave) and owner-chosen checkout payment options (pay on delivery, bank transfer)
 - [ ] Online card payments at storefront checkout (the card option is a demo)
 - [ ] Delivery fees, zones and courier integrations
-- [ ] Password reset and email verification
+- [x] Password reset and email verification
+- [x] Bookable services with opening hours and appointment slots (customers pay on arrival)
+- [ ] Take payment or a deposit when booking
 - [ ] Subdomain routing and custom domains
 - [x] NestJS + Prisma backend (the retailr repo)
 - [x] Header search to jump to any admin page (⌘K)

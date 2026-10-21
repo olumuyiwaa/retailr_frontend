@@ -3,6 +3,7 @@ import type { AuthUser, Role } from "@/types/saas";
 import {
   BoxCubeIcon,
   BoxIcon,
+  CalenderIcon,
   DollarLineIcon,
   FileIcon,
   GridIcon,
@@ -76,6 +77,7 @@ export const navFor = (role: Role, teamRole?: TeamRole): NavSection[] => {
             { name: "Categories", path: "/admin/business/categories", icon: BoxIcon },
             { name: "Record sale", path: "/admin/business/sales/new", icon: DollarLineIcon },
             { name: "Orders", path: "/admin/business/orders", icon: PieChartIcon },
+            { name: "Bookings", path: "/admin/business/bookings", icon: CalenderIcon },
             { name: "Customers", path: "/admin/business/customers", icon: GroupIcon },
             { name: "Groups", path: "/admin/business/groups", icon: GroupIcon },
             { name: "Messages", path: "/admin/business/messages", icon: MailIcon },

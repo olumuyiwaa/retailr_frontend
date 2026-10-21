@@ -162,6 +162,10 @@ export interface Product {
   kind: ProductKind;
   /** Minutes a service takes. */
   durationMins?: number;
+  /** Services only: customers pick a time slot instead of adding it to a cart. */
+  bookable?: boolean;
+  /** How many bookings of this service can overlap. */
+  maxConcurrent?: number;
   sku: string;
   category: string;
   description: string;
@@ -435,4 +439,47 @@ export interface PlatformAnalytics extends SiteAnalytics {
   /** Traffic across every storefront on the platform. */
   stores: { visitors: number; sessions: number; orders: number; conversionRate: number };
   topStores: { id: string; name: string; slug: string; visitors: number; sessions: number; orders: number; conversionRate: number }[];
+}
+
+export type BookingStatus = "pending" | "confirmed" | "completed" | "cancelled" | "no_show";
+
+export interface Booking {
+  id: string;
+  productId: string;
+  serviceName: string;
+  variantName?: string;
+  price: number;
+  /** ISO instants; show them in `timezone`. */
+  startsAt: string;
+  endsAt: string;
+  durationMins: number;
+  status: BookingStatus;
+  customerId: string;
+  customerName: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  notes?: string;
+  source: "store" | "admin";
+  timezone?: string;
+  /** Only on what the customer gets back, for their own link. */
+  publicToken?: string;
+  createdAt: string;
+}
+
+export type WeekDay = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
+export interface OpeningPeriod { start: string; end: string }
+export interface BookingSettings {
+  timezone: string;
+  hours: Partial<Record<WeekDay, OpeningPeriod[]>>;
+  /** false until the owner saves hours once (Monday to Friday 09:00-17:00 applies meanwhile). */
+  configured: boolean;
+  noticeHours: number;
+  autoConfirm: boolean;
+}
+
+export interface BookingSlots {
+  date: string;
+  timezone: string;
+  durationMins: number;
+  slots: { startsAt: string; label: string }[];
 }

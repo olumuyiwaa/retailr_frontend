@@ -1,7 +1,7 @@
 // The signed-in person's notifications and their browser push subscription.
 import { api } from "@/lib/api";
 
-export type NotificationKind = "new_order" | "low_stock" | "out_of_stock" | "new_business";
+export type NotificationKind = "new_order" | "low_stock" | "out_of_stock" | "new_business" | "new_booking" | "booking_cancelled";
 
 export interface AppNotification {
   id: string;

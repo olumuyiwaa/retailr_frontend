@@ -1,4 +1,5 @@
 "use client";
+import BookingPanel from "@/components/Store/BookingPanel";
 import React, { useState } from "react";
 import Link from "next/link";
 import { useDispatch } from "react-redux";
@@ -152,6 +153,10 @@ export default function AtelierProduct({ productId }: { productId: string }) {
               </fieldset>
             )}
 
+            {product.bookable ? (
+              <BookingPanel product={product} variantId={variant?.id} price={unit} />
+            ) : (
+              <>
             <div className="mt-7 flex gap-3">
               <div className="flex items-center rounded-md border bg-white/60" style={line}>
                 <button type="button" aria-label="Decrease quantity" className={step} disabled={qty <= 1 || soldOut} onClick={() => setQty((q) => Math.max(1, q - 1))}>−</button>
@@ -170,6 +175,8 @@ export default function AtelierProduct({ productId }: { productId: string }) {
             </div>
             {!soldOut && stock <= 5 && <p className="mt-3 text-custom-sm font-medium text-dark">Only {stock} left</p>}
             {inCart > 0 && <p className="mt-3 text-custom-sm">{inCart} already in your bag</p>}
+              </>
+            )}
             {wa && (
               <p className="mt-4 text-custom-sm">
                 Questions about this one?{" "}

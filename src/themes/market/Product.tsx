@@ -1,4 +1,5 @@
 "use client";
+import BookingPanel from "@/components/Store/BookingPanel";
 import React, { useState } from "react";
 import Link from "next/link";
 import { useDispatch } from "react-redux";
@@ -248,6 +249,10 @@ export default function MarketProduct({ productId }: { productId: string }) {
               </fieldset>
             )}
 
+            {product.bookable ? (
+              <BookingPanel product={product} variantId={variant?.id} price={unit} />
+            ) : (
+              <>
             {/* Qty + Add to cart */}
             <div className="mt-6 flex gap-3">
               <div
@@ -303,6 +308,9 @@ export default function MarketProduct({ productId }: { productId: string }) {
                   view cart
                 </Link>
               </p>
+            )}
+
+              </>
             )}
 
             {/* Specs */}

@@ -1,5 +1,5 @@
 // Public storefront services: what a shopper at /s/[slug] can do. All of them are open to anyone, so they send no session.
-import type { Order, OrderItem, PaymentMethod, Product, PublicStore } from "@/types/saas";
+import type { Booking, BookingSlots, Order, OrderItem, PaymentMethod, Product, PublicStore } from "@/types/saas";
 import { ApiError, api } from "@/lib/api";
 
 export const STORE_UNAVAILABLE = "STORE_UNAVAILABLE";
@@ -45,3 +45,23 @@ export async function getOrderForConfirmation(token: string): Promise<Order & { 
   const r = await api.get<{ order: Order & { items: OrderItem[] } }>(`/store/orders/${encodeURIComponent(token)}`, undefined, { auth: false });
   return r.order;
 }
+
+// ---------- bookings ----------
+
+/** Free start times for a bookable service on one day (YYYY-MM-DD), already in the business's time zone. */
+export const getSlots = (slug: string, productId: string, date: string) =>
+  api.get<BookingSlots>(`/store/${encodeURIComponent(slug)}/services/${encodeURIComponent(productId)}/slots`, { date }, { auth: false });
+
+export interface BookInput {
+  slug: string;
+  productId: string;
+  variantId?: string;
+  startsAt: string;
+  customer: { name: string; email: string; phone: string };
+  notes?: string;
+}
+export const bookService = ({ slug, ...body }: BookInput) =>
+  api.post<Booking & { publicToken: string }>(`/store/${encodeURIComponent(slug)}/bookings`, { ...body, notes: body.notes?.trim() || undefined }, { auth: false });
+
+export const getBookingByToken = (token: string) => api.get<{ booking: Booking }>(`/store/bookings/${encodeURIComponent(token)}`, undefined, { auth: false }).then((r) => r.booking);
+export const cancelBookingByToken = (token: string) => api.post<Booking>(`/store/bookings/${encodeURIComponent(token)}/cancel`, {}, { auth: false });

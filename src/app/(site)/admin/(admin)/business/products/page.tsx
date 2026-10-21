@@ -51,6 +51,7 @@ export default function ProductsPage() {
   const [drafts, setDrafts] = useState<DraftVariant[]>([]);
   const [addingCat, setAddingCat] = useState(false);
   const [kind, setKind] = useState<ProductKind>("product");
+  const [bookable, setBookable] = useState(false);
   const [specs, setSpecs] = useState<{ label: string; value: string }[]>([]);
   const { data: profile } = useAsync(() => getBusinessProfile(bid), [bid]);
   const { data: cats, reload: reloadCats } = useAsync(() => listCategories(bid), [bid]);
@@ -62,6 +63,7 @@ export default function ProductsPage() {
     setFormError(null);
     setAddingCat(false);
     setKind(p !== "new" ? p.kind : startAs);
+    setBookable(p !== "new" ? !!p.bookable : false);
     setSpecs(p !== "new" ? (p.specs ?? []).map((s) => ({ ...s })) : []);
     setImages(p !== "new" ? (p.images?.length ? p.images : p.image ? [p.image] : []) : []);
     setDrafts(p !== "new" ? (p.variants ?? []).map(toDraft) : []);
@@ -114,7 +116,7 @@ export default function ProductsPage() {
       price: Number(f.get("price")),
       stock: kind === "service" ? 0 : Number(f.get("stock")),
       kind,
-      ...(kind === "service" ? { durationMins: f.get("durationMins") ? Number(f.get("durationMins")) : null } : {}),
+      ...(kind === "service" ? { durationMins: f.get("durationMins") ? Number(f.get("durationMins")) : null, bookable, ...(bookable ? { maxConcurrent: Number(f.get("maxConcurrent")) || 1 } : {}) } : { bookable: false }),
       status: f.get("status") as ProductStatus,
       images,
       specs,
@@ -129,6 +131,7 @@ export default function ProductsPage() {
       input.stock = kind === "service" ? 0 : input.variants.reduce((sum, v) => sum + (Number.isFinite(v.stock) ? v.stock : 0), 0);
     }
     if (!input.name) return setFormError(kind === "service" ? "Service name is required." : "Product name is required.");
+    if (kind === "service" && bookable && !input.durationMins) return setFormError("Add how long the service takes so customers can pick a time.");
     if (!(input.price >= 0)) return setFormError("Enter a valid price.");
     if (kind === "product" && !drafts.length && (!Number.isInteger(input.stock) || input.stock < 0)) return setFormError("Stock must be a whole number, 0 or more.");
     setSaving(true);
@@ -340,6 +343,25 @@ export default function ProductsPage() {
                 </Field>
               )}
             </div>
+            {kind === "service" && (
+              <div className="rounded-xl border border-gray-200 p-4 dark:border-gray-800">
+                <label className="flex items-start gap-3 text-sm text-gray-700 dark:text-gray-300">
+                  <input type="checkbox" checked={bookable} onChange={(e) => setBookable(e.target.checked)} className="mt-1" />
+                  <span>
+                    <span className="font-medium">Customers book a time slot</span>
+                    <span className="block text-theme-xs text-gray-500">They pick a day and time from your opening hours instead of adding it to a cart. Needs a duration.</span>
+                  </span>
+                </label>
+                {bookable && (
+                  <div className="mt-3 max-w-[220px]">
+                    <Field label="At the same time">
+                      <input name="maxConcurrent" type="number" min="1" max="50" defaultValue={p?.maxConcurrent ?? 1} className={inputCls} />
+                    </Field>
+                    <p className="mt-1 text-theme-xs text-gray-500">How many customers you can serve at once (staff or chairs).</p>
+                  </div>
+                )}
+              </div>
+            )}
             <Field label="Status">
               <select name="status" defaultValue={p?.status === "out_of_stock" ? "active" : p?.status ?? "active"} className={inputCls}>
                 <option value="active">Active</option>

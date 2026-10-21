@@ -27,7 +27,7 @@ export default function StoreProductCard({ item }: { item: Product }) {
 
   const add = () => {
     if (soldOut) return;
-    if (hasVariants) {
+    if (hasVariants || item.bookable) {
       router.push(to);
       return;
     }

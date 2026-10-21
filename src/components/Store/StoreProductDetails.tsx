@@ -1,4 +1,5 @@
 "use client";
+import BookingPanel from "./BookingPanel";
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -122,6 +123,10 @@ export default function StoreProductDetails({ productId }: { productId: string }
 
             {product.description && <p className="mt-6 text-lg leading-relaxed">{product.description}</p>}
 
+            {product.bookable ? (
+              <BookingPanel product={product} variantId={variant?.id} price={unitPrice} />
+            ) : (
+              <>
             <div className="mt-9 flex flex-wrap items-center gap-4">
               <div className="flex items-center rounded-full bg-white ring-1 ring-inset" style={ring}>
                 <button
@@ -175,6 +180,9 @@ export default function StoreProductDetails({ productId }: { productId: string }
                 Buy now
               </button>
             </div>
+
+              </>
+            )}
 
             <dl className="mt-10 divide-y border-y text-custom-sm" style={{ borderColor: "var(--line)" }}>
               {[
