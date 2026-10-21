@@ -57,11 +57,11 @@ const ProductItem = ({ item }: { item: Product }) => {
     <div className="group">
       <div className="relative overflow-hidden flex items-center justify-center rounded-lg bg-[#F6F7FB] min-h-[270px] mb-4">
         {inStore ? (
-          <Link href={href(`/product/${item.id}`)} className="block w-full h-[270px]" aria-label={item.title}>
-            <ProductThumb item={item} size={250} />
+          <Link href={href(`/product/${item.id}`)} className="relative block h-[270px] w-full overflow-hidden" aria-label={item.title}>
+            <ProductThumb item={item} />
           </Link>
         ) : (
-          <Image src={item.imgs.previews[0]} alt="" width={250} height={250} />
+          <Image src={item.imgs.previews[0]} alt="" width={250} height={250} className="object-cover" />
         )}
         {soldOut && (
           <span className="absolute left-3 top-3 rounded bg-dark px-2.5 py-1 text-2xs font-medium uppercase text-white">

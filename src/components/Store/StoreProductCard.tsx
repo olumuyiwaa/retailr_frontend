@@ -38,9 +38,9 @@ export default function StoreProductCard({ item }: { item: Product }) {
   return (
     <article className="group">
       <div className="relative overflow-hidden rounded-2xl">
-        <Link href={to} aria-label={item.title} className="block aspect-[4/5] overflow-hidden">
-          <div className="relative h-full w-full transition-transform duration-500 ease-out group-hover:scale-[1.04]">
-            <ProductThumb item={item} size={320} />
+        <Link href={to} aria-label={item.title} className="relative block aspect-[4/5] overflow-hidden bg-[color:var(--tint)]">
+          <div className="absolute inset-0 transition-transform duration-500 ease-out group-hover:scale-[1.04]">
+            <ProductThumb item={item} />
             {item.imgs?.previews?.[1] && (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={item.imgs.previews[1]} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
