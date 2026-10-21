@@ -95,9 +95,21 @@ export default function ShowcaseHome() {
 
           {topServices.length > 0 && (
             <section className="mt-12">
-              <div className="mb-6 flex items-end justify-between gap-4">
-                <h2 className="text-2xl font-semibold text-dark">Services</h2>
-                <Link href={href("/shop?kind=service")} className="text-custom-sm text-blue">View all</Link>
+              <Wrap>
+                <div className="mb-6 flex items-end justify-between gap-4">
+                  <h2 className="text-2xl font-semibold text-dark">Services</h2>
+                  <Link href={href("/shop?kind=service")} className="text-custom-sm text-blue">
+                    View all
+                  </Link>
+                </div>
+                <div className="grid grid-cols-1 gap-x-7.5 gap-y-9 sm:grid-cols-2 xl:grid-cols-4">
+                  {topServices.map((p) => (
+                    <ProductItem item={p} key={p.id} />
+                  ))}
+                </div>
+              </Wrap>
+            </section>
+          )} className="text-custom-sm text-blue">View all</Link>
               </div>
               <div className="grid grid-cols-1 gap-x-7.5 gap-y-9 sm:grid-cols-2 xl:grid-cols-4">
                 {topServices.map((p) => <ProductItem item={p} key={p.id} />)}

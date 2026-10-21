@@ -101,15 +101,19 @@ export default function AtelierHome() {
           </Wrap>
 
           {topServices.length > 0 && (
-            <section className="mt-16">
+            <Wrap className="py-12">
               <div className="mb-8 flex items-end justify-between gap-4">
                 <h2 className="text-3xl font-bold text-dark">Services</h2>
-                <Link href={href("/shop?kind=service")} className="text-custom-sm underline-offset-4 hover:underline">View all</Link>
+                <Link href={href("/shop?kind=service")} className="text-custom-sm underline-offset-4 hover:underline">
+                  View all
+                </Link>
               </div>
               <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 lg:grid-cols-4">
-                {topServices.map((p) => <AtelierCard key={p.id} item={p} />)}
+                {topServices.map((p) => (
+                  <AtelierCard key={p.id} item={p} />
+                ))}
               </div>
-            </section>
+            </Wrap>
           )}
 
           {best.length > 0 && (

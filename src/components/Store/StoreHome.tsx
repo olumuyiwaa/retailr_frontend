@@ -200,17 +200,14 @@ export default function StoreHome() {
 
           {topServices.length > 0 && (
             <section className="mt-16">
-              <div className="mb-8 flex items-end justify-between gap-4">
-                <h2 className="text-3xl font-bold text-dark sm:text-4xl">Services</h2>
-                <Link href={href("/shop?kind=service")} className="text-custom-sm font-medium underline-offset-4 hover:underline">
-                  View all
-                </Link>
-              </div>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 lg:grid-cols-4">
-                {topServices.map((item) => (
-                  <StoreProductCard item={item} key={item.id} />
-                ))}
-              </div>
+              <Container>
+                <SectionHead title="Services" href={href("/shop?kind=service")} />
+                <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 lg:grid-cols-4">
+                  {topServices.map((item) => (
+                    <StoreProductCard item={item} key={item.id} />
+                  ))}
+                </div>
+              </Container>
             </section>
           )}
 
