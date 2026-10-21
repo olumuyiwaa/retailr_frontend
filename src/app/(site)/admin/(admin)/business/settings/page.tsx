@@ -91,59 +91,105 @@ export default function StoreSettingsPage() {
     <>
       <PageHeader title="Store settings" subtitle="How your business appears to customers." />
 
-      <Card className="mb-6 max-w-5xl">
-        <CardHeader title="Your storefront" subtitle="Share this link with customers so they can shop with you." />
-        <div className="space-y-3 p-5 sm:p-6">
-          <div className="flex flex-wrap items-center gap-3">
-            <code className="min-w-0 flex-1 truncate rounded-lg bg-gray-100 px-4 py-3 text-sm text-gray-700 dark:bg-white/5 dark:text-gray-300">
-              {url || storePath(data.slug)}
-            </code>
-            <OutlineButton
-              type="button"
-              onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(url);
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
-                } catch {
-                  /* clipboard unavailable */
-                }
-              }}
-            >
-              {copied ? "Copied" : "Copy link"}
-            </OutlineButton>
-            <a
-              href={storePath(data.slug)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-3 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600"
-            >
-              View store ↗
-            </a>
-          </div>
-          {data.status !== "active" && data.status !== "trial" && (
-            <p className="text-theme-sm text-warning-600">
-              Your store is currently offline ({data.status}). It goes live once your account is active.
-            </p>
-          )}
-        </div>
-      </Card>
-
-      <Card className="mb-6 max-w-5xl">
-        <CardHeader title="Storefront theme" subtitle="Change how your store looks to shoppers. Your products and settings stay the same." />
-        <ThemePicker businessId={bid} current={data.theme} />
-      </Card>
-
-      {/* Payment options on the left; logo + currency fill the empty right column on desktop */}
-      <div className="mb-6 grid max-w-5xl grid-cols-1 items-start gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <PaymentOptions businessId={bid} business={data} className="mb-0" />
-        </div>
-        <div className="space-y-6">
+      {/*
+        Desktop: main settings stack on the left; logo + currency occupy the
+        empty right rail. Mobile: logo/currency stack above the rest.
+      */}
+      <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_17.5rem]">
+        <div className="order-2 min-w-0 space-y-6 xl:order-1">
           <Card>
-            <CardHeader title="Logo" subtitle="Storefront header, invoices and receipts." />
+            <CardHeader title="Your storefront" subtitle="Share this link with customers so they can shop with you." />
             <div className="space-y-3 p-5 sm:p-6">
-              <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center lg:flex-col lg:items-start">
+              <div className="flex flex-wrap items-center gap-3">
+                <code className="min-w-0 flex-1 truncate rounded-lg bg-gray-100 px-4 py-3 text-sm text-gray-700 dark:bg-white/5 dark:text-gray-300">
+                  {url || storePath(data.slug)}
+                </code>
+                <OutlineButton
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(url);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    } catch {
+                      /* clipboard unavailable */
+                    }
+                  }}
+                >
+                  {copied ? "Copied" : "Copy link"}
+                </OutlineButton>
+                <a
+                  href={storePath(data.slug)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-3 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600"
+                >
+                  View store ↗
+                </a>
+              </div>
+              {data.status !== "active" && data.status !== "trial" && (
+                <p className="text-theme-sm text-warning-600">
+                  Your store is currently offline ({data.status}). It goes live once your account is active.
+                </p>
+              )}
+            </div>
+          </Card>
+
+          <Card>
+            <CardHeader title="Storefront theme" subtitle="Change how your store looks to shoppers. Your products and settings stay the same." />
+            <ThemePicker businessId={bid} current={data.theme} />
+          </Card>
+
+          <PaymentOptions businessId={bid} business={data} className="mb-0" />
+
+          <Card>
+            <CardHeader title="Business profile" subtitle="Shown on your storefront." />
+            <form onSubmit={submit} className="space-y-4 p-5 sm:p-6">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label="Store name">
+                  <input name="name" defaultValue={data.name} className={inputCls} />
+                </Field>
+                <Field label="Category">
+                  <select name="category" defaultValue={data.category} className={inputCls}>
+                    {CATEGORIES.map((c) => (
+                      <option key={c}>{c}</option>
+                    ))}
+                  </select>
+                </Field>
+                <Field label="Country">
+                  <input name="country" defaultValue={data.country} className={inputCls} />
+                </Field>
+                <Field label="City">
+                  <input name="city" defaultValue={data.city} className={inputCls} />
+                </Field>
+                <Field label="Phone">
+                  <input name="phone" defaultValue={data.phone} className={inputCls} />
+                </Field>
+                <Field label="Brand colour">
+                  <input name="brandColor" type="color" defaultValue={data.brandColor} className={`${inputCls} p-1`} />
+                </Field>
+              </div>
+              <Field label="About your business">
+                <textarea name="description" rows={4} defaultValue={data.description} className={`${inputCls} h-auto py-3`} />
+              </Field>
+              {formError && <ErrorNote message={formError} />}
+              <div className="flex items-center gap-3 pt-2">
+                <PrimaryButton busy={saving}>Save changes</PrimaryButton>
+                {saved && (
+                  <span role="status" className="text-theme-sm text-success-600">
+                    Saved
+                  </span>
+                )}
+              </div>
+            </form>
+          </Card>
+        </div>
+
+        <aside className="order-1 space-y-6 xl:order-2 xl:sticky xl:top-24 xl:self-start">
+          <Card>
+            <CardHeader title="Logo" subtitle="Header, invoices and receipts." />
+            <div className="space-y-3 p-5 sm:p-6">
+              <div className="flex flex-col items-start gap-4">
                 <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-white/5">
                   {data.logo ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -197,7 +243,7 @@ export default function StoreSettingsPage() {
           </Card>
 
           <Card>
-            <CardHeader title="Store currency" subtitle="Storefront, invoices and reports." />
+            <CardHeader title="Currency" subtitle="Storefront, invoices and reports." />
             <form onSubmit={saveCurrency} className="space-y-3 p-5 sm:p-6">
               <Field label="Currency">
                 <select name="currency" defaultValue={data.currency} className={inputCls}>
@@ -212,7 +258,7 @@ export default function StoreSettingsPage() {
                 Doesn&apos;t convert existing prices — update products and coupons to match.
               </p>
               <div className="flex items-center gap-3">
-                <PrimaryButton busy={curSaving}>Save currency</PrimaryButton>
+                <PrimaryButton busy={curSaving}>Save</PrimaryButton>
                 {curSaved && (
                   <span role="status" className="text-theme-sm text-success-600">
                     Saved
@@ -221,50 +267,8 @@ export default function StoreSettingsPage() {
               </div>
             </form>
           </Card>
-        </div>
+        </aside>
       </div>
-
-      <Card className="max-w-5xl">
-        <CardHeader title="Business profile" subtitle="Shown on your storefront." />
-        <form onSubmit={submit} className="space-y-4 p-5 sm:p-6">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Store name">
-              <input name="name" defaultValue={data.name} className={inputCls} />
-            </Field>
-            <Field label="Category">
-              <select name="category" defaultValue={data.category} className={inputCls}>
-                {CATEGORIES.map((c) => (
-                  <option key={c}>{c}</option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Country">
-              <input name="country" defaultValue={data.country} className={inputCls} />
-            </Field>
-            <Field label="City">
-              <input name="city" defaultValue={data.city} className={inputCls} />
-            </Field>
-            <Field label="Phone">
-              <input name="phone" defaultValue={data.phone} className={inputCls} />
-            </Field>
-            <Field label="Brand colour">
-              <input name="brandColor" type="color" defaultValue={data.brandColor} className={`${inputCls} p-1`} />
-            </Field>
-          </div>
-          <Field label="About your business">
-            <textarea name="description" rows={4} defaultValue={data.description} className={`${inputCls} h-auto py-3`} />
-          </Field>
-          {formError && <ErrorNote message={formError} />}
-          <div className="flex items-center gap-3 pt-2">
-            <PrimaryButton busy={saving}>Save changes</PrimaryButton>
-            {saved && (
-              <span role="status" className="text-theme-sm text-success-600">
-                Saved
-              </span>
-            )}
-          </div>
-        </form>
-      </Card>
     </>
   );
 }
