@@ -50,7 +50,7 @@ export function AreaSeriesChart({
       axisBorder: { show: false },
       axisTicks: { show: false },
       tickAmount: Math.min(8, data.length),
-      labels: { rotate: 0, style: { colors: "#667085" } },
+      labels: { rotate: 0, style: { colors: "#667085", fontSize: "10px" } },
     },
     yaxis: {
       labels: {
@@ -84,7 +84,7 @@ export function BarSeriesChart({
       categories: data.map((d) => d.label),
       axisBorder: { show: false },
       axisTicks: { show: false },
-      labels: { style: { colors: "#667085" } },
+      labels: { style: { colors: "#667085", fontSize: "10px" } },
     },
     yaxis: { labels: { style: { colors: ["#667085"], fontSize: "11px" }, formatter: (v) => compactAxis(v) } },
   };
@@ -133,7 +133,7 @@ export function TrafficChart({
     markers: { size: 0 },
     legend: { position: "top", horizontalAlign: "right", fontFamily: "Outfit, sans-serif", labels: { colors: "#667085" } },
     grid: { yaxis: { lines: { show: true } }, xaxis: { lines: { show: false } }, borderColor: "#e4e7ec" },
-    xaxis: { categories: labels, axisBorder: { show: false }, axisTicks: { show: false }, tickAmount: Math.min(8, labels.length), labels: { rotate: 0, style: { colors: "#667085" } } },
+    xaxis: { categories: labels, axisBorder: { show: false }, axisTicks: { show: false }, tickAmount: Math.min(8, labels.length), labels: { rotate: 0, style: { colors: "#667085", fontSize: "10px" } } },
     yaxis: { labels: { style: { colors: ["#667085"], fontSize: "11px" }, formatter: (v) => compactAxis(v) } },
   };
   return <ReactApexChart options={options} series={series.map((s) => ({ name: s.name, data: s.data }))} type="area" height={height} />;
