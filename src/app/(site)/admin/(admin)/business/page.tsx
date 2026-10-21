@@ -132,7 +132,7 @@ export default function BusinessDashboard() {
         <div className="grid grid-cols-12 gap-4 md:gap-6">
           <Card className="col-span-12 xl:col-span-8">
             <CardHeader title="Revenue" subtitle="Paid orders per day, last 30 days" />
-            <div className="px-3 pb-4 sm:px-4">
+            <div className="px-3 pb-4 sm:px-2">
               <AreaSeriesChart data={o.revenueSeries} name="Revenue" currency={currency} />
             </div>
           </Card>
