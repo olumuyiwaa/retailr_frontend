@@ -90,6 +90,7 @@ export default function StoreSettingsPage() {
   return (
     <>
       <PageHeader title="Store settings" subtitle="How your business appears to customers." />
+
       <Card className="mb-6 max-w-5xl">
         <CardHeader title="Your storefront" subtitle="Share this link with customers so they can shop with you." />
         <div className="space-y-3 p-5 sm:p-6">
@@ -127,92 +128,144 @@ export default function StoreSettingsPage() {
           )}
         </div>
       </Card>
-      <Card className="mb-6 max-w-5xl">
-        <CardHeader title="Logo" subtitle="Shown in your storefront header and on invoices and receipts." />
-        <div className="space-y-3 p-5 sm:p-6">
-          <div className="flex flex-wrap items-center gap-5">
-            <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-white/5">
-              {data.logo ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={data.logo} alt={`${data.name} logo`} className="h-full w-full object-contain p-2" />
-              ) : (
-                <span className="flex h-14 w-14 items-center justify-center rounded-full text-2xl font-bold text-white" style={{ background: data.brandColor }} aria-hidden>
-                  {data.name.charAt(0).toUpperCase()}
-                </span>
-              )}
-            </div>
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center gap-3">
-                <label className={`inline-flex cursor-pointer items-center rounded-lg px-4 py-2.5 text-sm font-medium text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:text-gray-400 dark:ring-gray-700 ${logoBusy ? "pointer-events-none opacity-60" : ""}`}>
-                  {logoBusy ? "Saving…" : data.logo ? "Replace logo" : "Upload logo"}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    aria-label="Business logo"
-                    className="sr-only"
-                    disabled={logoBusy}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0] ?? null;
-                      e.target.value = "";
-                      if (file) changeLogo(file);
-                    }}
-                  />
-                </label>
-                {data.logo && !logoBusy && (
-                  <button type="button" onClick={() => changeLogo(null)} className="text-sm font-medium text-error-600 hover:text-error-700">Remove</button>
-                )}
-              </div>
-              <p className="text-theme-xs text-gray-500">A square image on a plain or transparent background works best. Without a logo, your store shows its first letter in your brand colour.</p>
-            </div>
-          </div>
-          {logoError && <ErrorNote message={logoError} />}
-        </div>
-      </Card>
+
       <Card className="mb-6 max-w-5xl">
         <CardHeader title="Storefront theme" subtitle="Change how your store looks to shoppers. Your products and settings stay the same." />
         <ThemePicker businessId={bid} current={data.theme} />
       </Card>
+
       <PaymentOptions businessId={bid} business={data} />
-      <Card className="mb-6 max-w-5xl">
-        <CardHeader title="Store currency" subtitle="Prices on your storefront, invoices and reports use this currency." />
-        <form onSubmit={saveCurrency} className="space-y-3 p-5 sm:p-6">
-          <Field label="Currency">
-            <select name="currency" defaultValue={data.currency} className={inputCls}>
-              {CURRENCIES.map((c) => <option key={c.code} value={c.code}>{c.symbol} · {c.label} ({c.code})</option>)}
-            </select>
-          </Field>
-          <p className="text-theme-xs text-gray-500">
-            Changing currency doesn&apos;t convert prices you&apos;ve already entered. Update your product prices and coupons to match.
-          </p>
-          <div className="flex items-center gap-3">
-            <PrimaryButton busy={curSaving}>Save currency</PrimaryButton>
-            {curSaved && <span role="status" className="text-theme-sm text-success-600">Saved</span>}
-          </div>
-        </form>
-      </Card>
-      <Card className="max-w-5xl">
-        <CardHeader title="Business profile" subtitle="Shown on your storefront." />
-        <form onSubmit={submit} className="space-y-4 p-5 sm:p-6">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Store name"><input name="name" defaultValue={data.name} className={inputCls} /></Field>
-            <Field label="Category">
-              <select name="category" defaultValue={data.category} className={inputCls}>
-                {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
-              </select>
-            </Field>
-            <Field label="Country"><input name="country" defaultValue={data.country} className={inputCls} /></Field>
-            <Field label="City"><input name="city" defaultValue={data.city} className={inputCls} /></Field>
-            <Field label="Phone"><input name="phone" defaultValue={data.phone} className={inputCls} /></Field>
-            <Field label="Brand colour"><input name="brandColor" type="color" defaultValue={data.brandColor} className={`${inputCls} p-1`} /></Field>
-          </div>
-          <Field label="About your business"><textarea name="description" rows={4} defaultValue={data.description} className={`${inputCls} h-auto py-3`} /></Field>
-          {formError && <ErrorNote message={formError} />}
-          <div className="flex items-center gap-3 pt-2">
-            <PrimaryButton busy={saving}>Save changes</PrimaryButton>
-            {saved && <span role="status" className="text-theme-sm text-success-600">Saved</span>}
-          </div>
-        </form>
-      </Card>
+
+      {/* Profile on the left; logo + currency fill the right column on desktop */}
+      <div className="mb-6 grid max-w-5xl grid-cols-1 items-start gap-6 lg:grid-cols-3">
+        <div className="order-2 lg:order-1 lg:col-span-2">
+          <Card>
+            <CardHeader title="Business profile" subtitle="Shown on your storefront." />
+            <form onSubmit={submit} className="space-y-4 p-5 sm:p-6">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label="Store name">
+                  <input name="name" defaultValue={data.name} className={inputCls} />
+                </Field>
+                <Field label="Category">
+                  <select name="category" defaultValue={data.category} className={inputCls}>
+                    {CATEGORIES.map((c) => (
+                      <option key={c}>{c}</option>
+                    ))}
+                  </select>
+                </Field>
+                <Field label="Country">
+                  <input name="country" defaultValue={data.country} className={inputCls} />
+                </Field>
+                <Field label="City">
+                  <input name="city" defaultValue={data.city} className={inputCls} />
+                </Field>
+                <Field label="Phone">
+                  <input name="phone" defaultValue={data.phone} className={inputCls} />
+                </Field>
+                <Field label="Brand colour">
+                  <input name="brandColor" type="color" defaultValue={data.brandColor} className={`${inputCls} p-1`} />
+                </Field>
+              </div>
+              <Field label="About your business">
+                <textarea name="description" rows={4} defaultValue={data.description} className={`${inputCls} h-auto py-3`} />
+              </Field>
+              {formError && <ErrorNote message={formError} />}
+              <div className="flex items-center gap-3 pt-2">
+                <PrimaryButton busy={saving}>Save changes</PrimaryButton>
+                {saved && (
+                  <span role="status" className="text-theme-sm text-success-600">
+                    Saved
+                  </span>
+                )}
+              </div>
+            </form>
+          </Card>
+        </div>
+
+        <div className="order-1 space-y-6 lg:order-2">
+          <Card>
+            <CardHeader title="Logo" subtitle="Storefront header, invoices and receipts." />
+            <div className="space-y-3 p-5 sm:p-6">
+              <div className="flex flex-col items-start gap-4">
+                <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-white/5">
+                  {data.logo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={data.logo} alt={`${data.name} logo`} className="h-full w-full object-contain p-2" />
+                  ) : (
+                    <span
+                      className="flex h-14 w-14 items-center justify-center rounded-full text-2xl font-bold text-white"
+                      style={{ background: data.brandColor }}
+                      aria-hidden
+                    >
+                      {data.name.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <label
+                      className={`inline-flex cursor-pointer items-center rounded-lg px-4 py-2.5 text-sm font-medium text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:text-gray-400 dark:ring-gray-700 ${logoBusy ? "pointer-events-none opacity-60" : ""}`}
+                    >
+                      {logoBusy ? "Saving…" : data.logo ? "Replace logo" : "Upload logo"}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        aria-label="Business logo"
+                        className="sr-only"
+                        disabled={logoBusy}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] ?? null;
+                          e.target.value = "";
+                          if (file) changeLogo(file);
+                        }}
+                      />
+                    </label>
+                    {data.logo && !logoBusy && (
+                      <button
+                        type="button"
+                        onClick={() => changeLogo(null)}
+                        className="text-sm font-medium text-error-600 hover:text-error-700"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-theme-xs text-gray-500">
+                    Square image on a plain or transparent background works best. Without a logo, your store shows its first letter in your brand colour.
+                  </p>
+                </div>
+              </div>
+              {logoError && <ErrorNote message={logoError} />}
+            </div>
+          </Card>
+
+          <Card>
+            <CardHeader title="Store currency" subtitle="Storefront, invoices and reports." />
+            <form onSubmit={saveCurrency} className="space-y-3 p-5 sm:p-6">
+              <Field label="Currency">
+                <select name="currency" defaultValue={data.currency} className={inputCls}>
+                  {CURRENCIES.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.symbol} · {c.label} ({c.code})
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <p className="text-theme-xs text-gray-500">
+                Changing currency doesn&apos;t convert prices you&apos;ve already entered. Update product prices and coupons to match.
+              </p>
+              <div className="flex items-center gap-3">
+                <PrimaryButton busy={curSaving}>Save currency</PrimaryButton>
+                {curSaved && (
+                  <span role="status" className="text-theme-sm text-success-600">
+                    Saved
+                  </span>
+                )}
+              </div>
+            </form>
+          </Card>
+        </div>
+      </div>
     </>
   );
 }
