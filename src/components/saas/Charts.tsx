@@ -50,7 +50,7 @@ export function AreaSeriesChart({
       axisBorder: { show: false },
       axisTicks: { show: false },
       tickAmount: Math.min(8, data.length),
-      labels: { rotate: 0, style: { colors: "#667085", fontSize: "10px" } },
+      labels: { rotate: 0, style: { colors: "#667085", fontSize: "8px" } },
     },
     yaxis: {
       labels: {
