@@ -19,7 +19,9 @@ export default function ShowcaseHeader() {
   const [q, setQ] = useState("");
 
   if (!ctx?.store) return <div className="h-[72px]" aria-hidden />;
-  const { store, categories, href, fmt } = ctx;
+  const { store, categories, href, products, fmt } = ctx;
+  const hasServices = (products ?? []).some((p) => p.kind === "service");
+  const hasProducts = (products ?? []).some((p) => (p.kind ?? "product") === "product");
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,7 +71,10 @@ export default function ShowcaseHeader() {
       <nav className="border-t border-gray-3" aria-label="Shop">
         <div className="store-container mx-auto flex items-center gap-6 overflow-x-auto px-4 py-3 sm:px-8">
           <Link href={href("/")} className={link(pathname === href("/"))}>Home</Link>
-          <Link href={href("/shop")} className={link(pathname === href("/shop"))}>All products</Link>
+          <Link href={href("/shop")} className={link(pathname === href("/shop"))}>{hasServices && hasProducts ? "Products" : "All products"}</Link>
+          {hasServices && (
+            <Link href={href("/shop?kind=service")} className={link(pathname === href("/shop"))}>Services</Link>
+          )}
           {categories.slice(0, 6).map((c) => (
             <Link key={c} href={href(`/shop?category=${encodeURIComponent(c)}`)} className={`${link(false)} whitespace-nowrap`}>
               {c}

@@ -66,10 +66,13 @@ export default function StoreHome() {
   if (!ctx?.store) return null;
   const { store, products, categories, href, fmt } = ctx;
 
-  const live = products.filter((p) => p.stock === undefined || p.stock > 0);
-  const newest = [...products].sort((a, b) => +new Date(b.createdAt ?? 0) - +new Date(a.createdAt ?? 0)).slice(0, 8);
+  const goods = products.filter((p) => (p.kind ?? "product") === "product");
+  const services = products.filter((p) => p.kind === "service");
+  const live = goods.filter((p) => p.stock === undefined || p.stock > 0);
+  const newest = [...goods].sort((a, b) => +new Date(b.createdAt ?? 0) - +new Date(a.createdAt ?? 0)).slice(0, 8);
   const bestSellers = [...live].filter((p) => (p.sold ?? 0) > 0).sort((a, b) => (b.sold ?? 0) - (a.sold ?? 0)).slice(0, 4);
   const featured = [...bestSellers, ...newest.filter((p) => !bestSellers.includes(p) && (p.stock ?? 1) > 0)].slice(0, 3);
+  const topServices = [...services].sort((a, b) => (b.sold ?? 0) - (a.sold ?? 0) || +new Date(b.createdAt ?? 0) - +new Date(a.createdAt ?? 0)).slice(0, 4);
 
   const catTiles = categories.map((c) => {
     const inCat = products.filter((p) => p.category === c);
@@ -194,6 +197,22 @@ export default function StoreHome() {
               </div>
             </Container>
           </section>
+
+          {topServices.length > 0 && (
+            <section className="mt-16">
+              <div className="mb-8 flex items-end justify-between gap-4">
+                <h2 className="text-3xl font-bold text-dark sm:text-4xl">Services</h2>
+                <Link href={href("/shop?kind=service")} className="text-custom-sm font-medium underline-offset-4 hover:underline">
+                  View all
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 lg:grid-cols-4">
+                {topServices.map((item) => (
+                  <StoreProductCard item={item} key={item.id} />
+                ))}
+              </div>
+            </section>
+          )}
 
           {bestSellers.length > 0 && (
             <section className="mt-20 py-16" style={{ background: "var(--tint)" }}>

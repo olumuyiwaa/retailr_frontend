@@ -37,7 +37,10 @@ export default function StoreHeader() {
   if (!ctx?.store) {
     return <div className="h-[72px] border-b" style={{ borderColor: "var(--line)" }} aria-hidden />;
   }
-  const { store, categories, href, fmt } = ctx;
+  const { store, categories, href, fmt, products } = ctx;
+  const hasServices = products.some((p) => p.kind === "service");
+  const hasProducts = products.some((p) => (p.kind ?? "product") === "product");
+  const onShop = pathname === href("/shop");
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,7 +51,14 @@ export default function StoreHeader() {
 
   const nav = [
     { label: "Home", to: href("/"), active: pathname === href("/") },
-    { label: "Shop", to: href("/shop"), active: pathname === href("/shop") },
+    {
+      label: hasServices && hasProducts ? "Products" : "Shop",
+      to: href("/shop"),
+      active: onShop,
+    },
+    ...(hasServices
+      ? [{ label: "Services", to: href("/shop?kind=service"), active: onShop }]
+      : []),
   ];
   const topCategories = categories.slice(0, 3);
 

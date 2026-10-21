@@ -15,8 +15,11 @@ export default function AtelierHome() {
   if (!ctx?.store) return null;
   const { store, products, categories, href } = ctx;
 
-  const newest = [...products].sort((a, b) => +new Date(b.createdAt ?? 0) - +new Date(a.createdAt ?? 0));
-  const best = products.filter((p) => (p.sold ?? 0) > 0).sort((a, b) => (b.sold ?? 0) - (a.sold ?? 0)).slice(0, 4);
+  const goods = products.filter((p) => (p.kind ?? "product") === "product");
+  const services = products.filter((p) => p.kind === "service");
+  const newest = [...(goods.length ? goods : products)].sort((a, b) => +new Date(b.createdAt ?? 0) - +new Date(a.createdAt ?? 0));
+  const best = goods.filter((p) => (p.sold ?? 0) > 0).sort((a, b) => (b.sold ?? 0) - (a.sold ?? 0)).slice(0, 4);
+  const topServices = [...services].sort((a, b) => (b.sold ?? 0) - (a.sold ?? 0) || +new Date(b.createdAt ?? 0) - +new Date(a.createdAt ?? 0)).slice(0, 4);
   const withPhoto = newest.filter((p) => p.imgs?.previews?.length);
   const main = withPhoto[0] ?? newest[0];
   const second = withPhoto[1] ?? newest[1];
@@ -96,6 +99,18 @@ export default function AtelierHome() {
               {newest.slice(0, 8).map((p) => <AtelierCard key={p.id} item={p} />)}
             </div>
           </Wrap>
+
+          {topServices.length > 0 && (
+            <section className="mt-16">
+              <div className="mb-8 flex items-end justify-between gap-4">
+                <h2 className="text-3xl font-bold text-dark">Services</h2>
+                <Link href={href("/shop?kind=service")} className="text-custom-sm underline-offset-4 hover:underline">View all</Link>
+              </div>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 lg:grid-cols-4">
+                {topServices.map((p) => <AtelierCard key={p.id} item={p} />)}
+              </div>
+            </section>
+          )}
 
           {best.length > 0 && (
             <Wrap className="py-12">

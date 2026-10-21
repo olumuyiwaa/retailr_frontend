@@ -13,8 +13,11 @@ export default function ShowcaseHome() {
   if (!ctx?.store) return null;
   const { store, products, categories, href, fmt } = ctx;
 
-  const newest = [...products].sort((a, b) => +new Date(b.createdAt ?? 0) - +new Date(a.createdAt ?? 0));
-  const best = [...products].filter((p) => (p.sold ?? 0) > 0).sort((a, b) => (b.sold ?? 0) - (a.sold ?? 0)).slice(0, 6);
+  const goods = products.filter((p) => (p.kind ?? "product") === "product");
+  const services = products.filter((p) => p.kind === "service");
+  const newest = [...(goods.length ? goods : products)].sort((a, b) => +new Date(b.createdAt ?? 0) - +new Date(a.createdAt ?? 0));
+  const best = [...goods].filter((p) => (p.sold ?? 0) > 0).sort((a, b) => (b.sold ?? 0) - (a.sold ?? 0)).slice(0, 6);
+  const topServices = [...services].sort((a, b) => (b.sold ?? 0) - (a.sold ?? 0) || +new Date(b.createdAt ?? 0) - +new Date(a.createdAt ?? 0)).slice(0, 4);
   const spot = [best[0] ?? newest[0], best[1] ?? newest[1]].filter(Boolean);
 
   return (
@@ -89,6 +92,18 @@ export default function ShowcaseHome() {
               </div>
             </Wrap>
           </section>
+
+          {topServices.length > 0 && (
+            <section className="mt-12">
+              <div className="mb-6 flex items-end justify-between gap-4">
+                <h2 className="text-2xl font-semibold text-dark">Services</h2>
+                <Link href={href("/shop?kind=service")} className="text-custom-sm text-blue">View all</Link>
+              </div>
+              <div className="grid grid-cols-1 gap-x-7.5 gap-y-9 sm:grid-cols-2 xl:grid-cols-4">
+                {topServices.map((p) => <ProductItem item={p} key={p.id} />)}
+              </div>
+            </section>
+          )}
 
           {best.length > 0 && (
             <section className="pb-16">

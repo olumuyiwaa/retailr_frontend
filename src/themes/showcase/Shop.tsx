@@ -15,13 +15,18 @@ export default function ShowcaseShop() {
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
   const q = (params.get("q") ?? "").trim();
   const category = params.get("category") ?? "";
+  const kind = params.get("kind") === "service" ? "service" : "product";
 
-  const top = useMemo(() => Math.ceil(Math.max(0, ...(ctx?.products ?? []).map((p) => p.discountedPrice))), [ctx?.products]);
+  const top = useMemo(
+    () => Math.ceil(Math.max(0, ...(ctx?.products ?? []).map((p) => p.discountedPrice))),
+    [ctx?.products],
+  );
 
   const list = useMemo(() => {
     let l = ctx?.products ?? [];
+    l = l.filter((p) => (p.kind ?? "product") === kind);
     if (category) l = l.filter((p) => p.category === category);
-    if (inStock) l = l.filter((p) => p.stock === undefined || p.stock > 0);
+    if (inStock && kind === "product") l = l.filter((p) => p.stock === undefined || p.stock > 0);
     if (maxPrice !== null) l = l.filter((p) => p.discountedPrice <= maxPrice);
     if (q) l = l.filter((p) => `${p.title} ${p.category ?? ""} ${p.description ?? ""}`.toLowerCase().includes(q.toLowerCase()));
     const by = [...l];
@@ -30,21 +35,32 @@ export default function ShowcaseShop() {
     if (sort === "price-asc") by.sort((a, b) => a.discountedPrice - b.discountedPrice);
     if (sort === "price-desc") by.sort((a, b) => b.discountedPrice - a.discountedPrice);
     return by;
-  }, [ctx?.products, category, q, sort, inStock, maxPrice]);
+  }, [ctx?.products, category, q, sort, kind, inStock, maxPrice]);
 
   if (!ctx?.store) return null;
   const { categories, href, fmt, products } = ctx;
+  const goods = products.filter((p) => (p.kind ?? "product") === "product");
+  const services = products.filter((p) => p.kind === "service");
+  const pool = kind === "service" ? services : goods;
+  const shopBase = kind === "service" ? "/shop?kind=service" : "/shop";
   const cap = maxPrice ?? top;
-  const catCls = (on: boolean) => `flex w-full justify-between rounded-md px-3 py-2 text-custom-sm ease-out duration-200 hover:bg-gray-1 hover:text-blue ${on ? "bg-gray-1 font-medium text-blue" : "text-dark"}`;
+  const catCls = (on: boolean) =>
+    `flex w-full justify-between rounded-md px-3 py-2 text-custom-sm ease-out duration-200 hover:bg-gray-1 hover:text-blue ${on ? "bg-gray-1 font-medium text-blue" : "text-dark"}`;
+  const title =
+    category || (q ? `Results for “${q}”` : kind === "service" ? "Services" : services.length ? "Products" : "All products");
 
   return (
     <section className="bg-[#F3F4F6] pb-16 pt-8">
       <div className="store-container mx-auto px-4 sm:px-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-lg bg-white px-5 py-4 shadow-1">
-          <h1 className="text-xl font-semibold text-dark">{category || (q ? `Results for “${q}”` : "All products")} <span className="text-custom-sm font-normal text-dark-4">({list.length})</span></h1>
-          <label className="flex items-center gap-2 text-custom-sm">
-            Sort by
-            <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} className="rounded-md border border-gray-3 bg-gray-1 px-3 py-2 text-dark outline-none">
+          <h1 className="text-xl font-semibold text-dark">{title}</h1>
+          <label className="flex items-center gap-2 text-custom-sm text-dark">
+            Sort
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as Sort)}
+              className="rounded-md border border-gray-3 bg-gray-1 px-3 py-2 text-dark outline-none"
+            >
               <option value="latest">Latest</option>
               <option value="best">Best selling</option>
               <option value="price-asc">Price: low to high</option>
@@ -55,37 +71,83 @@ export default function ShowcaseShop() {
 
         <div className="flex flex-col gap-7 lg:flex-row">
           <aside className="w-full shrink-0 space-y-5 lg:w-[270px]">
+            {goods.length > 0 && services.length > 0 && (
+              <div className="rounded-lg bg-white p-5 shadow-1">
+                <h2 className="mb-3 font-medium text-dark">Type</h2>
+                <Link href={href("/shop")} className={catCls(kind === "product")}>
+                  <span>Products</span>
+                  <span>{goods.length}</span>
+                </Link>
+                <Link href={href("/shop?kind=service")} className={catCls(kind === "service")}>
+                  <span>Services</span>
+                  <span>{services.length}</span>
+                </Link>
+              </div>
+            )}
             <div className="rounded-lg bg-white p-5 shadow-1">
               <h2 className="mb-3 font-medium text-dark">Categories</h2>
-              <Link href={href("/shop")} className={catCls(!category)}><span>All</span><span>{products.length}</span></Link>
+              <Link href={href(shopBase)} className={catCls(!category)}>
+                <span>All</span>
+                <span>{pool.length}</span>
+              </Link>
               {categories.map((c) => (
-                <Link key={c} href={href(`/shop?category=${encodeURIComponent(c)}`)} className={catCls(category === c)}>
-                  <span>{c}</span><span>{products.filter((p) => p.category === c).length}</span>
+                <Link
+                  key={c}
+                  href={href(`/shop?${kind === "service" ? "kind=service&" : ""}category=${encodeURIComponent(c)}`)}
+                  className={catCls(category === c)}
+                >
+                  <span>{c}</span>
+                  <span>{pool.filter((p) => p.category === c).length}</span>
                 </Link>
               ))}
             </div>
-            {top > 0 && (
+            {kind === "product" && top > 0 && (
               <div className="rounded-lg bg-white p-5 shadow-1">
                 <h2 className="mb-3 font-medium text-dark">Max price</h2>
-                <input type="range" min={0} max={top} value={cap} onChange={(e) => setMaxPrice(Number(e.target.value))} aria-label="Maximum price" className="w-full accent-blue" />
+                <input
+                  type="range"
+                  min={0}
+                  max={top}
+                  value={cap}
+                  onChange={(e) => setMaxPrice(Number(e.target.value))}
+                  aria-label="Maximum price"
+                  className="w-full accent-blue"
+                />
                 <p className="mt-1 text-custom-sm">Up to {fmt(cap)}</p>
               </div>
             )}
-            <label className="flex items-center gap-3 rounded-lg bg-white p-5 text-custom-sm text-dark shadow-1">
-              <input type="checkbox" checked={inStock} onChange={(e) => setInStock(e.target.checked)} className="h-4 w-4 accent-blue" />
-              In stock only
-            </label>
+            {kind === "product" && (
+              <label className="flex items-center gap-3 rounded-lg bg-white p-5 text-custom-sm text-dark shadow-1">
+                <input
+                  type="checkbox"
+                  checked={inStock}
+                  onChange={(e) => setInStock(e.target.checked)}
+                  className="h-4 w-4 accent-blue"
+                />
+                In stock only
+              </label>
+            )}
           </aside>
 
           <div className="flex-1">
             {list.length === 0 ? (
               <div className="rounded-lg bg-white py-20 text-center shadow-1">
-                <p className="font-medium text-dark">No products match.</p>
-                <Link href={href("/shop")} className="mt-3 inline-block text-blue">Clear filters</Link>
+                <p className="font-medium text-dark">
+                  {pool.length === 0
+                    ? kind === "service"
+                      ? "No services yet."
+                      : "No products yet."
+                    : "No matches."}
+                </p>
+                <Link href={href(shopBase)} className="mt-3 inline-block text-blue">
+                  Clear filters
+                </Link>
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-x-7.5 gap-y-9 sm:grid-cols-2 xl:grid-cols-3">
-                {list.map((p) => <ProductItem item={p} key={p.id} />)}
+                {list.map((p) => (
+                  <ProductItem item={p} key={p.id} />
+                ))}
               </div>
             )}
           </div>
