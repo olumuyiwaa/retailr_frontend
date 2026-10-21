@@ -2,6 +2,7 @@ import type { StoreTheme } from "./types";
 import classic from "./classic";
 import showcase from "./showcase";
 import atelier from "./atelier";
+import market from "./market";
 
 /**
  * Every storefront theme. To add one:
@@ -9,7 +10,7 @@ import atelier from "./atelier";
  *  2. add it to this list.
  * Pages, header or footer a theme doesn't provide fall back to the default theme.
  */
-export const THEMES: StoreTheme[] = [classic, showcase, atelier];
+export const THEMES: StoreTheme[] = [classic, showcase, atelier, market];
 
 export const DEFAULT_THEME_ID = classic.id;
 
