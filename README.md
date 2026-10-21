@@ -15,7 +15,7 @@ A multi-tenant SaaS platform that lets small African businesses subscribe, get t
 | Super admin | `/admin/super/*` | The Retailr team |
 | Public storefront | `/s/<slug>` | Shoppers |
 
-**Business admin:** dashboard with setup checklist, KPIs and needs-attention panel; products (up to 6 photos with a cover image, size/colour variants with their own stock and price, and up to 10 custom details such as Material or Density, with suggested names for the business type); categories the business creates and manages itself, each with a cover picture (rename moves its products, delete leaves them uncategorised); orders (status updates, invoice link, send receipt); customers (filter by group); record a sale (in person, WhatsApp, Instagram or phone sales with custom prices, discount, paid/owing and walk-in or saved customers; stock updates immediately); reports (sales over time, by channel and payment method, best sellers, top customers, money still owed); site analytics (visitors, visits, page views, conversion, a visit-to-order funnel, traffic sources, devices, countries, most visited pages and products); customer groups (automatic rules like "spent over X" or hand-picked); messages (email or SMS to everyone or a group, with {{first_name}} and {{store}} personalisation; the history shows how many were sent and how many failed); discounts and coupons; team; billing and plan changes (with a discount-code box); store settings (logo, currency, storefront theme, profile).
+**Business admin:** dashboard with setup checklist, KPIs and needs-attention panel; products (up to 6 photos with a cover image, size/colour variants with their own stock and price, and up to 10 custom details such as Material or Density, with suggested names for the business type); categories the business creates and manages itself, each with a cover picture (rename moves its products, delete leaves them uncategorised); orders (status updates, invoice link, send receipt); customers (filter by group); record a sale (in person, WhatsApp, Instagram or phone sales with custom prices, discount, paid/owing and walk-in or saved customers; stock updates immediately); reports (sales over time, by channel and payment method, best sellers, top customers, money still owed); site analytics (visitors, visits, page views, conversion, a visit-to-order funnel, traffic sources, devices, countries, most visited pages and products); customer groups (automatic rules like "spent over X" or hand-picked); messages (email or SMS to everyone or a group, with {{first_name}} and {{store}} personalisation; the history shows how many were sent and how many failed); discounts and coupons; team; billing and plan changes (with a discount-code box); store settings (logo, currency, storefront theme, profile, and which payment options checkout offers: pay on delivery, bank transfer with your account details, or the card demo).
 
 **Super admin:** platform overview (MRR, churn, sign-ups, alerts); site analytics (marketing-site traffic and sign-up funnel, plus traffic and conversion across all stores, busiest stores); business approvals, suspend/reactivate; plans editor; subscriptions; invoices; subscription discounts (percentage or fixed USD codes, optionally limited to certain plans or one business, with a use limit and expiry; businesses enter them at sign-up or when changing plan, and the discount comes off every billing period while they stay on that plan).
 
@@ -46,21 +46,21 @@ npm run dev
 
 Open http://localhost:3000. Production build: `npm run build && npm start`.
 
-Requires Node 18.18+ (Node 20+ recommended).
+Requires Node 20.9+ (Next.js 16). Other scripts: `npm run lint` (ESLint) and `npm run typecheck`.
+
+Copy `.env.example` to `.env.local` and point `NEXT_PUBLIC_API_URL` at the API (`http://localhost:4000/api/v1` by default). `NEXT_PUBLIC_IMAGE_HOSTS` lists extra hosts product photos are served from (your S3/R2/CDN domain), and `NEXT_PUBLIC_DEMO_ENABLED=false` hides the demo links and one-click demo sign-in on a deployment that hasn't run the API's `seed:demo`.
 
 ### Demo accounts
 
-Start the API first (see its README: run the migrations and `npm run seed` to create the plans and the super admin). Then sign up at `/get-started`, or sign in at `/admin/login` as the seeded super admin.
+Start the API first (see its README): run the migrations and `npm run seed` to create the plans and the super admin, and `npm run seed:demo` for a demo shop.
 
-| Role | Email |
-| --- | --- |
-| Super admin | `admin@retailr.com` |
-| Business admin (Adire Hub, Growth plan) | `amara@adirehub.com` |
-| Business admin (Kente & Co, Scale plan) | `kwame@kenteandco.com` |
+| Role | Email | Password |
+| --- | --- | --- |
+| Super admin | `admin@retailr.com` (or your `SEED_SUPER_ADMIN_EMAIL`) | `SEED_SUPER_ADMIN_PASSWORD` from the API's `.env` |
+| Demo store owner (Scentora) | `demo@scentora.example` | `Demo@12345` |
+| Demo store manager / staff | `manager@scentora.example`, `staff@scentora.example` | `Demo@12345` |
 
-Try a storefront at `/s/adire-hub` or `/s/kente-co`. Coupon codes to try at checkout: `WELCOME10`, `SAVE5` (minimum $50).
-
-Demo data lives in your browser's localStorage (`retailr:db:v2`). The login page has a reset option, or clear site data to start fresh.
+The sign-in page also has one-click demo buttons for the owner, manager and staff. Try the demo storefront at `/s/scentora`; the coupon `WELCOME10` gives 10% off. Or sign up at `/get-started` to create your own business. All data lives in the API's database; nothing is stored in the browser except your session and your cart.
 
 ## Project structure
 
@@ -92,7 +92,7 @@ UI code never calls `fetch` directly. It calls typed async functions in `src/ser
 
 ### Site analytics
 
-`src/services/analytics.ts` generates plausible traffic history from the seed data (online orders and sign-ups always match the real tables) and adds the visits you make while using the demo, recorded by `StoreTracker` on storefronts and `MarketingTracker` on the landing and sign-up pages. Visitors are counted once per day per browser, visits once per tab session, and the traffic source comes from `utm_source` or the referrer (try `/s/adire-hub?utm_source=whatsapp`). With a real backend, replace this file with calls to an analytics API; the pages only use `getBusinessAnalytics` and `getPlatformAnalytics`.
+`StoreTracker` (storefronts) and `MarketingTracker` (landing and sign-up pages) send visits, page views, product views, add-to-cart, checkout and order events to the API's `/track` in small batches (`src/services/analytics.ts`); the pages read `getBusinessAnalytics` and `getPlatformAnalytics`. Visitors are counted once per day per browser, visits once per tab session, and the traffic source comes from `utm_source` or the referrer (try `/s/scentora?utm_source=whatsapp`). Each funnel step counts visits that reached it, and "Placed an order" counts visits that placed an order, so the funnel and conversion rate never exceed the number of visits.
 
 ## Roadmap
 
@@ -105,10 +105,13 @@ UI code never calls `fetch` directly. It calls typed async functions in `src/ser
 - [x] Storefront themes, managed categories and product details
 - [x] Site analytics for businesses and the platform
 - [ ] More themes, and gating themes by plan
-- [ ] Payment gateways and delivery integrations
+- [x] Subscription payments (Paystack and Flutterwave) and owner-chosen checkout payment options (pay on delivery, bank transfer)
+- [ ] Online card payments at storefront checkout (the card option is a demo)
+- [ ] Delivery fees, zones and courier integrations
+- [ ] Password reset and email verification
 - [ ] Subdomain routing and custom domains
-- [ ] NestJS + Prisma backend (spec and Prisma schema ready in the retailr repo)
-- [ ] Working global search and notifications
+- [x] NestJS + Prisma backend (the retailr repo)
+- [ ] Working global search and notifications (the search box and bell in the admin header are placeholders)
 
 ## Credits
 
