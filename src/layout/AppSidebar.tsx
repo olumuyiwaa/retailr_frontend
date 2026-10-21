@@ -26,10 +26,9 @@ const AppSidebar: React.FC = () => {
     if (!pathMatch) return false;
     if (qs) {
       const want = new URLSearchParams(qs);
-      for (const [k, v] of want.entries()) {
-        if (searchParams.get(k) !== v) return false;
-      }
-      return true;
+      // Avoid for..of on URLSearchParams iterators (tsconfig target is es5).
+      const ok = Array.from(want.keys()).every((k) => searchParams.get(k) === want.get(k));
+      return ok;
     }
     // Bare /products should not look active when we are on Services (?kind=service)
     if (base === "/admin/business/products" && searchParams.get("kind") === "service") return false;
