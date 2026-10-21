@@ -75,7 +75,7 @@ export default function RecordSalePage() {
 
   const addLine = (p: Product, variantId?: string) => {
     const variant = variantId ? p.variants?.find((v) => v.id === variantId) : undefined;
-    const max = variant ? variant.stock : p.stock;
+    const max = p.kind === "service" ? 99 : variant ? variant.stock : p.stock;
     if (max <= 0) return;
     const key = lineKey(p.id, variantId);
     setFormError(null);
@@ -181,7 +181,8 @@ export default function RecordSalePage() {
               <ul className="mt-4 grid max-h-[560px] gap-2.5 overflow-y-auto sm:grid-cols-2">
                 {sellable.map((p) => {
                   const hasVariants = !!p.variants?.length;
-                  const soldOut = p.stock <= 0;
+                  const isService = p.kind === "service";
+                  const soldOut = !isService && p.stock <= 0;
                   const inCart = lines.filter((l) => l.productId === p.id).reduce((n, l) => n + l.qty, 0);
                   return (
                     <li key={p.id} className="rounded-xl border border-gray-200 dark:border-gray-800">
@@ -200,7 +201,7 @@ export default function RecordSalePage() {
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-theme-sm font-medium text-gray-800 dark:text-white/90">{p.name}</span>
                           <span className="block text-theme-xs text-gray-500">
-                            {fmt(p.price)} · {soldOut ? "Sold out" : `${p.stock} in stock`}
+                            {fmt(p.price)} · {isService ? `Service${p.durationMins ? ` · ${p.durationMins} min` : ""}` : soldOut ? "Sold out" : `${p.stock} in stock`}
                           </span>
                         </span>
                         {inCart > 0 && <span className="rounded-full bg-brand-500 px-2 py-0.5 text-xs font-medium text-white">{inCart}</span>}
@@ -211,11 +212,11 @@ export default function RecordSalePage() {
                             <button
                               key={v.id}
                               type="button"
-                              disabled={v.stock <= 0}
+                              disabled={!isService && v.stock <= 0}
                               onClick={() => addLine(p, v.id)}
                               className="rounded-lg px-3 py-1.5 text-theme-xs font-medium text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-400 dark:ring-gray-700"
                             >
-                              {v.name} · {v.stock > 0 ? `${v.stock} left` : "sold out"}
+                              {v.name}{isService ? "" : ` · ${v.stock > 0 ? `${v.stock} left` : "sold out"}`}
                             </button>
                           ))}
                         </div>

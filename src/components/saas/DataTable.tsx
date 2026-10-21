@@ -44,7 +44,8 @@ export default function DataTable<T>({
   emptyTitle = "Nothing here yet",
   emptyBody,
 }: Props<T>) {
-  const [query, setQuery] = useState("");
+  // a link like /orders?q=ada opens the table already filtered (the admin search sends people here)
+  const [query, setQuery] = useState(() => (typeof window === "undefined" ? "" : new URLSearchParams(window.location.search).get("q") ?? ""));
   const [filterValue, setFilterValue] = useState("all");
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState<{ key: string; dir: 1 | -1 } | null>(null);

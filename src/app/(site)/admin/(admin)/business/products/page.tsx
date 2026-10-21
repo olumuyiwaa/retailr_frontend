@@ -13,7 +13,7 @@ import { Modal } from "@/components/ui/modal";
 import { fileToDataUrl } from "@/lib/image";
 import RowActions from "@/components/saas/RowActions";
 import { specSuggestions } from "@/lib/specPresets";
-import type { Product, ProductStatus, ProductVariant } from "@/types/saas";
+import type { Product, ProductKind, ProductStatus, ProductVariant } from "@/types/saas";
 
 type DraftVariant = { key: string; name: string; price: string; stock: string };
 let draftKey = 0;
@@ -38,6 +38,7 @@ export default function ProductsPage() {
   const [images, setImages] = useState<string[]>([]);
   const [drafts, setDrafts] = useState<DraftVariant[]>([]);
   const [addingCat, setAddingCat] = useState(false);
+  const [kind, setKind] = useState<ProductKind>("product");
   const [specs, setSpecs] = useState<{ label: string; value: string }[]>([]);
   const { data: profile } = useAsync(() => getBusinessProfile(bid), [bid]);
   const { data: cats, reload: reloadCats } = useAsync(() => listCategories(bid), [bid]);
@@ -45,9 +46,10 @@ export default function ProductsPage() {
   if (loading) return <PageLoading />;
   if (error || !data) return <ErrorNote message={error ?? "Could not load products."} onRetry={reload} />;
 
-  const open = (p: Product | "new") => {
+  const open = (p: Product | "new", startAs: ProductKind = "product") => {
     setFormError(null);
     setAddingCat(false);
+    setKind(p !== "new" ? p.kind : startAs);
     setSpecs(p !== "new" ? (p.specs ?? []).map((s) => ({ ...s })) : []);
     setImages(p !== "new" ? (p.images?.length ? p.images : p.image ? [p.image] : []) : []);
     setDrafts(p !== "new" ? (p.variants ?? []).map(toDraft) : []);
@@ -100,13 +102,13 @@ export default function ProductsPage() {
           )}
           <div>
             <p className="font-medium text-gray-800 dark:text-white/90">{p.name}</p>
-            <p className="text-theme-xs text-gray-500">{p.sku}{p.variants?.length ? ` · ${p.variants.length} variants` : ""}{(p.images?.length ?? 0) > 1 ? ` · ${p.images!.length} photos` : ""}</p>
+            <p className="text-theme-xs text-gray-500">{p.kind === "service" ? `Service${p.durationMins ? ` · ${p.durationMins} min` : ""}` : p.sku}{p.variants?.length ? ` · ${p.variants.length} variants` : ""}{(p.images?.length ?? 0) > 1 ? ` · ${p.images!.length} photos` : ""}</p>
           </div>
         </div>
       ),
     },
     { key: "price", header: "Price", sortValue: (p) => p.price, render: (p) => fmt(p.price) },
-    { key: "stock", header: "Stock", sortValue: (p) => p.stock, render: (p) => p.stock },
+    { key: "stock", header: "Stock", sortValue: (p) => (p.kind === "service" ? -1 : p.stock), render: (p) => (p.kind === "service" ? <span className="text-gray-400">—</span> : p.stock) },
     { key: "sold", header: "Sold", sortValue: (p) => p.sold, render: (p) => p.sold },
     { key: "status", header: "Status", sortValue: (p) => p.status, render: (p) => <StatusBadge status={p.status} /> },
     {
@@ -134,7 +136,9 @@ export default function ProductsPage() {
       category: category,
       description: String(f.get("description")).trim(),
       price: Number(f.get("price")),
-      stock: Number(f.get("stock")),
+      stock: kind === "service" ? 0 : Number(f.get("stock")),
+      kind,
+      ...(kind === "service" ? { durationMins: f.get("durationMins") ? Number(f.get("durationMins")) : null } : {}),
       status: f.get("status") as ProductStatus,
       images,
       specs,
@@ -143,14 +147,14 @@ export default function ProductsPage() {
       input.variants = drafts.map((d) => ({
         id: d.key.startsWith("new") ? "" : d.key,
         name: d.name,
-        stock: Number(d.stock),
+        stock: kind === "service" ? 0 : Number(d.stock),
         ...(d.price.trim() !== "" ? { price: Number(d.price) } : {}),
       }));
-      input.stock = input.variants.reduce((sum, v) => sum + (Number.isFinite(v.stock) ? v.stock : 0), 0);
+      input.stock = kind === "service" ? 0 : input.variants.reduce((sum, v) => sum + (Number.isFinite(v.stock) ? v.stock : 0), 0);
     }
-    if (!input.name) return setFormError("Product name is required.");
+    if (!input.name) return setFormError(kind === "service" ? "Service name is required." : "Product name is required.");
     if (!(input.price >= 0)) return setFormError("Enter a valid price.");
-    if (!drafts.length && (!Number.isInteger(input.stock) || input.stock < 0)) return setFormError("Stock must be a whole number, 0 or more.");
+    if (kind === "product" && !drafts.length && (!Number.isInteger(input.stock) || input.stock < 0)) return setFormError("Stock must be a whole number, 0 or more.");
     setSaving(true);
     setFormError(null);
     try {
@@ -173,23 +177,25 @@ export default function ProductsPage() {
   };
 
   const p = editing && editing !== "new" ? editing : null;
+  const stocked = data.filter((x) => x.kind !== "service");
+  const services = data.filter((x) => x.kind === "service");
 
   return (
     <>
       <PageHeader
         title="Products"
-        subtitle={`${data.length} products in your catalogue`}
-        action={<PrimaryButton onClick={() => open("new")}>+ Add product</PrimaryButton>}
+        subtitle={`${stocked.length} product${stocked.length === 1 ? "" : "s"}${services.length ? ` and ${services.length} service${services.length === 1 ? "" : "s"}` : ""} in your catalogue`}
+        action={<div className="flex gap-2"><OutlineButton onClick={() => open("new", "service")}>+ Add service</OutlineButton><PrimaryButton onClick={() => open("new")}>+ Add product</PrimaryButton></div>}
       />
       <div className="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-4">
-        <StatCard label="Products" value={String(data.length)} hint={`${data.filter((p) => p.status === "draft").length} in draft`} />
+        <StatCard label="Items" value={String(data.length)} hint={`${data.filter((p) => p.status === "draft").length} in draft`} />
         <StatCard label="Active" value={String(data.filter((p) => p.status === "active").length)} hint="visible on your store" />
         <StatCard
           label="Low or out of stock"
-          value={String(data.filter((p) => p.status !== "draft" && p.stock <= 6).length)}
-          hint={`${data.filter((p) => p.status !== "draft" && p.stock === 0).length} out of stock`}
+          value={String(stocked.filter((p) => p.status !== "draft" && p.stock <= 6).length)}
+          hint={`${stocked.filter((p) => p.status !== "draft" && p.stock === 0).length} out of stock`}
         />
-        <StatCard label="Stock value" value={fmt(data.reduce((n, p) => n + p.price * p.stock, 0))} hint={`${data.reduce((n, p) => n + p.stock, 0)} units on hand`} />
+        <StatCard label="Stock value" value={fmt(stocked.reduce((n, p) => n + p.price * p.stock, 0))} hint={`${stocked.reduce((n, p) => n + p.stock, 0)} units on hand`} />
       </div>
       {rowError && <div className="mb-4"><ErrorNote message={rowError} /></div>}
       <DataTable
@@ -197,23 +203,31 @@ export default function ProductsPage() {
         columns={columns}
         rowKey={(x) => x.id}
         searchText={(x) => `${x.name} ${x.sku} ${x.category}`}
-        searchPlaceholder="Search products or SKU…"
+        searchPlaceholder="Search products, services or SKU…"
         filter={{
-          label: "Status",
-          options: [{ label: "Active", value: "active" }, { label: "Draft", value: "draft" }, { label: "Out of stock", value: "out_of_stock" }],
-          match: (x, v) => x.status === v,
+          label: "Show",
+          options: [{ label: "Products", value: "product" }, { label: "Services", value: "service" }, { label: "Active", value: "active" }, { label: "Draft", value: "draft" }, { label: "Out of stock", value: "out_of_stock" }],
+          match: (x, v) => (v === "product" || v === "service" ? x.kind === v : x.status === v),
         }}
-        emptyTitle="No products yet"
-        emptyBody="Add your first product to start selling."
+        emptyTitle="Nothing to sell yet"
+        emptyBody="Add your first product or service to start selling."
       />
 
       <Modal isOpen={!!editing} onClose={() => setEditing(null)} className="max-w-[600px] p-6 sm:p-8 m-4 max-h-[92vh] overflow-y-auto">
         {editing && (
           <form onSubmit={submit} className="space-y-4" key={p?.id ?? "new"}>
-            <h3 className="text-xl font-semibold text-gray-800 dark:text-white/90">{p ? "Edit product" : "Add product"}</h3>
-            <Field label="Name"><input name="name" defaultValue={p?.name} className={inputCls} placeholder="e.g. Adire Wrap Dress" /></Field>
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-white/90">{p ? `Edit ${kind}` : `Add ${kind}`}</h3>
+            <div className="inline-flex rounded-lg bg-gray-100 p-1 dark:bg-gray-800" role="tablist" aria-label="What are you selling?">
+              {(["product", "service"] as const).map((k) => (
+                <button key={k} type="button" role="tab" aria-selected={kind === k} onClick={() => setKind(k)}
+                  className={`rounded-md px-3 py-1.5 text-theme-sm font-medium transition ${kind === k ? "bg-white text-gray-800 shadow-theme-xs dark:bg-gray-900 dark:text-white/90" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}`}>
+                  {k === "product" ? "Product" : "Service"}
+                </button>
+              ))}
+            </div>
+            <Field label="Name"><input name="name" defaultValue={p?.name} className={inputCls} placeholder={kind === "service" ? "e.g. Braiding session" : "e.g. Adire Wrap Dress"} /></Field>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="SKU"><input name="sku" defaultValue={p?.sku} className={inputCls} /></Field>
+              {kind === "product" && <Field label="SKU"><input name="sku" defaultValue={p?.sku} className={inputCls} /></Field>}
               <Field label="Category">
                 <div className="space-y-2">
                   <select
@@ -231,13 +245,17 @@ export default function ProductsPage() {
                 </div>
               </Field>
               <Field label={`Price (${currency})`}><input name="price" type="number" step="0.01" min="0" defaultValue={p?.price ?? ""} className={inputCls} /></Field>
-              <Field label={drafts.length ? "Stock (total of variants)" : "Stock"}>
-{drafts.length ? (
-                  <input aria-label="Total stock" readOnly value={drafts.reduce((sum, v) => sum + (Number(v.stock) || 0), 0)} className={inputCls} />
-                ) : (
-                  <input name="stock" type="number" min="0" defaultValue={p?.stock ?? 0} className={inputCls} />
-                )}
-              </Field>
+              {kind === "service" ? (
+                <Field label="Duration (minutes, optional)"><input name="durationMins" type="number" min="1" max="1440" defaultValue={p?.durationMins ?? ""} className={inputCls} placeholder="e.g. 60" /></Field>
+              ) : (
+                <Field label={drafts.length ? "Stock (total of variants)" : "Stock"}>
+                  {drafts.length ? (
+                    <input aria-label="Total stock" readOnly value={drafts.reduce((sum, v) => sum + (Number(v.stock) || 0), 0)} className={inputCls} />
+                  ) : (
+                    <input name="stock" type="number" min="0" defaultValue={p?.stock ?? 0} className={inputCls} />
+                  )}
+                </Field>
+              )}
             </div>
             <Field label="Status">
               <select name="status" defaultValue={p?.status === "out_of_stock" ? "active" : p?.status ?? "active"} className={inputCls}>
@@ -274,22 +292,22 @@ export default function ProductsPage() {
             </div>
             <div>
               <div className="mb-1.5 flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-400">Variants <span className="font-normal text-gray-400">(size, colour…)</span></span>
-                <button type="button" onClick={() => setDrafts((d) => [...d, toDraft()])} className="text-sm font-medium text-brand-500 hover:text-brand-600">+ Add variant</button>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-400">{kind === "service" ? "Options" : "Variants"} <span className="font-normal text-gray-400">({kind === "service" ? "basic, premium…" : "size, colour…"})</span></span>
+                <button type="button" onClick={() => setDrafts((d) => [...d, toDraft()])} className="text-sm font-medium text-brand-500 hover:text-brand-600">{kind === "service" ? "+ Add option" : "+ Add variant"}</button>
               </div>
               {drafts.length === 0 ? (
-                <p className="text-theme-xs text-gray-500">No variants. Add some if shoppers need to pick an option, like a size.</p>
+                <p className="text-theme-xs text-gray-500">{kind === "service" ? "No options. Add some if customers choose between packages, like Basic or Premium." : "No variants. Add some if shoppers need to pick an option, like a size."}</p>
               ) : (
                 <ul className="space-y-2">
                   {drafts.map((v) => (
-                    <li key={v.key} className="grid grid-cols-[1fr_88px_72px_auto] items-center gap-2">
+                    <li key={v.key} className={`grid ${kind === "service" ? "grid-cols-[1fr_88px_auto]" : "grid-cols-[1fr_88px_72px_auto]"} items-center gap-2`}>
                       <input aria-label="Variant name" placeholder="e.g. Large / Red" value={v.name} onChange={(e) => setDraft(v.key, { name: e.target.value })} className={inputCls} />
                       <input aria-label="Variant price" type="number" min="0" step="0.01" placeholder="Price" value={v.price} onChange={(e) => setDraft(v.key, { price: e.target.value })} className={inputCls} />
-                      <input aria-label="Variant stock" type="number" min="0" value={v.stock} onChange={(e) => setDraft(v.key, { stock: e.target.value })} className={inputCls} />
+                      {kind === "product" && <input aria-label="Variant stock" type="number" min="0" value={v.stock} onChange={(e) => setDraft(v.key, { stock: e.target.value })} className={inputCls} />}
                       <button type="button" aria-label="Remove variant" onClick={() => setDrafts((d) => d.filter((x) => x.key !== v.key))} className="px-1 text-error-600">✕</button>
                     </li>
                   ))}
-                  <li className="text-theme-xs text-gray-500">Leave price empty to use the product price.</li>
+                  <li className="text-theme-xs text-gray-500">Leave price empty to use the {kind === "service" ? "service" : "product"} price.</li>
                 </ul>
               )}
             </div>

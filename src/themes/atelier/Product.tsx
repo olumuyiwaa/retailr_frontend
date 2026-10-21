@@ -125,6 +125,7 @@ export default function AtelierProduct({ productId }: { productId: string }) {
             <h1 className="text-4xl font-bold leading-tight text-dark sm:text-5xl">{product.title}</h1>
             {product.category && <p className="mt-1 text-xl">{product.category}</p>}
             <p className="mt-6 text-3xl font-bold text-dark">{fmt(unit)}</p>
+            {product.kind === "service" && product.durationMins && <p className="mt-1 text-sm text-body">{product.durationMins} min</p>}
             {product.description && <p className="mt-5 text-lg leading-relaxed text-dark/85">{product.description}</p>}
 
             {variants.length > 0 && (

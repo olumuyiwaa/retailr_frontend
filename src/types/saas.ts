@@ -143,6 +143,9 @@ export interface Invoice {
 
 export type ProductStatus = "active" | "draft" | "out_of_stock";
 
+/** A product is stocked; a service (haircut, repair, class…) has no stock and is never sold out. */
+export type ProductKind = "product" | "service";
+
 export interface ProductVariant {
   id: string;
   /** What the shopper picks, e.g. "Large / Red". */
@@ -156,6 +159,9 @@ export interface Product {
   id: string;
   businessId: string;
   name: string;
+  kind: ProductKind;
+  /** Minutes a service takes. */
+  durationMins?: number;
   sku: string;
   category: string;
   description: string;

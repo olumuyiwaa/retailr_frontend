@@ -14,7 +14,10 @@ export type Product = {
   storeId?: string;
   category?: string;
   description?: string;
+  /** undefined = no stock limit (services). */
   stock?: number;
+  kind?: "product" | "service";
+  durationMins?: number;
   color?: string; // placeholder tile colour when a product has no photo
   sku?: string;
   createdAt?: string;

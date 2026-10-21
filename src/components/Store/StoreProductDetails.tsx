@@ -87,9 +87,10 @@ export default function StoreProductDetails({ productId }: { productId: string }
             <h1 className="text-4xl font-bold leading-[1.05] text-dark sm:text-5xl">{product.title}</h1>
 
             <p className="mt-5 font-display text-3xl font-semibold text-dark">{fmt(unitPrice)}</p>
+            {product.kind === "service" && product.durationMins && <p className="mt-1 text-sm text-body">{product.durationMins} min</p>}
 
             <p className="mt-3 text-custom-sm font-medium" style={{ color: soldOut ? "#b42318" : "var(--ink)" }}>
-              {soldOut ? "Sold out" : stock <= 5 ? `Only ${stock} left` : "In stock"}
+              {soldOut ? "Sold out" : product.kind === "service" ? "Available" : stock <= 5 ? `Only ${stock} left` : "In stock"}
             </p>
 
             {variants.length > 0 && (

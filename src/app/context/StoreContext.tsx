@@ -37,6 +37,9 @@ export const useStoreHref = () => useContext(StoreContext)?.href ?? ((p: string)
 
 export const storeBase = (slug: string) => `/s/${slug}`;
 
+/** Services have no stock; their options get a ceiling so quantity pickers stay finite. */
+const SERVICE_OPTION_STOCK = 99;
+
 // Convert an admin product row into the shape the template's product components use.
 export const toTemplateProduct = (p: StoreProductRow): Product => ({
   id: p.id,
@@ -47,13 +50,17 @@ export const toTemplateProduct = (p: StoreProductRow): Product => ({
   storeId: p.businessId,
   category: p.category,
   description: p.description,
-  stock: p.status === "out_of_stock" ? 0 : p.stock,
+  // a service has no stock: leaving it undefined means "always available" everywhere the storefront checks
+  stock: p.kind === "service" ? undefined : p.status === "out_of_stock" ? 0 : p.stock,
+  kind: p.kind,
+  durationMins: p.durationMins,
   color: p.imageColor,
   imgs: (() => {
     const all = p.images?.length ? p.images : p.image ? [p.image] : [];
     return all.length ? { thumbnails: all, previews: all } : undefined;
   })(),
-  variants: p.variants?.length ? p.variants.map((v) => ({ ...v })) : undefined,
+  // a service's options never run out
+  variants: p.variants?.length ? p.variants.map((v) => ({ ...v, stock: p.kind === "service" ? SERVICE_OPTION_STOCK : v.stock })) : undefined,
   sku: p.sku,
   specs: p.specs?.length ? p.specs.map((s) => ({ ...s })) : undefined,
   createdAt: p.createdAt,

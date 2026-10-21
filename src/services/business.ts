@@ -30,6 +30,9 @@ export const MAX_PRODUCT_IMAGES = 6;
 export const MAX_PRODUCT_SPECS = 10;
 
 export type ProductInput = Pick<Product, "name" | "sku" | "category" | "description" | "price" | "stock" | "status"> & {
+  kind?: Product["kind"];
+  /** Minutes a service takes; null clears it. */
+  durationMins?: number | null;
   /** Photos (picked files as data URLs, or already-uploaded URLs), cover first. Omit to leave unchanged; [] removes all. */
   images?: string[];
   variants?: Product["variants"];
@@ -42,6 +45,9 @@ export async function saveProduct(_b: string, input: ProductInput, id?: string):
   const body = { ...rest, ...(images ? { images: await uploadImages(images, "product") } : {}) };
   return id ? api.put<Product>(`/business/products/${id}`, body) : api.post<Product>("/business/products", body);
 }
+export type SearchResults = { q: string; orders: Order[]; customers: Customer[]; products: Product[] };
+/** One search over orders, customers and products/services (needs 2+ characters). */
+export const searchAll = (q: string) => api.get<SearchResults>(`/business/search?q=${encodeURIComponent(q)}`);
 export const deleteProduct = (_b: string, id: string) => api.del(`/business/products/${id}`);
 
 // ---------- orders & customers ----------
