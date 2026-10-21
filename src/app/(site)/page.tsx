@@ -53,7 +53,7 @@ export default function LandingPage() {
   return (
     <MarketingShell>
       <section className="overflow-hidden bg-brand-950 text-white">
-        <div className={`${MARKETING_WIDTH} grid items-center gap-14 py-16 sm:py-24 lg:grid-cols-[1.05fr_1fr] lg:py-28`}>
+        <div className={`${MARKETING_WIDTH} grid items-center gap-14 py-16 sm:py-24 lg:grid-cols-[1.05fr_1fr] lg:py-36`}>
           <div>
             <p className="w-fit rounded-full bg-white/10 px-4 py-1.5 text-sm text-brand-100">Built for African small businesses</p>
             <h1 className="mt-6 text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl lg:leading-[1.05] 2xl:text-7xl">Everything you need to sell online, in one place.</h1>
