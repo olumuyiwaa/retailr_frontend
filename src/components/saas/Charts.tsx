@@ -54,7 +54,7 @@ export function AreaSeriesChart({
     },
     yaxis: {
       labels: {
-        style: { colors: ["#667085"], fontSize: "11px" },
+        style: { colors: ["#667085"], fontSize: "8px" },
         formatter: (v) => (code ? axisMoney(v, code) : compactAxis(v)),
       },
     },
