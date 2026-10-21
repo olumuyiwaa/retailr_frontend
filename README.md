@@ -111,7 +111,8 @@ UI code never calls `fetch` directly. It calls typed async functions in `src/ser
 - [ ] Password reset and email verification
 - [ ] Subdomain routing and custom domains
 - [x] NestJS + Prisma backend (the retailr repo)
-- [ ] Working global search and notifications (the search box and bell in the admin header are placeholders)
+- [x] Header search to jump to any admin page (⌘K)
+- [ ] Search across orders, customers and products, and real notifications (the bell is empty for now)
 
 ## Credits
 
