@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useSidebar } from "@/app/context/SidebarContext";
 import { useAuth } from "@/app/context/AuthContext";
 import Logo from "@/components/saas/Logo";
@@ -11,13 +11,30 @@ const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const { user } = useAuth();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const showText = isExpanded || isHovered || isMobileOpen;
 
   if (!user) return null;
   const sections = navFor(user.role, user.teamRole);
   const rootPaths = ["/admin/super", "/admin/business"];
-  const isActive = (path: string) =>
-    rootPaths.includes(path) ? pathname === path : pathname === path || pathname.startsWith(path + "/");
+  /** Match path and optional query (so Products vs Services can share a page). */
+  const isActive = (path: string) => {
+    const [base, qs] = path.split("?");
+    const pathMatch = rootPaths.includes(base)
+      ? pathname === base
+      : pathname === base || pathname.startsWith(base + "/");
+    if (!pathMatch) return false;
+    if (qs) {
+      const want = new URLSearchParams(qs);
+      for (const [k, v] of want.entries()) {
+        if (searchParams.get(k) !== v) return false;
+      }
+      return true;
+    }
+    // Bare /products should not look active when we are on Services (?kind=service)
+    if (base === "/admin/business/products" && searchParams.get("kind") === "service") return false;
+    return true;
+  };
 
   return (
     <aside

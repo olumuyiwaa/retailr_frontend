@@ -1,6 +1,7 @@
 "use client";
 import { useConfirm } from "@/components/ui/confirm";
 import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useBizCurrency, useBizMoney } from "@/hooks/useBizMoney";
 import { useAuth } from "@/app/context/AuthContext";
 import { useAsync } from "@/hooks/useAsync";
@@ -31,6 +32,17 @@ export default function ProductsPage() {
   const currency = useBizCurrency();
   const bid = user!.businessId!;
   const { data, loading, error, reload } = useAsync(() => listProducts(bid), [bid]);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  /** Catalogue tab: products (default) or services — driven by ?kind=service */
+  const viewKind: ProductKind = searchParams.get("kind") === "service" ? "service" : "product";
+  const setViewKind = (k: ProductKind) => {
+    const qs = new URLSearchParams(searchParams.toString());
+    if (k === "service") qs.set("kind", "service");
+    else qs.delete("kind");
+    const s = qs.toString();
+    router.replace(s ? `?${s}` : "?", { scroll: false });
+  };
   const [editing, setEditing] = useState<Product | "new" | null>(null);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -61,7 +73,7 @@ export default function ProductsPage() {
     e.target.value = "";
     if (files.length === 0) return;
     const room = MAX_PRODUCT_IMAGES - images.length;
-    if (room <= 0) return setFormError(`You can add up to ${MAX_PRODUCT_IMAGES} photos per product.`);
+    if (room <= 0) return setFormError(`You can add up to ${MAX_PRODUCT_IMAGES} photos.`);
     const picked = files.slice(0, room);
     try {
       const added = await Promise.all(picked.map((f) => fileToDataUrl(f, 640, 0.8)));
@@ -79,51 +91,15 @@ export default function ProductsPage() {
     setDrafts((d) => d.map((v) => (v.key === key ? { ...v, ...patch } : v)));
 
   const remove = async (p: Product) => {
-    if (!(await confirm({ title: `Delete "${p.name}"?`, message: "This can't be undone.", confirmLabel: "Delete product", tone: "danger" }))) return;
+    if (!(await confirm({ title: `Delete "${p.name}"?`, message: "This can't be undone.", confirmLabel: p.kind === "service" ? "Delete service" : "Delete product", tone: "danger" }))) return;
     setRowError(null);
     try {
       await deleteProduct(bid, p.id);
       reload();
     } catch (e) {
-      setRowError(e instanceof Error ? e.message : "Could not delete product.");
+      setRowError(e instanceof Error ? e.message : `Could not delete ${p.kind === "service" ? "service" : "product"}.`);
     }
   };
-
-  const columns: Column<Product>[] = [
-    {
-      key: "name", header: "Product", sortValue: (p) => p.name,
-      render: (p) => (
-        <div className="flex items-center gap-3">
-          {p.image ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={p.image} alt="" className="h-10 w-10 shrink-0 rounded-lg object-cover" />
-          ) : (
-            <span className="h-10 w-10 shrink-0 rounded-lg" style={{ background: p.imageColor }} />
-          )}
-          <div>
-            <p className="font-medium text-gray-800 dark:text-white/90">{p.name}</p>
-            <p className="text-theme-xs text-gray-500">{p.kind === "service" ? `Service${p.durationMins ? ` · ${p.durationMins} min` : ""}` : p.sku}{p.variants?.length ? ` · ${p.variants.length} variants` : ""}{(p.images?.length ?? 0) > 1 ? ` · ${p.images!.length} photos` : ""}</p>
-          </div>
-        </div>
-      ),
-    },
-    { key: "price", header: "Price", sortValue: (p) => p.price, render: (p) => fmt(p.price) },
-    { key: "stock", header: "Stock", sortValue: (p) => (p.kind === "service" ? -1 : p.stock), render: (p) => (p.kind === "service" ? <span className="text-gray-400">—</span> : p.stock) },
-    { key: "sold", header: "Sold", sortValue: (p) => p.sold, render: (p) => p.sold },
-    { key: "status", header: "Status", sortValue: (p) => p.status, render: (p) => <StatusBadge status={p.status} /> },
-    {
-      key: "actions", header: "", className: "text-right whitespace-nowrap",
-      render: (p) => (
-        <RowActions
-          label={`Actions for ${p.name}`}
-          actions={[
-            { label: "Edit", onClick: () => open(p) },
-            { label: "Delete", tone: "danger", onClick: () => remove(p) },
-          ]}
-        />
-      ),
-    },
-  ];
 
   const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -179,38 +155,145 @@ export default function ProductsPage() {
   const p = editing && editing !== "new" ? editing : null;
   const stocked = data.filter((x) => x.kind !== "service");
   const services = data.filter((x) => x.kind === "service");
+  const rows = viewKind === "service" ? services : stocked;
+  const noun = viewKind === "service" ? "service" : "product";
+  const Noun = viewKind === "service" ? "Service" : "Product";
+
+  const cols: Column<Product>[] = [
+      {
+        key: "name", header: Noun, sortValue: (row) => row.name,
+        render: (row) => (
+          <div className="flex items-center gap-3">
+            {row.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={row.image} alt="" className="h-10 w-10 shrink-0 rounded-lg object-cover" />
+            ) : (
+              <span className="h-10 w-10 shrink-0 rounded-lg" style={{ background: row.imageColor }} />
+            )}
+            <div>
+              <p className="font-medium text-gray-800 dark:text-white/90">{row.name}</p>
+              <p className="text-theme-xs text-gray-500">
+                {row.kind === "service"
+                  ? (row.durationMins ? `${row.durationMins} min` : "Service")
+                  : row.sku}
+                {row.variants?.length ? ` · ${row.variants.length} variants` : ""}
+                {(row.images?.length ?? 0) > 1 ? ` · ${row.images!.length} photos` : ""}
+              </p>
+            </div>
+          </div>
+        ),
+      },
+      { key: "price", header: "Price", sortValue: (row) => row.price, render: (row) => fmt(row.price) },
+    ];
+    if (viewKind === "product") {
+      cols.push({ key: "stock", header: "Stock", sortValue: (row) => row.stock, render: (row) => row.stock });
+    } else {
+      cols.push({
+        key: "duration",
+        header: "Duration",
+        sortValue: (row) => row.durationMins ?? 0,
+        render: (row) => (row.durationMins ? `${row.durationMins} min` : <span className="text-gray-400">—</span>),
+      });
+    }
+    cols.push(
+      { key: "sold", header: viewKind === "service" ? "Booked" : "Sold", sortValue: (row) => row.sold, render: (row) => row.sold },
+      { key: "status", header: "Status", sortValue: (row) => row.status, render: (row) => <StatusBadge status={row.status} /> },
+      {
+        key: "actions", header: "", className: "text-right whitespace-nowrap",
+        render: (row) => (
+          <RowActions
+            label={`Actions for ${row.name}`}
+            actions={[
+              { label: "Edit", onClick: () => open(row) },
+              { label: "Delete", tone: "danger", onClick: () => remove(row) },
+            ]}
+          />
+        ),
+      },
+    );
+  const columns = cols;
 
   return (
     <>
       <PageHeader
-        title="Products"
-        subtitle={`${stocked.length} product${stocked.length === 1 ? "" : "s"}${services.length ? ` and ${services.length} service${services.length === 1 ? "" : "s"}` : ""} in your catalogue`}
-        action={<div className="flex gap-2"><OutlineButton onClick={() => open("new", "service")}>+ Add service</OutlineButton><PrimaryButton onClick={() => open("new")}>+ Add product</PrimaryButton></div>}
+        title={viewKind === "service" ? "Services" : "Products"}
+        subtitle={
+          viewKind === "service"
+            ? `${services.length} service${services.length === 1 ? "" : "s"} in your catalogue — no stock to track`
+            : `${stocked.length} product${stocked.length === 1 ? "" : "s"} in your catalogue`
+        }
+        action={<PrimaryButton onClick={() => open("new", viewKind)}>+ Add {noun}</PrimaryButton>}
       />
+
+      <div className="mb-6 inline-flex rounded-xl border border-gray-200 bg-white p-1 dark:border-gray-800 dark:bg-gray-900" role="tablist" aria-label="Catalogue type">
+        {([
+          ["product", "Products", stocked.length],
+          ["service", "Services", services.length],
+        ] as const).map(([k, label, count]) => {
+          const active = viewKind === k;
+          return (
+            <button
+              key={k}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              onClick={() => setViewKind(k)}
+              className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
+                active
+                  ? "bg-brand-500 text-white shadow-theme-xs"
+                  : "text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-white/5"
+              }`}
+            >
+              {label}
+              <span className={`ml-2 text-theme-xs ${active ? "text-white/80" : "text-gray-400"}`}>{count}</span>
+            </button>
+          );
+        })}
+      </div>
+
       <div className="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-4">
-        <StatCard label="Items" value={String(data.length)} hint={`${data.filter((p) => p.status === "draft").length} in draft`} />
-        <StatCard label="Active" value={String(data.filter((p) => p.status === "active").length)} hint="visible on your store" />
-        <StatCard
-          label="Low or out of stock"
-          value={String(stocked.filter((p) => p.status !== "draft" && p.stock <= 6).length)}
-          hint={`${stocked.filter((p) => p.status !== "draft" && p.stock === 0).length} out of stock`}
-        />
-        <StatCard label="Stock value" value={fmt(stocked.reduce((n, p) => n + p.price * p.stock, 0))} hint={`${stocked.reduce((n, p) => n + p.stock, 0)} units on hand`} />
+        {viewKind === "product" ? (
+          <>
+            <StatCard label="Products" value={String(stocked.length)} hint={`${stocked.filter((x) => x.status === "draft").length} in draft`} />
+            <StatCard label="Active" value={String(stocked.filter((x) => x.status === "active").length)} hint="visible on your store" />
+            <StatCard
+              label="Low or out of stock"
+              value={String(stocked.filter((x) => x.status !== "draft" && x.stock <= 6).length)}
+              hint={`${stocked.filter((x) => x.status !== "draft" && x.stock === 0).length} out of stock`}
+            />
+            <StatCard label="Stock value" value={fmt(stocked.reduce((n, x) => n + x.price * x.stock, 0))} hint={`${stocked.reduce((n, x) => n + x.stock, 0)} units on hand`} />
+          </>
+        ) : (
+          <>
+            <StatCard label="Services" value={String(services.length)} hint={`${services.filter((x) => x.status === "draft").length} in draft`} />
+            <StatCard label="Active" value={String(services.filter((x) => x.status === "active").length)} hint="visible on your store" />
+            <StatCard label="With duration" value={String(services.filter((x) => x.durationMins).length)} hint="shown to shoppers" />
+            <StatCard label="Times sold" value={String(services.reduce((n, x) => n + x.sold, 0))} hint="across all services" />
+          </>
+        )}
       </div>
       {rowError && <div className="mb-4"><ErrorNote message={rowError} /></div>}
       <DataTable
-        rows={data}
+        rows={rows}
         columns={columns}
         rowKey={(x) => x.id}
         searchText={(x) => `${x.name} ${x.sku} ${x.category}`}
-        searchPlaceholder="Search products, services or SKU…"
+        searchPlaceholder={viewKind === "service" ? "Search services…" : "Search products or SKU…"}
         filter={{
           label: "Show",
-          options: [{ label: "Products", value: "product" }, { label: "Services", value: "service" }, { label: "Active", value: "active" }, { label: "Draft", value: "draft" }, { label: "Out of stock", value: "out_of_stock" }],
-          match: (x, v) => (v === "product" || v === "service" ? x.kind === v : x.status === v),
+          options: [
+            { label: "Active", value: "active" },
+            { label: "Draft", value: "draft" },
+            ...(viewKind === "product" ? [{ label: "Out of stock", value: "out_of_stock" }] : []),
+          ],
+          match: (x, v) => x.status === v,
         }}
-        emptyTitle="Nothing to sell yet"
-        emptyBody="Add your first product or service to start selling."
+        emptyTitle={viewKind === "service" ? "No services yet" : "No products yet"}
+        emptyBody={
+          viewKind === "service"
+            ? "Add a service you offer — haircuts, repairs, classes, consultations, and more."
+            : "Add your first product to start selling."
+        }
       />
 
       <Modal isOpen={!!editing} onClose={() => setEditing(null)} className="max-w-[600px] p-6 sm:p-8 m-4 max-h-[92vh] overflow-y-auto">
@@ -359,7 +442,7 @@ export default function ProductsPage() {
             {formError && <ErrorNote message={formError} />}
             <div className="flex justify-end gap-3 pt-2">
               <OutlineButton type="button" onClick={() => setEditing(null)}>Cancel</OutlineButton>
-              <PrimaryButton busy={saving}>{p ? "Save changes" : "Add product"}</PrimaryButton>
+              <PrimaryButton busy={saving}>{p ? "Save changes" : `Add ${kind}`}</PrimaryButton>
             </div>
           </form>
         )}
