@@ -18,7 +18,7 @@ export default function MarketFooter() {
         className="border-b"
         style={{ borderColor: "rgba(255,255,255,.08)", background: "var(--brand)" }}
       >
-        <div className="mx-auto flex w-full max-w-[1280px] flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-6">
+        <div className="mx-auto flex w-full max-w-[1680px] flex-wrap items-center justify-between gap-4 px-5 py-3 sm:px-8 lg:px-12 2xl:px-20">
           <p className="text-custom-sm font-semibold text-white">
             {store.name} — {store.category}
           </p>
@@ -32,7 +32,7 @@ export default function MarketFooter() {
       </div>
 
       {/* Main columns */}
-      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6">
+      <div className="mx-auto w-full max-w-[1680px] px-5 sm:px-8 lg:px-12 2xl:px-20">
         <div className="grid gap-10 pb-10 pt-12 sm:grid-cols-2 md:grid-cols-4">
           {/* Brand */}
           <div className="md:col-span-2">

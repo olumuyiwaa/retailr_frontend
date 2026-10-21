@@ -43,7 +43,7 @@ export default function AtelierShop() {
 
   return (
     <section>
-      <div className="mx-auto w-full max-w-[1260px] px-4 pb-8 pt-10 sm:px-8">
+      <div className="mx-auto w-full max-w-[1680px] px-5 pb-8 pt-10 sm:px-8 lg:px-12 2xl:px-20">
         <nav aria-label="Breadcrumb" className="text-custom-sm">
           <Link href={href("/")} className="hover:text-dark">
             Home
@@ -57,7 +57,7 @@ export default function AtelierShop() {
       </div>
 
       <div className="border-y" style={line}>
-        <div className="mx-auto flex w-full max-w-[1260px] flex-wrap items-center gap-x-8 gap-y-3 px-4 sm:px-8">
+        <div className="mx-auto flex w-full max-w-[1680px] flex-wrap items-center gap-x-8 gap-y-3 px-5 sm:px-8 lg:px-12 2xl:px-20">
           {goods.length > 0 && services.length > 0 && (
             <nav className="flex gap-6 overflow-x-auto" aria-label="Catalogue type">
               <Link href={href("/shop")} className={tab(kind === "product")} role="tab" aria-selected={kind === "product"}>
@@ -112,7 +112,7 @@ export default function AtelierShop() {
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-[1260px] px-4 pt-8 sm:px-8">
+      <div className="mx-auto w-full max-w-[1680px] px-5 pt-8 sm:px-8 lg:px-12 2xl:px-20">
         <p className="mb-6 text-custom-sm">
           {list.length}{" "}
           {kind === "service"

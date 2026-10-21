@@ -7,7 +7,7 @@ import CategoryPicture from "@/components/Store/CategoryPicture";
 import { whatsappLink } from "./whatsapp";
 
 const Wrap = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-  <div className={`mx-auto w-full max-w-[1260px] px-4 sm:px-8 ${className}`}>{children}</div>
+  <div className={`mx-auto w-full max-w-[1680px] px-5 sm:px-8 lg:px-12 2xl:px-20 ${className}`}>{children}</div>
 );
 
 export default function AtelierHome() {

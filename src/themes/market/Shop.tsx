@@ -72,7 +72,7 @@ export default function MarketShop() {
     <section style={{ background: "var(--wash)" }}>
       {/* Breadcrumb + heading */}
       <div className="bg-white border-b" style={divider}>
-        <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 py-5">
+        <div className="mx-auto w-full max-w-[1680px] px-5 sm:px-8 lg:px-12 2xl:px-20 py-5">
           <nav aria-label="Breadcrumb" className="text-custom-sm mb-2" style={{ color: "var(--muted)" }}>
             <Link href={href("/")} className="hover:underline hover:text-dark">
               Home
@@ -93,7 +93,7 @@ export default function MarketShop() {
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 py-6">
+      <div className="mx-auto w-full max-w-[1680px] px-5 sm:px-8 lg:px-12 2xl:px-20 py-6">
         {/* Filters toolbar */}
         <div className="mb-6 flex flex-wrap items-center gap-3">
           {/* Category + kind pills */}

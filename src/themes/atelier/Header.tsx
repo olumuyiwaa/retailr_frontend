@@ -27,7 +27,7 @@ export default function AtelierHeader() {
         Pay on delivery or by bank transfer · Shipping from {store.city}, {store.country}
       </div>
       <header className="sticky top-0 z-50 border-b backdrop-blur" style={{ background: "color-mix(in srgb, var(--wash) 94%, transparent)", borderColor: "var(--line)" }}>
-        <div className="mx-auto flex h-[68px] w-full max-w-[1260px] items-center gap-8 px-4 sm:px-8">
+        <div className="mx-auto flex h-[68px] w-full max-w-[1680px] items-center gap-8 px-5 sm:px-8 lg:px-12 2xl:px-20">
           <Link href={href("/")} className="flex shrink-0 items-center gap-2.5 text-dark" aria-label={`${store.name} home`}>
             {store.logo && <StoreLogo name={store.name} logo={store.logo} size={32} />}
             <span className="text-xl font-semibold tracking-tight">{store.name}</span>
@@ -45,7 +45,7 @@ export default function AtelierHeader() {
             Bag ({count})
           </button>
         </div>
-        <nav className="flex gap-6 overflow-x-auto border-t px-4 py-2.5 lg:hidden" style={{ borderColor: "var(--line)" }} aria-label="Shop categories">
+        <nav className="flex gap-6 overflow-x-auto border-t px-5 py-2.5 lg:hidden" style={{ borderColor: "var(--line)" }} aria-label="Shop categories">
           <Link href={href("/shop")} className={link(onShop && !cat)}>{hasServices && hasProducts ? "Products" : "Shop all"}</Link>
           {hasServices && (
             <Link href={href("/shop?kind=service")} className={link(onShop && !cat)}>Services</Link>

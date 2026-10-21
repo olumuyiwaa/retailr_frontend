@@ -20,7 +20,7 @@ export default function AtelierCart() {
 
   if (items.length === 0) {
     return (
-      <section className="mx-auto max-w-[1260px] px-4 py-24 text-center sm:px-8">
+      <section className="mx-auto max-w-[1680px] px-5 py-24 text-center sm:px-8">
         <h1 className="mb-2 text-4xl font-bold text-dark">Your bag is empty</h1>
         <p className="mb-8">Pick something you like and it will show up here.</p>
         <Link href={href("/shop")} className={`${btn} mx-auto w-fit px-8`} style={{ background: "var(--ink)" }}>Continue shopping</Link>
@@ -30,7 +30,7 @@ export default function AtelierCart() {
 
   const step = "flex h-9 w-9 items-center justify-center text-lg text-dark disabled:opacity-35";
   return (
-    <section className="mx-auto w-full max-w-[1260px] px-4 pb-8 pt-10 sm:px-8">
+    <section className="mx-auto w-full max-w-[1680px] px-5 pb-8 pt-10 sm:px-8 lg:px-12 2xl:px-20">
       <nav aria-label="Breadcrumb" className="text-custom-sm"><Link href={href("/")} className="hover:text-dark">Home</Link> / <span className="text-dark">Bag</span></nav>
       <div className="mb-8 mt-4 flex flex-wrap items-end justify-between gap-3">
         <h1 className="text-4xl font-bold text-dark sm:text-5xl">Your bag</h1>

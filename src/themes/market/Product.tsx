@@ -25,7 +25,7 @@ export default function MarketProduct({ productId }: { productId: string }) {
 
   if (!product) {
     return (
-      <section className="mx-auto max-w-[1280px] px-4 py-24 text-center sm:px-6">
+      <section className="mx-auto max-w-[1680px] px-5 py-24 text-center sm:px-8">
         <h1 className="mb-2 text-4xl font-bold text-dark">Product not found</h1>
         <p className="mb-6" style={{ color: "var(--muted)" }}>
           This product is no longer available.
@@ -88,7 +88,7 @@ export default function MarketProduct({ productId }: { productId: string }) {
 
   return (
     <div style={{ background: "var(--wash)" }}>
-      <section className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 pb-8 pt-6">
+      <section className="mx-auto w-full max-w-[1680px] px-5 sm:px-8 lg:px-12 2xl:px-20 pb-8 pt-6">
         {/* Breadcrumb */}
         <nav
           aria-label="Breadcrumb"
@@ -360,7 +360,7 @@ export default function MarketProduct({ productId }: { productId: string }) {
 
       {/* Related products */}
       {related.length > 0 && (
-        <section className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 pb-14">
+        <section className="mx-auto w-full max-w-[1680px] px-5 sm:px-8 lg:px-12 2xl:px-20 pb-14">
           <h2 className="mb-5 text-2xl font-extrabold text-dark">
             You Might Also Like
           </h2>

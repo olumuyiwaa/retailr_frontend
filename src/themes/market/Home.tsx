@@ -15,7 +15,7 @@ const Wrap = ({
   children: React.ReactNode;
   className?: string;
 }) => (
-  <div className={`mx-auto w-full max-w-[1280px] px-4 sm:px-6 ${className}`}>
+  <div className={`mx-auto w-full max-w-[1680px] px-5 sm:px-8 lg:px-12 2xl:px-20 ${className}`}>
     {children}
   </div>
 );

@@ -38,7 +38,7 @@ export default function AtelierProduct({ productId }: { productId: string }) {
 
   if (!product) {
     return (
-      <section className="mx-auto max-w-[1260px] px-4 py-24 text-center sm:px-8">
+      <section className="mx-auto max-w-[1680px] px-5 py-24 text-center sm:px-8">
         <h1 className="mb-2 text-4xl font-bold text-dark">Product not found</h1>
         <p className="mb-6">This product doesn&apos;t exist or is no longer available.</p>
         <Link href={href("/shop")} className="inline-flex h-12 items-center rounded-md px-7 font-medium text-white" style={{ background: "var(--ink)" }}>Back to shop</Link>
@@ -88,7 +88,7 @@ export default function AtelierProduct({ productId }: { productId: string }) {
 
   return (
     <>
-      <section className="mx-auto w-full max-w-[1260px] px-4 pb-6 pt-8 sm:px-8">
+      <section className="mx-auto w-full max-w-[1680px] px-5 pb-6 pt-8 sm:px-8 lg:px-12 2xl:px-20">
         <nav aria-label="Breadcrumb" className="text-custom-sm">
           <Link href={href("/")} className="hover:text-dark">Home</Link> /{" "}
           {product.category && (<><Link href={href(`/shop?category=${encodeURIComponent(product.category)}`)} className="hover:text-dark">{product.category}</Link> / </>)}
@@ -197,7 +197,7 @@ export default function AtelierProduct({ productId }: { productId: string }) {
       </section>
 
       {related.length > 0 && (
-        <section className="mx-auto w-full max-w-[1260px] px-4 pt-14 sm:px-8">
+        <section className="mx-auto w-full max-w-[1680px] px-5 pt-14 sm:px-8 lg:px-12 2xl:px-20">
           <h2 className="mb-8 text-3xl font-bold text-dark">You might also like</h2>
           <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 lg:grid-cols-4">
             {related.map((p) => <AtelierCard key={p.id} item={p} />)}

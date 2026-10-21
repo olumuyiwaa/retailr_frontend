@@ -29,7 +29,7 @@ export default function MarketCart() {
   if (items.length === 0) {
     return (
       <section
-        className="mx-auto max-w-[1280px] px-4 py-24 text-center sm:px-6"
+        className="mx-auto max-w-[1680px] px-5 py-24 text-center sm:px-8"
         style={{ background: "var(--wash)" }}
       >
         {/* Empty cart icon */}
@@ -74,7 +74,7 @@ export default function MarketCart() {
       className="min-h-screen"
       style={{ background: "var(--wash)" }}
     >
-      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 pb-12 pt-6">
+      <div className="mx-auto w-full max-w-[1680px] px-5 sm:px-8 lg:px-12 2xl:px-20 pb-12 pt-6">
         {/* Breadcrumb */}
         <nav
           aria-label="Breadcrumb"

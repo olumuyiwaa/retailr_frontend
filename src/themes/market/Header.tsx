@@ -49,7 +49,7 @@ export default function MarketHeader() {
         className="sticky top-0 z-50 shadow-md"
         style={{ background: "var(--ink)" }}
       >
-        <div className="mx-auto flex h-[64px] w-full max-w-[1280px] items-center gap-4 px-4 sm:px-6">
+        <div className="mx-auto flex h-[64px] w-full max-w-[1680px] items-center gap-4 px-5 sm:px-8 lg:px-12 2xl:px-20">
           {/* Logo */}
           <Link
             href={href("/")}
@@ -154,7 +154,7 @@ export default function MarketHeader() {
           className="border-t border-white/10"
           style={{ background: "color-mix(in srgb, var(--ink) 90%, black)" }}
         >
-          <div className="mx-auto flex w-full max-w-[1280px] items-center overflow-x-auto px-4 sm:px-6">
+          <div className="mx-auto flex w-full max-w-[1680px] items-center overflow-x-auto px-5 sm:px-8 lg:px-12 2xl:px-20">
             <Link
               href={href("/shop")}
               className={catLink(onShop && !cat)}
@@ -182,7 +182,7 @@ export default function MarketHeader() {
       {/* ── Mobile search (below header) ── */}
       {mobileOpen && (
         <div
-          className="md:hidden border-b px-4 py-3"
+          className="md:hidden border-b px-5 py-3 sm:px-8"
           style={{ background: "var(--ink)", borderColor: "rgba(255,255,255,.15)" }}
         >
           <form onSubmit={handleSearch} className="flex overflow-hidden rounded-md bg-white" role="search">

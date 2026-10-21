@@ -12,7 +12,7 @@ export default function AtelierFooter() {
   const l = "ease-out duration-200 hover:text-white";
   return (
     <footer className="mt-24" style={{ background: "var(--ink)", color: "rgba(255,255,255,.72)" }}>
-      <div className="mx-auto w-full max-w-[1260px] px-4 sm:px-8">
+      <div className="mx-auto w-full max-w-[1680px] px-5 sm:px-8 lg:px-12 2xl:px-20">
         <div className="grid gap-12 pb-12 pt-16 md:grid-cols-[1.4fr_1fr_1fr]">
           <div>
             <p className="text-2xl font-semibold text-white">{store.name}</p>
