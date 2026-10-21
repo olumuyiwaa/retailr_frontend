@@ -5,7 +5,7 @@ import Logo from "./Logo";
 import MarketingTracker from "@/components/analytics/MarketingTracker";
 
 /** Content width shared by every marketing section so header, body and footer line up. */
-export const MARKETING_WIDTH = "mx-auto w-full max-w-[1360px] px-5 sm:px-8 lg:px-12";
+export const MARKETING_WIDTH = "mx-auto w-full max-w-[1680px] px-5 sm:px-8 lg:px-12 2xl:px-20";
 
 export default function MarketingShell({ children }: { children: React.ReactNode }) {
   return (

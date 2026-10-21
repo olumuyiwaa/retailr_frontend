@@ -56,8 +56,8 @@ export default function LandingPage() {
         <div className={`${MARKETING_WIDTH} grid items-center gap-14 py-16 sm:py-24 lg:grid-cols-[1.05fr_1fr] lg:py-28`}>
           <div>
             <p className="w-fit rounded-full bg-white/10 px-4 py-1.5 text-sm text-brand-100">Built for African small businesses</p>
-            <h1 className="mt-6 text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl lg:leading-[1.05]">Everything you need to sell online, in one place.</h1>
-            <p className="mt-6 max-w-xl text-lg text-brand-100/80">
+            <h1 className="mt-6 text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl lg:leading-[1.05] 2xl:text-7xl">Everything you need to sell online, in one place.</h1>
+            <p className="mt-6 max-w-xl text-lg text-brand-100/80 2xl:max-w-2xl 2xl:text-xl">
               Launch a beautiful storefront, take orders from your shop, WhatsApp and Instagram, and see exactly how your business is doing, on one simple subscription.
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
