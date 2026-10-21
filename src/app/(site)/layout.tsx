@@ -32,7 +32,7 @@ export default function RootLayout({
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin");
   // Marketing pages bring their own header/footer and skip the storefront shell.
-  const isMarketing = pathname === "/" || pathname?.startsWith("/get-started");
+  const isMarketing = pathname === "/" || pathname?.startsWith("/get-started") || pathname?.startsWith("/themes");
   const skipShell = isAdmin || isMarketing;
   // Business storefronts live at /s/<slug>/...
   const storeSlug = pathname?.match(/^\/s\/([^/]+)/)?.[1];

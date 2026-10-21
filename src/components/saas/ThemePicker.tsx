@@ -44,7 +44,7 @@ export default function ThemePicker({ businessId, current, onSaved }: { business
                 on ? "border-brand-500 ring-2 ring-brand-500/30" : "border-gray-200 hover:border-gray-300 dark:border-gray-800"
               }`}
             >
-              <ThemeThumb swatches={t.swatches} layout={t.id === "showcase" ? "showcase" : t.id === "atelier" ? "atelier" : "classic"} />
+              <ThemeThumb swatches={t.swatches} layout={t.id === "showcase" ? "showcase" : t.id === "atelier" ? "atelier" : t.id === "market" ? "market" : "classic"} />
               <div className="mt-3 flex items-center justify-between gap-2">
                 <span className="font-medium text-gray-800 dark:text-white/90">{t.name}</span>
                 {on && <span className="rounded-full bg-brand-50 px-2 py-0.5 text-theme-xs font-medium text-brand-600">{busy === t.id ? "Saving…" : "Active"}</span>}

@@ -111,14 +111,14 @@ export default function LandingPage() {
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {THEMES.map((t) => (
               <div key={t.id} className="rounded-2xl bg-white p-4 shadow-theme-xs ring-1 ring-gray-200">
-                <ThemeThumb swatches={t.swatches} layout={t.id === "showcase" ? "showcase" : t.id === "atelier" ? "atelier" : "classic"} />
+                <ThemeThumb swatches={t.swatches} layout={t.id === "showcase" ? "showcase" : t.id === "atelier" ? "atelier" : t.id === "market" ? "market" : "classic"} />
                 <h3 className="mt-4 font-semibold">{t.name}</h3>
                 <p className="mt-1 text-sm text-gray-500">{t.description}</p>
               </div>
             ))}
           </div>
           <p className="mt-8 text-center text-sm">
-            {DEMO_ENABLED && <Link href={DEMO_STORE_HREF} className="font-medium text-brand-600 underline underline-offset-4 hover:text-brand-700">See a live demo store</Link>}
+            <Link href="/themes" className="font-medium text-brand-600 underline underline-offset-4 hover:text-brand-700">See all themes in detail →</Link>
           </p>
         </div>
       </section>

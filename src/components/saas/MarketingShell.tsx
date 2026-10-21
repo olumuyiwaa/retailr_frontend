@@ -15,7 +15,7 @@ export default function MarketingShell({ children }: { children: React.ReactNode
           <Link href="/"><Logo /></Link>
           <nav className="hidden items-center gap-8 text-sm font-medium text-gray-600 md:flex">
             <Link href="/#features" className="hover:text-brand-500">Features</Link>
-            <Link href="/#themes" className="hover:text-brand-500">Themes</Link>
+            <Link href="/themes" className="hover:text-brand-500">Themes</Link>
             <Link href="/#how" className="hover:text-brand-500">How it works</Link>
             <Link href="/#pricing" className="hover:text-brand-500">Pricing</Link>
             <Link href="/#faq" className="hover:text-brand-500">FAQ</Link>
