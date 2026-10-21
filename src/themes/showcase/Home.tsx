@@ -109,12 +109,6 @@ export default function ShowcaseHome() {
                 </div>
               </Wrap>
             </section>
-          )} className="text-custom-sm text-blue">View all</Link>
-              </div>
-              <div className="grid grid-cols-1 gap-x-7.5 gap-y-9 sm:grid-cols-2 xl:grid-cols-4">
-                {topServices.map((p) => <ProductItem item={p} key={p.id} />)}
-              </div>
-            </section>
           )}
 
           {best.length > 0 && (
