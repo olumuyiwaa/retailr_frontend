@@ -108,7 +108,7 @@ export default function LandingPage() {
             <h2 className="text-3xl font-semibold lg:text-4xl">A storefront that looks like you</h2>
             <p className="mt-3 text-gray-500">Choose a theme, add your logo and brand colour, and switch whenever you like. More themes are on the way.</p>
           </div>
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {THEMES.map((t) => (
               <div key={t.id} className="rounded-2xl bg-white p-4 shadow-theme-xs ring-1 ring-gray-200">
                 <ThemeThumb swatches={t.swatches} layout={t.id === "showcase" ? "showcase" : t.id === "atelier" ? "atelier" : "classic"} />

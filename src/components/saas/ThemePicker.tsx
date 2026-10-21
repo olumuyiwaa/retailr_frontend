@@ -29,7 +29,7 @@ export default function ThemePicker({ businessId, current, onSaved }: { business
 
   return (
     <div className="p-5 sm:p-6">
-      <div role="radiogroup" aria-label="Storefront theme" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div role="radiogroup" aria-label="Storefront theme" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {THEMES.map((t) => {
           const on = active === t.id;
           return (
