@@ -134,66 +134,23 @@ export default function StoreSettingsPage() {
         <ThemePicker businessId={bid} current={data.theme} />
       </Card>
 
-      <PaymentOptions businessId={bid} business={data} />
-
-      {/* Profile on the left; logo + currency fill the right column on desktop */}
+      {/* Payment options on the left; logo + currency fill the empty right column on desktop */}
       <div className="mb-6 grid max-w-5xl grid-cols-1 items-start gap-6 lg:grid-cols-3">
-        <div className="order-2 lg:order-1 lg:col-span-2">
-          <Card>
-            <CardHeader title="Business profile" subtitle="Shown on your storefront." />
-            <form onSubmit={submit} className="space-y-4 p-5 sm:p-6">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="Store name">
-                  <input name="name" defaultValue={data.name} className={inputCls} />
-                </Field>
-                <Field label="Category">
-                  <select name="category" defaultValue={data.category} className={inputCls}>
-                    {CATEGORIES.map((c) => (
-                      <option key={c}>{c}</option>
-                    ))}
-                  </select>
-                </Field>
-                <Field label="Country">
-                  <input name="country" defaultValue={data.country} className={inputCls} />
-                </Field>
-                <Field label="City">
-                  <input name="city" defaultValue={data.city} className={inputCls} />
-                </Field>
-                <Field label="Phone">
-                  <input name="phone" defaultValue={data.phone} className={inputCls} />
-                </Field>
-                <Field label="Brand colour">
-                  <input name="brandColor" type="color" defaultValue={data.brandColor} className={`${inputCls} p-1`} />
-                </Field>
-              </div>
-              <Field label="About your business">
-                <textarea name="description" rows={4} defaultValue={data.description} className={`${inputCls} h-auto py-3`} />
-              </Field>
-              {formError && <ErrorNote message={formError} />}
-              <div className="flex items-center gap-3 pt-2">
-                <PrimaryButton busy={saving}>Save changes</PrimaryButton>
-                {saved && (
-                  <span role="status" className="text-theme-sm text-success-600">
-                    Saved
-                  </span>
-                )}
-              </div>
-            </form>
-          </Card>
+        <div className="lg:col-span-2">
+          <PaymentOptions businessId={bid} business={data} className="mb-0" />
         </div>
-
-        <div className="order-1 space-y-6 lg:order-2">
+        <div className="space-y-6">
           <Card>
             <CardHeader title="Logo" subtitle="Storefront header, invoices and receipts." />
             <div className="space-y-3 p-5 sm:p-6">
-              <div className="flex flex-col items-start gap-4">
-                <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-white/5">
+              <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center lg:flex-col lg:items-start">
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-white/5">
                   {data.logo ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={data.logo} alt={`${data.name} logo`} className="h-full w-full object-contain p-2" />
                   ) : (
                     <span
-                      className="flex h-14 w-14 items-center justify-center rounded-full text-2xl font-bold text-white"
+                      className="flex h-12 w-12 items-center justify-center rounded-full text-xl font-bold text-white"
                       style={{ background: data.brandColor }}
                       aria-hidden
                     >
@@ -201,7 +158,7 @@ export default function StoreSettingsPage() {
                     </span>
                   )}
                 </div>
-                <div className="space-y-2">
+                <div className="min-w-0 space-y-2">
                   <div className="flex flex-wrap items-center gap-3">
                     <label
                       className={`inline-flex cursor-pointer items-center rounded-lg px-4 py-2.5 text-sm font-medium text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:text-gray-400 dark:ring-gray-700 ${logoBusy ? "pointer-events-none opacity-60" : ""}`}
@@ -231,7 +188,7 @@ export default function StoreSettingsPage() {
                     )}
                   </div>
                   <p className="text-theme-xs text-gray-500">
-                    Square image on a plain or transparent background works best. Without a logo, your store shows its first letter in your brand colour.
+                    Square image works best. Without a logo, the store shows its first letter in your brand colour.
                   </p>
                 </div>
               </div>
@@ -252,7 +209,7 @@ export default function StoreSettingsPage() {
                 </select>
               </Field>
               <p className="text-theme-xs text-gray-500">
-                Changing currency doesn&apos;t convert prices you&apos;ve already entered. Update product prices and coupons to match.
+                Doesn&apos;t convert existing prices — update products and coupons to match.
               </p>
               <div className="flex items-center gap-3">
                 <PrimaryButton busy={curSaving}>Save currency</PrimaryButton>
@@ -266,6 +223,48 @@ export default function StoreSettingsPage() {
           </Card>
         </div>
       </div>
+
+      <Card className="max-w-5xl">
+        <CardHeader title="Business profile" subtitle="Shown on your storefront." />
+        <form onSubmit={submit} className="space-y-4 p-5 sm:p-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label="Store name">
+              <input name="name" defaultValue={data.name} className={inputCls} />
+            </Field>
+            <Field label="Category">
+              <select name="category" defaultValue={data.category} className={inputCls}>
+                {CATEGORIES.map((c) => (
+                  <option key={c}>{c}</option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Country">
+              <input name="country" defaultValue={data.country} className={inputCls} />
+            </Field>
+            <Field label="City">
+              <input name="city" defaultValue={data.city} className={inputCls} />
+            </Field>
+            <Field label="Phone">
+              <input name="phone" defaultValue={data.phone} className={inputCls} />
+            </Field>
+            <Field label="Brand colour">
+              <input name="brandColor" type="color" defaultValue={data.brandColor} className={`${inputCls} p-1`} />
+            </Field>
+          </div>
+          <Field label="About your business">
+            <textarea name="description" rows={4} defaultValue={data.description} className={`${inputCls} h-auto py-3`} />
+          </Field>
+          {formError && <ErrorNote message={formError} />}
+          <div className="flex items-center gap-3 pt-2">
+            <PrimaryButton busy={saving}>Save changes</PrimaryButton>
+            {saved && (
+              <span role="status" className="text-theme-sm text-success-600">
+                Saved
+              </span>
+            )}
+          </div>
+        </form>
+      </Card>
     </>
   );
 }

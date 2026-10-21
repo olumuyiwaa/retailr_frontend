@@ -12,7 +12,7 @@ const OPTIONS: { id: StorePaymentMethod; title: string; hint: string }[] = [
 ];
 
 /** The owner decides which payment options their storefront checkout offers. */
-export default function PaymentOptions({ businessId, business }: { businessId: string; business: Business }) {
+export default function PaymentOptions({ businessId, business, className = "mb-6 max-w-5xl" }: { businessId: string; business: Business; className?: string }) {
   const [methods, setMethods] = useState<StorePaymentMethod[]>(business.paymentMethods ?? ["cod", "bank", "card"]);
   const [bank, setBank] = useState(business.bankDetails ?? "");
   const [busy, setBusy] = useState(false);
@@ -43,7 +43,7 @@ export default function PaymentOptions({ businessId, business }: { businessId: s
   };
 
   return (
-    <Card className="mb-6 max-w-5xl">
+    <Card className={className}>
       <CardHeader title="Payment options" subtitle="Choose how shoppers can pay at your checkout." />
       <form onSubmit={save} className="space-y-4 p-5 sm:p-6">
         <div className="space-y-3">
