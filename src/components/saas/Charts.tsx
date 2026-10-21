@@ -1,5 +1,6 @@
 "use client";
-import { formatCurrency } from "@/lib/money";
+import { formatCurrency, CURRENCIES } from "@/lib/money";
+import { compactAxis } from "@/lib/format";
 import type { Currency } from "@/types/saas";
 import React from "react";
 import dynamic from "next/dynamic";
@@ -7,6 +8,12 @@ import type { ApexOptions } from "apexcharts";
 import type { TimeSeriesPoint } from "@/types/saas";
 
 const ReactApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
+
+
+const axisMoney = (v: number, code: Currency) => {
+  const symbol = CURRENCIES.find((c) => c.code === code)?.symbol ?? "";
+  return symbol + compactAxis(Math.round(v));
+};
 
 const base = (h: number): ApexOptions["chart"] => ({
   fontFamily: "Outfit, sans-serif",
@@ -47,8 +54,8 @@ export function AreaSeriesChart({
     },
     yaxis: {
       labels: {
-        style: { colors: ["#667085"] },
-        formatter: (v) => (code ? formatCurrency(Math.round(v), code) : String(Math.round(v))),
+        style: { colors: ["#667085"], fontSize: "11px" },
+        formatter: (v) => (code ? axisMoney(v, code) : compactAxis(v)),
       },
     },
     tooltip: { y: { formatter: (v) => (code ? formatCurrency(v, code) : String(v)) } },
@@ -79,7 +86,7 @@ export function BarSeriesChart({
       axisTicks: { show: false },
       labels: { style: { colors: "#667085" } },
     },
-    yaxis: { labels: { style: { colors: ["#667085"] } } },
+    yaxis: { labels: { style: { colors: ["#667085"], fontSize: "11px" }, formatter: (v) => compactAxis(v) } },
   };
   return <ReactApexChart options={options} series={[{ name, data: data.map((d) => d.value) }]} type="bar" height={height} />;
 }
@@ -127,7 +134,7 @@ export function TrafficChart({
     legend: { position: "top", horizontalAlign: "right", fontFamily: "Outfit, sans-serif", labels: { colors: "#667085" } },
     grid: { yaxis: { lines: { show: true } }, xaxis: { lines: { show: false } }, borderColor: "#e4e7ec" },
     xaxis: { categories: labels, axisBorder: { show: false }, axisTicks: { show: false }, tickAmount: Math.min(8, labels.length), labels: { rotate: 0, style: { colors: "#667085" } } },
-    yaxis: { labels: { style: { colors: ["#667085"] }, formatter: (v) => String(Math.round(v)) } },
+    yaxis: { labels: { style: { colors: ["#667085"], fontSize: "11px" }, formatter: (v) => compactAxis(v) } },
   };
   return <ReactApexChart options={options} series={series.map((s) => ({ name: s.name, data: s.data }))} type="area" height={height} />;
 }
