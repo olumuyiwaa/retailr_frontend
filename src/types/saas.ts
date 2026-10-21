@@ -330,6 +330,8 @@ export interface AuthUser {
   name: string;
   email: string;
   role: Role;
+  /** False until the person opens the link in the confirmation email. */
+  emailVerified?: boolean;
   businessId?: string; // set for business_admin
   /** A business admin's role on the team; decides which screens they see. */
   teamRole?: "owner" | "manager" | "staff";

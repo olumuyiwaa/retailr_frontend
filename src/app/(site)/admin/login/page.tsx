@@ -50,7 +50,10 @@ export default function LoginPage() {
               <input className={field} type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@business.com" />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">Password</label>
+              <div className="mb-1.5 flex items-center justify-between">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-400">Password</label>
+                <Link href="/admin/forgot-password" className="text-theme-xs font-medium text-brand-500 hover:text-brand-600">Forgot password?</Link>
+              </div>
               <input className={field} type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
             </div>
             {error && (

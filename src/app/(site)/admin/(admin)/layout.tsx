@@ -10,6 +10,7 @@ import { useSidebar } from "@/app/context/SidebarContext";
 import { homeFor, useAuth } from "@/app/context/AuthContext";
 import Spinner from "@/components/saas/Spinner";
 import { canOpen } from "@/layout/navConfig";
+import VerifyEmailBanner from "@/components/saas/VerifyEmailBanner";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const { isExpanded, isHovered, isMobileOpen } = useSidebar();
@@ -55,7 +56,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Backdrop />
             <div className={`flex-1 transition-all duration-300 ease-in-out ${mainContentMargin}`}>
                 <AppHeader />
-                <div className="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">{children}</div>
+                <div className="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6"><VerifyEmailBanner />{children}</div>
             </div>
         </div>
     );

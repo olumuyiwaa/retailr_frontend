@@ -45,3 +45,9 @@ export async function logout(): Promise<void> {
   try { if (t) await api.post("/auth/logout", { refreshToken: t.refresh }); } catch { /* signing out locally anyway */ }
   setTokens(null);
 }
+
+/** Always succeeds from the caller's view, so the form never reveals which emails have accounts. */
+export const forgotPassword = (email: string) => api.post("/auth/forgot-password", { email: email.trim() }, { auth: false });
+export const resetPassword = (token: string, password: string) => api.post("/auth/reset-password", { token, password }, { auth: false });
+export const verifyEmail = (token: string) => api.post("/auth/verify-email", { token }, { auth: false });
+export const resendVerification = () => api.post("/auth/resend-verification");
