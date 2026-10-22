@@ -1,11 +1,8 @@
-const tiles: [string, string, string][] = [
-  ["#E8D5C4", "Adire wrap dress", "₦28,500"],
-  ["#C4D4C7", "Shea butter set", "₦12,000"],
-  ["#C9C6E8", "Kente tote", "₦18,500"],
-  ["#F3B9A7", "Beaded necklace", "₦9,800"],
-];
+import { DEMO_PRODUCTS } from "@/lib/demoPhotos";
 
 export default function HeroMock() {
+  const tiles = DEMO_PRODUCTS.slice(0, 4);
+
   return (
     <div className="relative mx-auto w-full max-w-[620px] pb-10 pl-0 sm:pl-8" aria-hidden>
       <div className="overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-white/20">
@@ -14,20 +11,22 @@ export default function HeroMock() {
           <span className="h-2.5 w-2.5 rounded-full bg-[#FFBD2E]" />
           <span className="h-2.5 w-2.5 rounded-full bg-[#28C840]" />
           <span className="ml-3 flex-1 truncate rounded-md bg-white px-3 py-1 text-xs text-gray-400 ring-1 ring-gray-200">
-            retailr.com/s/your-store
+            retailr.com/s/scentora
           </span>
         </div>
         <div className="bg-[#F6EFE7] p-5">
           <div className="mb-4 flex items-center justify-between gap-3">
-            <span className="text-sm font-semibold text-[#2A1D19]">Your Store</span>
-            <span className="truncate text-xs text-[#6B5A51]">Shop · New · Best sellers · Bag (2)</span>
+            <span className="text-sm font-semibold tracking-wide text-[#2A1D19]">SCENTORA</span>
+            <span className="truncate text-xs text-[#6B5A51]">Shop · Women · Oud · Bag (2)</span>
           </div>
           <div className="grid grid-cols-4 gap-3">
-            {tiles.map(([c, n, p]) => (
-              <div key={n}>
-                <div className="aspect-[4/5] rounded-md shadow-sm" style={{ background: c }} />
-                <p className="mt-2 truncate text-[11px] font-medium text-[#2A1D19]">{n}</p>
-                <p className="text-[11px] font-medium text-[#6B5A51]">{p}</p>
+            {tiles.map((p) => (
+              <div key={p.name}>
+                <div className="aspect-[4/5] overflow-hidden rounded-md shadow-sm ring-1 ring-black/5">
+                  <img src={p.photo} alt="" className="h-full w-full object-cover" />
+                </div>
+                <p className="mt-2 truncate text-[11px] font-medium text-[#2A1D19]">{p.name}</p>
+                <p className="text-[11px] font-medium text-[#6B5A51]">{p.price}</p>
               </div>
             ))}
           </div>
