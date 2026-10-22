@@ -72,9 +72,27 @@ function SignupFlow() {
 
   const labels = ["Your account", "Your business", "Choose a plan"];
 
+  const benefits = [
+    "14-day free trial, no card required",
+    "Your own storefront link to share anywhere",
+    "Orders, customers and reports in one dashboard",
+    "Upgrade, downgrade or cancel anytime",
+  ];
+
   return (
     <div className={`${MARKETING_WIDTH} py-14 lg:grid lg:grid-cols-[minmax(0,560px)_1fr] lg:gap-20 lg:py-20`}>
     <div>
+      <div className="mb-8 rounded-2xl border border-brand-100 bg-brand-50/60 p-4 lg:hidden">
+        <p className="text-sm font-semibold text-brand-800">What you get</p>
+        <ul className="mt-2 space-y-1.5 text-sm text-brand-900/80">
+          {benefits.map((t) => (
+            <li key={t} className="flex gap-2">
+              <span className="text-brand-600" aria-hidden>✓</span>
+              <span>{t}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
       <ol className="mb-8 flex items-center gap-2 text-sm">
         {labels.map((l, i) => (
           <li key={l} className={`flex flex-1 items-center gap-2 ${i + 1 <= step ? "text-brand-600" : "text-gray-400"}`}>
@@ -158,17 +176,20 @@ function SignupFlow() {
     </div>
 
     <aside className="hidden lg:block" aria-label="What you get">
-      <div className="sticky top-28 rounded-3xl bg-brand-950 p-10 text-white">
+      <div className="sticky top-28 rounded-3xl bg-brand-950 p-10 text-white shadow-theme-lg">
         <p className="text-sm font-medium text-brand-100/80">Everything you need to sell online</p>
         <h2 className="mt-3 text-3xl font-semibold leading-tight">Open your shop in minutes, not weeks.</h2>
         <ul className="mt-8 space-y-4 text-brand-100/90">
-          {["14-day free trial, no card required", "Your own storefront link to share anywhere", "Orders, customers and reports in one dashboard", "Upgrade, downgrade or cancel anytime"].map((t) => (
+          {benefits.map((t) => (
             <li key={t} className="flex gap-3">
               <span aria-hidden className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/15 text-sm">✓</span>
               <span>{t}</span>
             </li>
           ))}
         </ul>
+        <p className="mt-8 border-t border-white/10 pt-6 text-sm text-brand-100/70">
+          Already selling on WhatsApp or Instagram? Bring those orders into Retailr so reports show the full picture.
+        </p>
       </div>
     </aside>
     </div>

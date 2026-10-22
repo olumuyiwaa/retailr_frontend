@@ -1,28 +1,32 @@
 import React from "react";
 import Link from "next/link";
-import { DEMO_ENABLED, DEMO_STORE_HREF } from "@/lib/demo";
 import Logo from "./Logo";
 import MarketingTracker from "@/components/analytics/MarketingTracker";
+import { DEMO_ENABLED, DEMO_STORE_HREF } from "@/lib/demo";
 
-/** Content width shared by every marketing section so header, body and footer line up. */
-export const MARKETING_WIDTH = "mx-auto w-full max-w-[1680px] px-5 sm:px-8 lg:px-12 2xl:px-20";
+/** Shared max-width + horizontal padding for marketing pages. */
+export const MARKETING_WIDTH = "mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10 2xl:max-w-[90rem]";
 
 export default function MarketingShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-white font-outfit text-gray-800">
-      <header className="sticky top-0 z-40 border-b border-gray-100 bg-white/90 backdrop-blur">
-        <div className={`${MARKETING_WIDTH} flex h-16 items-center justify-between lg:h-[72px]`}>
-          <Link href="/"><Logo /></Link>
-          <nav className="hidden items-center gap-8 text-sm font-medium text-gray-600 md:flex">
+    <div className="min-h-screen bg-white text-gray-800 antialiased">
+      <header className="sticky top-0 z-40 border-b border-gray-100/80 bg-white/90 backdrop-blur-md">
+        <div className={`${MARKETING_WIDTH} flex h-16 items-center justify-between gap-4`}>
+          <Link href="/" className="shrink-0" aria-label="Retailr home">
+            <Logo />
+          </Link>
+          <nav className="hidden items-center gap-6 text-sm font-medium text-gray-600 md:flex">
             <Link href="/#features" className="hover:text-brand-500">Features</Link>
             <Link href="/themes" className="hover:text-brand-500">Themes</Link>
             <Link href="/#how" className="hover:text-brand-500">How it works</Link>
             <Link href="/#pricing" className="hover:text-brand-500">Pricing</Link>
             <Link href="/#faq" className="hover:text-brand-500">FAQ</Link>
           </nav>
-          <div className="flex items-center gap-3 text-sm font-medium">
-            <Link href="/admin/login" className="px-3 py-2 text-gray-600 hover:text-brand-500">Sign in</Link>
-            <Link href="/get-started" className="rounded-lg bg-brand-500 px-4 py-2.5 text-white shadow-theme-xs hover:bg-brand-600">Start free trial</Link>
+          <div className="flex items-center gap-2 text-sm font-medium sm:gap-3">
+            <Link href="/admin/login" className="hidden px-3 py-2 text-gray-600 hover:text-brand-500 sm:inline">Sign in</Link>
+            <Link href="/get-started" className="rounded-lg bg-brand-500 px-3.5 py-2.5 text-white shadow-theme-xs hover:bg-brand-600 sm:px-4">
+              Start free
+            </Link>
           </div>
         </div>
       </header>
@@ -38,7 +42,7 @@ export default function MarketingShell({ children }: { children: React.ReactNode
             <h2 className="text-sm font-semibold text-gray-800">Product</h2>
             <ul className="mt-3 space-y-2 text-sm text-gray-500">
               <li><Link href="/#features" className="hover:text-brand-500">Features</Link></li>
-              <li><Link href="/#themes" className="hover:text-brand-500">Themes</Link></li>
+              <li><Link href="/themes" className="hover:text-brand-500">Themes</Link></li>
               <li><Link href="/#pricing" className="hover:text-brand-500">Pricing</Link></li>
               <li><Link href="/#faq" className="hover:text-brand-500">FAQ</Link></li>
             </ul>
