@@ -148,6 +148,9 @@ export default function BillingPage() {
               <UsageBar label="Team members" used={usage.staff.used} limit={usage.staff.limit} />
               <UsageBar label="Orders this month" used={usage.ordersThisMonth.used} limit={usage.ordersThisMonth.limit} />
               <UsageBar label="Storage" used={usage.storageGb.used} limit={usage.storageGb.limit} unit=" GB" />
+              {usage.smsThisMonth && (
+                <UsageBar label="SMS this month" used={usage.smsThisMonth.used} limit={usage.smsThisMonth.limit} />
+              )}
             </div>
           </div>
         </Card>

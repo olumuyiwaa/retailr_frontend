@@ -423,6 +423,8 @@ export interface BusinessUsage {
   staff: { used: number; limit: number };
   ordersThisMonth: { used: number; limit: number };
   storageGb: { used: number; limit: number };
+  /** Monthly SMS campaign credits (limit -1 = unlimited). */
+  smsThisMonth?: { used: number; limit: number };
 }
 
 // ---------- site analytics ----------
