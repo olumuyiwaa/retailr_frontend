@@ -145,9 +145,6 @@ export interface Invoice {
 
 export type ProductStatus = "active" | "draft" | "out_of_stock";
 
-/** A product is stocked; a service (haircut, repair, class…) has no stock and is never sold out. */
-export type ProductKind = "product" | "service";
-
 export interface ProductVariant {
   id: string;
   /** What the shopper picks, e.g. "Large / Red". */
@@ -161,13 +158,6 @@ export interface Product {
   id: string;
   businessId: string;
   name: string;
-  kind: ProductKind;
-  /** Minutes a service takes. */
-  durationMins?: number;
-  /** Services only: customers pick a time slot instead of adding it to a cart. */
-  bookable?: boolean;
-  /** How many bookings of this service can overlap. */
-  maxConcurrent?: number;
   sku: string;
   category: string;
   description: string;
@@ -183,6 +173,39 @@ export interface Product {
   /** When present, product.stock is the sum of the variants' stock. */
   variants?: ProductVariant[];
   /** Extra details the business wants shown on the product page (e.g. Material: Cotton). */
+  specs?: ProductSpec[];
+  createdAt: string;
+}
+
+export type ServiceStatus = "active" | "draft";
+
+/** A priced choice such as "Short hair". Overrides the service price when set. */
+export interface ServiceOption {
+  id: string;
+  name: string;
+  price?: number;
+}
+
+/** A haircut, repair, class… Kept apart from products: no stock, never sold out, optionally bookable for a time slot. */
+export interface Service {
+  id: string;
+  businessId: string;
+  name: string;
+  category: string;
+  description: string;
+  price: number;
+  /** Minutes the service takes. */
+  durationMins?: number;
+  /** Customers pick a time slot instead of adding it to a cart. */
+  bookable?: boolean;
+  /** How many bookings can overlap. */
+  maxConcurrent?: number;
+  status: ServiceStatus;
+  sold: number;
+  imageColor: string;
+  image?: string;
+  images?: string[];
+  options?: ServiceOption[];
   specs?: ProductSpec[];
   createdAt: string;
 }
@@ -205,8 +228,11 @@ export type StorePaymentMethod = "cod" | "bank" | "card";
 export type SalesChannel = "online" | "in_store" | "whatsapp" | "instagram" | "phone" | "other";
 
 export interface OrderItem {
+  /** A line is a product (productId, variantId) or a service (serviceId, optionId). */
   productId: string;
+  serviceId?: string;
   variantId?: string;
+  optionId?: string;
   name: string;
   qty: number;
   price: number;
@@ -447,7 +473,7 @@ export type BookingStatus = "pending" | "confirmed" | "completed" | "cancelled" 
 
 export interface Booking {
   id: string;
-  productId: string;
+  serviceId: string;
   serviceName: string;
   variantName?: string;
   price: number;

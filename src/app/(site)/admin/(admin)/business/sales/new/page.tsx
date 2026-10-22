@@ -4,14 +4,33 @@ import Link from "next/link";
 import { useBizMoney } from "@/hooks/useBizMoney";
 import { useAuth } from "@/app/context/AuthContext";
 import { useAsync } from "@/hooks/useAsync";
-import { getBusinessProfile, listCustomers, listProducts, recordSale } from "@/services/business";
+import { getBusinessProfile, listCustomers, listProducts, listServices, recordSale } from "@/services/business";
 import { Card, CardHeader, ErrorNote, PageHeader, PageLoading } from "@/components/saas/Card";
 import { Field, inputCls, OutlineButton, PrimaryButton } from "@/components/saas/Form";
 import { CHANNELS, PAYMENT_LABELS, RECORD_PAYMENT_METHODS } from "@/lib/orderMeta";
-import type { Order, PaymentMethod, Product, SalesChannel } from "@/types/saas";
+import type { Order, PaymentMethod, SalesChannel } from "@/types/saas";
+
+/** A product or a service, as the picker shows it. */
+interface Sellable {
+  kind: "product" | "service";
+  id: string;
+  name: string;
+  sku: string;
+  category: string;
+  price: number;
+  /** Products only. */
+  stock: number;
+  status: string;
+  image?: string;
+  imageColor: string;
+  durationMins?: number;
+  variants?: { id: string; name: string; price?: number; stock: number }[];
+}
 
 interface Line {
   key: string;
+  kind: "product" | "service";
+  /** The product or service id; variantId is the variant or option id. */
   productId: string;
   variantId?: string;
   name: string;
@@ -22,6 +41,7 @@ interface Line {
 }
 
 const lineKey = (productId: string, variantId?: string) => `${productId}:${variantId ?? ""}`;
+const SERVICE_MAX = 99;
 
 const pill = (on: boolean) =>
   `rounded-lg px-3.5 py-2 text-theme-sm font-medium ring-1 ring-inset transition ${
@@ -36,8 +56,15 @@ export default function RecordSalePage() {
   const bid = user!.businessId!;
   const { data, loading, error, reload } = useAsync(
     async () => {
-      const [products, customers, profile] = await Promise.all([listProducts(bid), listCustomers(bid), getBusinessProfile(bid)]);
-      return { products, customers, profile };
+      const [products, services, customers, profile] = await Promise.all([listProducts(bid), listServices(bid), listCustomers(bid), getBusinessProfile(bid)]);
+      const items: Sellable[] = [
+        ...products.map((p): Sellable => ({ kind: "product", id: p.id, name: p.name, sku: p.sku, category: p.category, price: p.price, stock: p.stock, status: p.status, image: p.image, imageColor: p.imageColor, variants: p.variants })),
+        ...services.map((s): Sellable => ({
+          kind: "service", id: s.id, name: s.name, sku: "", category: s.category, price: s.price, stock: 0, status: s.status, image: s.image, imageColor: s.imageColor, durationMins: s.durationMins,
+          variants: s.options?.map((o) => ({ ...o, stock: SERVICE_MAX })),
+        })),
+      ];
+      return { items, customers, profile };
     },
     [bid]
   );
@@ -60,31 +87,31 @@ export default function RecordSalePage() {
 
   const sellable = useMemo(
     () =>
-      (data?.products ?? [])
+      (data?.items ?? [])
         .filter((p) => p.status !== "draft")
         .filter((p) => !query.trim() || `${p.name} ${p.sku} ${p.category}`.toLowerCase().includes(query.trim().toLowerCase())),
     [data, query]
   );
 
   if (loading) return <PageLoading />;
-  if (error || !data) return <ErrorNote message={error ?? "Could not load your products."} onRetry={reload} />;
+  if (error || !data) return <ErrorNote message={error ?? "Could not load your catalogue."} onRetry={reload} />;
 
   const subtotal = lines.reduce((s, l) => s + l.qty * l.price, 0);
   const discountNum = Math.max(0, Number(discount) || 0);
   const total = Math.max(0, Math.round((subtotal - discountNum) * 100) / 100);
 
-  const addLine = (p: Product, variantId?: string) => {
+  const addLine = (p: Sellable, variantId?: string) => {
     const variant = variantId ? p.variants?.find((v) => v.id === variantId) : undefined;
-    const max = p.kind === "service" ? 99 : variant ? variant.stock : p.stock;
+    const max = p.kind === "service" ? SERVICE_MAX : variant ? variant.stock : p.stock;
     if (max <= 0) return;
-    const key = lineKey(p.id, variantId);
+    const key = `${p.kind}:${lineKey(p.id, variantId)}`;
     setFormError(null);
     setLines((cur) => {
       const existing = cur.find((l) => l.key === key);
       if (existing) return cur.map((l) => (l.key === key ? { ...l, qty: Math.min(l.max, l.qty + 1) } : l));
       return [
         ...cur,
-        { key, productId: p.id, variantId, name: variant ? `${p.name} (${variant.name})` : p.name, qty: 1, price: variant?.price ?? p.price, max },
+        { key, kind: p.kind, productId: p.id, variantId, name: variant ? `${p.name} (${variant.name})` : p.name, qty: 1, price: variant?.price ?? p.price, max },
       ];
     });
     setOpen(null);
@@ -119,7 +146,7 @@ export default function RecordSalePage() {
       const order = await recordSale(bid, {
         customerId: customerMode === "existing" ? customerId : undefined,
         newCustomer: customerMode === "new" ? newCustomer : undefined,
-        items: lines.map((l) => ({ productId: l.productId, variantId: l.variantId, qty: l.qty, price: l.price })),
+        items: lines.map((l) => (l.kind === "service" ? { serviceId: l.productId, optionId: l.variantId, qty: l.qty, price: l.price } : { productId: l.productId, variantId: l.variantId, qty: l.qty, price: l.price })),
         channel,
         paymentMethod: method,
         paid,
@@ -170,12 +197,12 @@ export default function RecordSalePage() {
       <div className="grid gap-6 lg:grid-cols-5">
         {/* product picker */}
         <Card className="lg:col-span-3">
-          <CardHeader title="Pick products" subtitle="Tap a product to add it. Tap again to add one more." />
+          <CardHeader title="Pick products and services" subtitle="Tap an item to add it. Tap again to add one more." />
           <div className="p-5 sm:p-6">
             <input className={inputCls} placeholder="Search by name, SKU or category…" value={query} onChange={(e) => setQuery(e.target.value)} />
             {sellable.length === 0 ? (
               <p className="py-10 text-center text-theme-sm text-gray-500">
-                {data.products.length === 0 ? "You haven't added any products yet." : "No products match your search."}
+                {data.items.length === 0 ? "You haven't added any products or services yet." : "No products match your search."}
               </p>
             ) : (
               <ul className="mt-4 grid max-h-[560px] gap-2.5 overflow-y-auto sm:grid-cols-2">
@@ -183,7 +210,7 @@ export default function RecordSalePage() {
                   const hasVariants = !!p.variants?.length;
                   const isService = p.kind === "service";
                   const soldOut = !isService && p.stock <= 0;
-                  const inCart = lines.filter((l) => l.productId === p.id).reduce((n, l) => n + l.qty, 0);
+                  const inCart = lines.filter((l) => l.kind === p.kind && l.productId === p.id).reduce((n, l) => n + l.qty, 0);
                   return (
                     <li key={p.id} className="rounded-xl border border-gray-200 dark:border-gray-800">
                       <button

@@ -1,7 +1,6 @@
 "use client";
 import { useConfirm } from "@/components/ui/confirm";
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { useBizCurrency, useBizMoney } from "@/hooks/useBizMoney";
 import { useAuth } from "@/app/context/AuthContext";
 import { useAsync } from "@/hooks/useAsync";
@@ -14,7 +13,7 @@ import { Modal } from "@/components/ui/modal";
 import { fileToDataUrl } from "@/lib/image";
 import RowActions from "@/components/saas/RowActions";
 import { specSuggestions } from "@/lib/specPresets";
-import type { Product, ProductKind, ProductStatus, ProductVariant } from "@/types/saas";
+import type { Product, ProductStatus, ProductVariant } from "@/types/saas";
 
 type DraftVariant = { key: string; name: string; price: string; stock: string };
 let draftKey = 0;
@@ -32,17 +31,6 @@ export default function ProductsPage() {
   const currency = useBizCurrency();
   const bid = user!.businessId!;
   const { data, loading, error, reload } = useAsync(() => listProducts(bid), [bid]);
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  /** Catalogue tab: products (default) or services — driven by ?kind=service */
-  const viewKind: ProductKind = searchParams.get("kind") === "service" ? "service" : "product";
-  const setViewKind = (k: ProductKind) => {
-    const qs = new URLSearchParams(searchParams.toString());
-    if (k === "service") qs.set("kind", "service");
-    else qs.delete("kind");
-    const s = qs.toString();
-    router.replace(s ? `?${s}` : "?", { scroll: false });
-  };
   const [editing, setEditing] = useState<Product | "new" | null>(null);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -50,8 +38,6 @@ export default function ProductsPage() {
   const [images, setImages] = useState<string[]>([]);
   const [drafts, setDrafts] = useState<DraftVariant[]>([]);
   const [addingCat, setAddingCat] = useState(false);
-  const [kind, setKind] = useState<ProductKind>("product");
-  const [bookable, setBookable] = useState(false);
   const [specs, setSpecs] = useState<{ label: string; value: string }[]>([]);
   const { data: profile } = useAsync(() => getBusinessProfile(bid), [bid]);
   const { data: cats, reload: reloadCats } = useAsync(() => listCategories(bid), [bid]);
@@ -59,11 +45,9 @@ export default function ProductsPage() {
   if (loading) return <PageLoading />;
   if (error || !data) return <ErrorNote message={error ?? "Could not load products."} onRetry={reload} />;
 
-  const open = (p: Product | "new", startAs: ProductKind = "product") => {
+  const open = (p: Product | "new") => {
     setFormError(null);
     setAddingCat(false);
-    setKind(p !== "new" ? p.kind : startAs);
-    setBookable(p !== "new" ? !!p.bookable : false);
     setSpecs(p !== "new" ? (p.specs ?? []).map((s) => ({ ...s })) : []);
     setImages(p !== "new" ? (p.images?.length ? p.images : p.image ? [p.image] : []) : []);
     setDrafts(p !== "new" ? (p.variants ?? []).map(toDraft) : []);
@@ -93,13 +77,13 @@ export default function ProductsPage() {
     setDrafts((d) => d.map((v) => (v.key === key ? { ...v, ...patch } : v)));
 
   const remove = async (p: Product) => {
-    if (!(await confirm({ title: `Delete "${p.name}"?`, message: "This can't be undone.", confirmLabel: p.kind === "service" ? "Delete service" : "Delete product", tone: "danger" }))) return;
+    if (!(await confirm({ title: `Delete "${p.name}"?`, message: "This can't be undone.", confirmLabel: "Delete product", tone: "danger" }))) return;
     setRowError(null);
     try {
       await deleteProduct(bid, p.id);
       reload();
     } catch (e) {
-      setRowError(e instanceof Error ? e.message : `Could not delete ${p.kind === "service" ? "service" : "product"}.`);
+      setRowError(e instanceof Error ? e.message : "Could not delete product.");
     }
   };
 
@@ -114,9 +98,7 @@ export default function ProductsPage() {
       category: category,
       description: String(f.get("description")).trim(),
       price: Number(f.get("price")),
-      stock: kind === "service" ? 0 : Number(f.get("stock")),
-      kind,
-      ...(kind === "service" ? { durationMins: f.get("durationMins") ? Number(f.get("durationMins")) : null, bookable, ...(bookable ? { maxConcurrent: Number(f.get("maxConcurrent")) || 1 } : {}) } : { bookable: false }),
+      stock: Number(f.get("stock")),
       status: f.get("status") as ProductStatus,
       images,
       specs,
@@ -125,15 +107,14 @@ export default function ProductsPage() {
       input.variants = drafts.map((d) => ({
         id: d.key.startsWith("new") ? "" : d.key,
         name: d.name,
-        stock: kind === "service" ? 0 : Number(d.stock),
+        stock: Number(d.stock),
         ...(d.price.trim() !== "" ? { price: Number(d.price) } : {}),
       }));
-      input.stock = kind === "service" ? 0 : input.variants.reduce((sum, v) => sum + (Number.isFinite(v.stock) ? v.stock : 0), 0);
+      input.stock = input.variants.reduce((sum, v) => sum + (Number.isFinite(v.stock) ? v.stock : 0), 0);
     }
-    if (!input.name) return setFormError(kind === "service" ? "Service name is required." : "Product name is required.");
-    if (kind === "service" && bookable && !input.durationMins) return setFormError("Add how long the service takes so customers can pick a time.");
+    if (!input.name) return setFormError("Product name is required.");
     if (!(input.price >= 0)) return setFormError("Enter a valid price.");
-    if (kind === "product" && !drafts.length && (!Number.isInteger(input.stock) || input.stock < 0)) return setFormError("Stock must be a whole number, 0 or more.");
+    if (!drafts.length && (!Number.isInteger(input.stock) || input.stock < 0)) return setFormError("Stock must be a whole number, 0 or more.");
     setSaving(true);
     setFormError(null);
     try {
@@ -156,15 +137,11 @@ export default function ProductsPage() {
   };
 
   const p = editing && editing !== "new" ? editing : null;
-  const stocked = data.filter((x) => x.kind !== "service");
-  const services = data.filter((x) => x.kind === "service");
-  const rows = viewKind === "service" ? services : stocked;
-  const noun = viewKind === "service" ? "service" : "product";
-  const Noun = viewKind === "service" ? "Service" : "Product";
+  const stocked = data;
 
-  const cols: Column<Product>[] = [
+  const columns: Column<Product>[] = [
       {
-        key: "name", header: Noun, sortValue: (row) => row.name,
+        key: "name", header: "Product", sortValue: (row) => row.name,
         render: (row) => (
           <div className="flex items-center gap-3">
             {row.image ? (
@@ -176,9 +153,7 @@ export default function ProductsPage() {
             <div>
               <p className="font-medium text-gray-800 dark:text-white/90">{row.name}</p>
               <p className="text-theme-xs text-gray-500">
-                {row.kind === "service"
-                  ? (row.durationMins ? `${row.durationMins} min` : "Service")
-                  : row.sku}
+                {row.sku}
                 {row.variants?.length ? ` · ${row.variants.length} variants` : ""}
                 {(row.images?.length ?? 0) > 1 ? ` · ${row.images!.length} photos` : ""}
               </p>
@@ -187,19 +162,8 @@ export default function ProductsPage() {
         ),
       },
       { key: "price", header: "Price", sortValue: (row) => row.price, render: (row) => fmt(row.price) },
-    ];
-    if (viewKind === "product") {
-      cols.push({ key: "stock", header: "Stock", sortValue: (row) => row.stock, render: (row) => row.stock });
-    } else {
-      cols.push({
-        key: "duration",
-        header: "Duration",
-        sortValue: (row) => row.durationMins ?? 0,
-        render: (row) => (row.durationMins ? `${row.durationMins} min` : <span className="text-gray-400">—</span>),
-      });
-    }
-    cols.push(
-      { key: "sold", header: viewKind === "service" ? "Booked" : "Sold", sortValue: (row) => row.sold, render: (row) => row.sold },
+      { key: "stock", header: "Stock", sortValue: (row) => row.stock, render: (row) => row.stock },
+      { key: "sold", header: "Sold", sortValue: (row) => row.sold, render: (row) => row.sold },
       { key: "status", header: "Status", sortValue: (row) => row.status, render: (row) => <StatusBadge status={row.status} /> },
       {
         key: "actions", header: "", className: "text-right whitespace-nowrap",
@@ -213,107 +177,49 @@ export default function ProductsPage() {
           />
         ),
       },
-    );
-  const columns = cols;
+    ];
 
   return (
     <>
       <PageHeader
-        title={viewKind === "service" ? "Services" : "Products"}
-        subtitle={
-          viewKind === "service"
-            ? `${services.length} service${services.length === 1 ? "" : "s"} in your catalogue — no stock to track`
-            : `${stocked.length} product${stocked.length === 1 ? "" : "s"} in your catalogue`
-        }
-        action={<PrimaryButton onClick={() => open("new", viewKind)}>+ Add {noun}</PrimaryButton>}
+        title="Products"
+        subtitle={`${stocked.length} product${stocked.length === 1 ? "" : "s"} in your catalogue`}
+        action={<PrimaryButton onClick={() => open("new")}>+ Add product</PrimaryButton>}
       />
 
-      <div className="mb-6 inline-flex rounded-xl border border-gray-200 bg-white p-1 dark:border-gray-800 dark:bg-gray-900" role="tablist" aria-label="Catalogue type">
-        {([
-          ["product", "Products", stocked.length],
-          ["service", "Services", services.length],
-        ] as const).map(([k, label, count]) => {
-          const active = viewKind === k;
-          return (
-            <button
-              key={k}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              onClick={() => setViewKind(k)}
-              className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
-                active
-                  ? "bg-brand-500 text-white shadow-theme-xs"
-                  : "text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-white/5"
-              }`}
-            >
-              {label}
-              <span className={`ml-2 text-theme-xs ${active ? "text-white/80" : "text-gray-400"}`}>{count}</span>
-            </button>
-          );
-        })}
-      </div>
-
       <div className="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-4">
-        {viewKind === "product" ? (
-          <>
-            <StatCard label="Products" value={String(stocked.length)} hint={`${stocked.filter((x) => x.status === "draft").length} in draft`} />
-            <StatCard label="Active" value={String(stocked.filter((x) => x.status === "active").length)} hint="visible on your store" />
-            <StatCard
-              label="Low or out of stock"
-              value={String(stocked.filter((x) => x.status !== "draft" && x.stock <= 6).length)}
-              hint={`${stocked.filter((x) => x.status !== "draft" && x.stock === 0).length} out of stock`}
-            />
-            <StatCard label="Stock value" value={fmt(stocked.reduce((n, x) => n + x.price * x.stock, 0))} hint={`${stocked.reduce((n, x) => n + x.stock, 0)} units on hand`} />
-          </>
-        ) : (
-          <>
-            <StatCard label="Services" value={String(services.length)} hint={`${services.filter((x) => x.status === "draft").length} in draft`} />
-            <StatCard label="Active" value={String(services.filter((x) => x.status === "active").length)} hint="visible on your store" />
-            <StatCard label="With duration" value={String(services.filter((x) => x.durationMins).length)} hint="shown to shoppers" />
-            <StatCard label="Times sold" value={String(services.reduce((n, x) => n + x.sold, 0))} hint="across all services" />
-          </>
-        )}
+        <StatCard label="Products" value={String(stocked.length)} hint={`${stocked.filter((x) => x.status === "draft").length} in draft`} />
+        <StatCard label="Active" value={String(stocked.filter((x) => x.status === "active").length)} hint="visible on your store" />
+        <StatCard
+          label="Low or out of stock"
+          value={String(stocked.filter((x) => x.status !== "draft" && x.stock <= 6).length)}
+          hint={`${stocked.filter((x) => x.status !== "draft" && x.stock === 0).length} out of stock`}
+        />
+        <StatCard label="Stock value" value={fmt(stocked.reduce((n, x) => n + x.price * x.stock, 0))} hint={`${stocked.reduce((n, x) => n + x.stock, 0)} units on hand`} />
       </div>
       {rowError && <div className="mb-4"><ErrorNote message={rowError} /></div>}
       <DataTable
-        rows={rows}
+        rows={stocked}
         columns={columns}
         rowKey={(x) => x.id}
         searchText={(x) => `${x.name} ${x.sku} ${x.category}`}
-        searchPlaceholder={viewKind === "service" ? "Search services…" : "Search products or SKU…"}
+        searchPlaceholder="Search products or SKU…"
         filter={{
           label: "Show",
-          options: [
-            { label: "Active", value: "active" },
-            { label: "Draft", value: "draft" },
-            ...(viewKind === "product" ? [{ label: "Out of stock", value: "out_of_stock" }] : []),
-          ],
+          options: [{ label: "Active", value: "active" }, { label: "Draft", value: "draft" }, { label: "Out of stock", value: "out_of_stock" }],
           match: (x, v) => x.status === v,
         }}
-        emptyTitle={viewKind === "service" ? "No services yet" : "No products yet"}
-        emptyBody={
-          viewKind === "service"
-            ? "Add a service you offer — haircuts, repairs, classes, consultations, and more."
-            : "Add your first product to start selling."
-        }
+        emptyTitle="No products yet"
+        emptyBody="Add your first product to start selling."
       />
 
       <Modal isOpen={!!editing} onClose={() => setEditing(null)} className="max-w-[600px] p-6 sm:p-8 m-4 max-h-[92vh] overflow-y-auto">
         {editing && (
           <form onSubmit={submit} className="space-y-4" key={p?.id ?? "new"}>
-            <h3 className="text-xl font-semibold text-gray-800 dark:text-white/90">{p ? `Edit ${kind}` : `Add ${kind}`}</h3>
-            <div className="inline-flex rounded-lg bg-gray-100 p-1 dark:bg-gray-800" role="tablist" aria-label="What are you selling?">
-              {(["product", "service"] as const).map((k) => (
-                <button key={k} type="button" role="tab" aria-selected={kind === k} onClick={() => setKind(k)}
-                  className={`rounded-md px-3 py-1.5 text-theme-sm font-medium transition ${kind === k ? "bg-white text-gray-800 shadow-theme-xs dark:bg-gray-900 dark:text-white/90" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}`}>
-                  {k === "product" ? "Product" : "Service"}
-                </button>
-              ))}
-            </div>
-            <Field label="Name"><input name="name" defaultValue={p?.name} className={inputCls} placeholder={kind === "service" ? "e.g. Braiding session" : "e.g. Adire Wrap Dress"} /></Field>
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-white/90">{p ? "Edit product" : "Add product"}</h3>
+            <Field label="Name"><input name="name" defaultValue={p?.name} className={inputCls} placeholder="e.g. Adire Wrap Dress" /></Field>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {kind === "product" && <Field label="SKU"><input name="sku" defaultValue={p?.sku} className={inputCls} /></Field>}
+              <Field label="SKU"><input name="sku" defaultValue={p?.sku} className={inputCls} /></Field>
               <Field label="Category">
                 <div className="space-y-2">
                   <select
@@ -331,37 +237,14 @@ export default function ProductsPage() {
                 </div>
               </Field>
               <Field label={`Price (${currency})`}><input name="price" type="number" step="0.01" min="0" defaultValue={p?.price ?? ""} className={inputCls} /></Field>
-              {kind === "service" ? (
-                <Field label="Duration (minutes, optional)"><input name="durationMins" type="number" min="1" max="1440" defaultValue={p?.durationMins ?? ""} className={inputCls} placeholder="e.g. 60" /></Field>
-              ) : (
-                <Field label={drafts.length ? "Stock (total of variants)" : "Stock"}>
+              <Field label={drafts.length ? "Stock (total of variants)" : "Stock"}>
                   {drafts.length ? (
                     <input aria-label="Total stock" readOnly value={drafts.reduce((sum, v) => sum + (Number(v.stock) || 0), 0)} className={inputCls} />
                   ) : (
                     <input name="stock" type="number" min="0" defaultValue={p?.stock ?? 0} className={inputCls} />
                   )}
-                </Field>
-              )}
+              </Field>
             </div>
-            {kind === "service" && (
-              <div className="rounded-xl border border-gray-200 p-4 dark:border-gray-800">
-                <label className="flex items-start gap-3 text-sm text-gray-700 dark:text-gray-300">
-                  <input type="checkbox" checked={bookable} onChange={(e) => setBookable(e.target.checked)} className="mt-1" />
-                  <span>
-                    <span className="font-medium">Customers book a time slot</span>
-                    <span className="block text-theme-xs text-gray-500">They pick a day and time from your opening hours instead of adding it to a cart. Needs a duration.</span>
-                  </span>
-                </label>
-                {bookable && (
-                  <div className="mt-3 max-w-[220px]">
-                    <Field label="At the same time">
-                      <input name="maxConcurrent" type="number" min="1" max="50" defaultValue={p?.maxConcurrent ?? 1} className={inputCls} />
-                    </Field>
-                    <p className="mt-1 text-theme-xs text-gray-500">How many customers you can serve at once (staff or chairs).</p>
-                  </div>
-                )}
-              </div>
-            )}
             <Field label="Status">
               <select name="status" defaultValue={p?.status === "out_of_stock" ? "active" : p?.status ?? "active"} className={inputCls}>
                 <option value="active">Active</option>
@@ -397,22 +280,22 @@ export default function ProductsPage() {
             </div>
             <div>
               <div className="mb-1.5 flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-400">{kind === "service" ? "Options" : "Variants"} <span className="font-normal text-gray-400">({kind === "service" ? "basic, premium…" : "size, colour…"})</span></span>
-                <button type="button" onClick={() => setDrafts((d) => [...d, toDraft()])} className="text-sm font-medium text-brand-500 hover:text-brand-600">{kind === "service" ? "+ Add option" : "+ Add variant"}</button>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-400">Variants <span className="font-normal text-gray-400">(size, colour…)</span></span>
+                <button type="button" onClick={() => setDrafts((d) => [...d, toDraft()])} className="text-sm font-medium text-brand-500 hover:text-brand-600">+ Add variant</button>
               </div>
               {drafts.length === 0 ? (
-                <p className="text-theme-xs text-gray-500">{kind === "service" ? "No options. Add some if customers choose between packages, like Basic or Premium." : "No variants. Add some if shoppers need to pick an option, like a size."}</p>
+                <p className="text-theme-xs text-gray-500">No variants. Add some if shoppers need to pick an option, like a size.</p>
               ) : (
                 <ul className="space-y-2">
                   {drafts.map((v) => (
-                    <li key={v.key} className={`grid ${kind === "service" ? "grid-cols-[1fr_88px_auto]" : "grid-cols-[1fr_88px_72px_auto]"} items-center gap-2`}>
+                    <li key={v.key} className="grid grid-cols-[1fr_88px_72px_auto] items-center gap-2">
                       <input aria-label="Variant name" placeholder="e.g. Large / Red" value={v.name} onChange={(e) => setDraft(v.key, { name: e.target.value })} className={inputCls} />
                       <input aria-label="Variant price" type="number" min="0" step="0.01" placeholder="Price" value={v.price} onChange={(e) => setDraft(v.key, { price: e.target.value })} className={inputCls} />
-                      {kind === "product" && <input aria-label="Variant stock" type="number" min="0" value={v.stock} onChange={(e) => setDraft(v.key, { stock: e.target.value })} className={inputCls} />}
+                      <input aria-label="Variant stock" type="number" min="0" value={v.stock} onChange={(e) => setDraft(v.key, { stock: e.target.value })} className={inputCls} />
                       <button type="button" aria-label="Remove variant" onClick={() => setDrafts((d) => d.filter((x) => x.key !== v.key))} className="px-1 text-error-600">✕</button>
                     </li>
                   ))}
-                  <li className="text-theme-xs text-gray-500">Leave price empty to use the {kind === "service" ? "service" : "product"} price.</li>
+                  <li className="text-theme-xs text-gray-500">Leave price empty to use the product price.</li>
                 </ul>
               )}
             </div>
@@ -464,7 +347,7 @@ export default function ProductsPage() {
             {formError && <ErrorNote message={formError} />}
             <div className="flex justify-end gap-3 pt-2">
               <OutlineButton type="button" onClick={() => setEditing(null)}>Cancel</OutlineButton>
-              <PrimaryButton busy={saving}>{p ? "Save changes" : `Add ${kind}`}</PrimaryButton>
+              <PrimaryButton busy={saving}>{p ? "Save changes" : "Add product"}</PrimaryButton>
             </div>
           </form>
         )}

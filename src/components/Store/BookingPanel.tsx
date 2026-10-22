@@ -52,7 +52,7 @@ export default function BookingPanel({ product, variantId, price }: { product: P
     setError(null);
     try {
       const b = await bookService({
-        slug: ctx.store!.slug, productId: String(product.id), variantId, startsAt: slot,
+        slug: ctx.store!.slug, serviceId: String(product.id), optionId: variantId, startsAt: slot,
         customer: { name: form.name, email: form.email, phone: form.phone }, notes: form.notes,
       });
       router.push(href(`/booking/${b.publicToken}`));

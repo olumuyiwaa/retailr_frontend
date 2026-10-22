@@ -101,7 +101,11 @@ export default function StoreCheckout() {
         notes: f.notes,
         paymentMethod: payment,
         couponCode: coupon?.code,
-        items: items.map((i) => ({ productId: i.productId ?? i.id, variantId: i.variantId, qty: i.quantity })),
+        items: items.map((i) =>
+          i.kind === "service"
+            ? { serviceId: String(i.productId ?? i.id), optionId: i.variantId, qty: i.quantity }
+            : { productId: i.productId ?? i.id, variantId: i.variantId, qty: i.quantity },
+        ),
       });
       track(store.id, { type: "order" }); // lets site analytics count this visit as one that ordered
       dispatch(removeAllItemsFromCart());

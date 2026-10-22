@@ -73,7 +73,7 @@ export const navFor = (role: Role, teamRole?: TeamRole): NavSection[] => {
           items: [
             { name: "Dashboard", path: "/admin/business", icon: GridIcon },
             { name: "Products", path: "/admin/business/products", icon: BoxIcon },
-            { name: "Services", path: "/admin/business/products?kind=service", icon: TaskIcon },
+            { name: "Services", path: "/admin/business/services", icon: TaskIcon },
             { name: "Categories", path: "/admin/business/categories", icon: BoxIcon },
             { name: "Record sale", path: "/admin/business/sales/new", icon: DollarLineIcon },
             { name: "Orders", path: "/admin/business/orders", icon: PieChartIcon },

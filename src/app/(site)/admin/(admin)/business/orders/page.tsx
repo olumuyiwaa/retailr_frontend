@@ -108,7 +108,7 @@ export default function OrdersPage() {
             </div>
             <ul className="divide-y divide-gray-100 rounded-xl border border-gray-200 dark:divide-gray-800 dark:border-gray-800">
               {selected.items.map((i) => (
-                <li key={`${i.productId}-${i.variantId ?? ""}`} className="flex justify-between px-4 py-3 text-theme-sm">
+                <li key={`${i.productId || i.serviceId}-${i.variantId ?? i.optionId ?? ""}`} className="flex justify-between px-4 py-3 text-theme-sm">
                   <span className="text-gray-800 dark:text-white/90">{i.qty} × {i.name}</span>
                   <span className="text-gray-600 dark:text-gray-400">{fmt(i.qty * i.price)}</span>
                 </li>

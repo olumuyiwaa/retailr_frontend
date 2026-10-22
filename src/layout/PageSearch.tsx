@@ -48,8 +48,8 @@ export default function PageSearch({ inputRef }: { inputRef: React.RefObject<HTM
     return [
       ...found.orders.map((o) => ({ key: `o:${o.id}`, group: "Orders", label: `${o.number} · ${o.customerName}`, hint: `${fmt(o.total)} · ${o.status}`, path: to("orders") })),
       ...found.customers.map((c) => ({ key: `c:${c.id}`, group: "Customers", label: c.name, hint: c.email || c.phone || c.city || undefined, path: to("customers") })),
-      ...found.products.filter((p) => p.kind !== "service").map((p) => ({ key: `p:${p.id}`, group: "Products", label: p.name, hint: fmt(p.price), path: to("products") })),
-      ...found.products.filter((p) => p.kind === "service").map((p) => ({ key: `s:${p.id}`, group: "Services", label: p.name, hint: `${p.durationMins ? `${p.durationMins} min · ` : ""}${fmt(p.price)}`, path: `${ADMIN}/products?kind=service&q=${encodeURIComponent(term)}` })),
+      ...found.products.map((p) => ({ key: `p:${p.id}`, group: "Products", label: p.name, hint: fmt(p.price), path: to("products") })),
+      ...found.services.map((p) => ({ key: `s:${p.id}`, group: "Services", label: p.name, hint: `${p.durationMins ? `${p.durationMins} min · ` : ""}${fmt(p.price)}`, path: to("services") })),
       ...pageHits,
     ];
   }, [found, pages, lower, term, fmt]);

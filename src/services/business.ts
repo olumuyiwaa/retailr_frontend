@@ -3,7 +3,7 @@
 import type {
   Booking, BookingSettings, BookingStatus,
   Audience, Business, BusinessOverview, BusinessUsage, Category, Coupon, Customer, CustomerGroup, GroupRuleType, Invoice, Message,
-  MessageChannel, Order, OrderStatus, PaymentMethod, Plan, Product, SalesChannel, Subscription, TeamMember, TimeSeriesPoint,
+  MessageChannel, Order, OrderStatus, PaymentMethod, Plan, Product, SalesChannel, Service, Subscription, TeamMember, TimeSeriesPoint,
 } from "@/types/saas";
 import { api, listAll } from "@/lib/api";
 import { uploadImage, uploadImages } from "@/lib/upload";
@@ -16,7 +16,7 @@ export const getBusinessOverview = (_b: string) => api.get<BusinessOverview>("/b
 
 export const listProducts = (_b: string) => listAll<Product>("/business/products");
 
-export type CategoryWithCount = Category & { productCount: number };
+export type CategoryWithCount = Category & { productCount: number; serviceCount: number };
 export const listCategories = (_b: string) => api.get<CategoryWithCount[]>("/business/categories");
 export async function createCategory(_b: string, rawName: string, image?: string): Promise<Category> {
   return api.post<Category>("/business/categories", { name: rawName.trim(), ...(image ? { image: await uploadImage(image, "category") } : {}) });
@@ -31,11 +31,6 @@ export const MAX_PRODUCT_IMAGES = 6;
 export const MAX_PRODUCT_SPECS = 10;
 
 export type ProductInput = Pick<Product, "name" | "sku" | "category" | "description" | "price" | "stock" | "status"> & {
-  kind?: Product["kind"];
-  bookable?: boolean;
-  maxConcurrent?: number;
-  /** Minutes a service takes; null clears it. */
-  durationMins?: number | null;
   /** Photos (picked files as data URLs, or already-uploaded URLs), cover first. Omit to leave unchanged; [] removes all. */
   images?: string[];
   variants?: Product["variants"];
@@ -48,10 +43,32 @@ export async function saveProduct(_b: string, input: ProductInput, id?: string):
   const body = { ...rest, ...(images ? { images: await uploadImages(images, "product") } : {}) };
   return id ? api.put<Product>(`/business/products/${id}`, body) : api.post<Product>("/business/products", body);
 }
-export type SearchResults = { q: string; orders: Order[]; customers: Customer[]; products: Product[] };
-/** One search over orders, customers and products/services (needs 2+ characters). */
+export type SearchResults = { q: string; orders: Order[]; customers: Customer[]; products: Product[]; services: Service[] };
+/** One search over orders, customers, products and services (needs 2+ characters). */
 export const searchAll = (q: string) => api.get<SearchResults>(`/business/search?q=${encodeURIComponent(q)}`);
 export const deleteProduct = (_b: string, id: string) => api.del(`/business/products/${id}`);
+
+// ---------- services ----------
+
+export const listServices = (_b: string) => listAll<Service>("/business/services");
+
+export type ServiceInput = Pick<Service, "name" | "category" | "description" | "price" | "status"> & {
+  bookable?: boolean;
+  maxConcurrent?: number;
+  /** Minutes the service takes; null clears it. */
+  durationMins?: number | null;
+  /** Photos (picked files as data URLs, or already-uploaded URLs), cover first. Omit to leave unchanged; [] removes all. */
+  images?: string[];
+  options?: { id?: string; name: string; price?: number }[];
+  specs?: Service["specs"];
+};
+
+export async function saveService(_b: string, input: ServiceInput, id?: string): Promise<Service> {
+  const { images, ...rest } = input;
+  const body = { ...rest, ...(images ? { images: await uploadImages(images, "product") } : {}) };
+  return id ? api.put<Service>(`/business/services/${id}`, body) : api.post<Service>("/business/services", body);
+}
+export const deleteService = (_b: string, id: string) => api.del(`/business/services/${id}`);
 
 // ---------- orders & customers ----------
 
@@ -62,7 +79,8 @@ export interface RecordSaleInput {
   /** Existing customer id, or omit for a walk-in / new customer. */
   customerId?: string;
   newCustomer?: { name: string; phone?: string; email?: string };
-  items: { productId: string; variantId?: string; qty: number; price?: number }[];
+  /** Each line is a product (productId, variantId) or a service (serviceId, optionId). */
+  items: { productId?: string; variantId?: string; serviceId?: string; optionId?: string; qty: number; price?: number }[];
   channel: SalesChannel;
   paymentMethod: PaymentMethod;
   /** false = the customer still owes the money */
@@ -232,7 +250,7 @@ export const listBookings = (q: { status?: BookingStatus; from?: string; to?: st
   return api.get<Booking[]>(`/business/bookings${p.size ? `?${p}` : ""}`);
 };
 export const setBookingStatus = (id: string, status: Exclude<BookingStatus, "pending">) => api.patch<Booking>(`/business/bookings/${id}/status`, { status });
-export const createBooking = (b: { productId: string; variantId?: string; startsAt: string; customer: { name: string; email?: string; phone?: string }; notes?: string }) =>
+export const createBooking = (b: { serviceId: string; optionId?: string; startsAt: string; customer: { name: string; email?: string; phone?: string }; notes?: string }) =>
   api.post<Booking>("/business/bookings", b);
 export const getBookingSettings = () => api.get<BookingSettings>("/business/booking-settings");
 export const saveBookingSettings = (s: Pick<BookingSettings, "timezone" | "hours" | "noticeHours" | "autoConfirm">) => api.put<BookingSettings>("/business/booking-settings", s);

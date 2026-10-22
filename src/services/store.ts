@@ -1,5 +1,5 @@
 // Public storefront services: what a shopper at /s/[slug] can do. All of them are open to anyone, so they send no session.
-import type { Booking, BookingSlots, Order, OrderItem, PaymentMethod, Product, PublicStore } from "@/types/saas";
+import type { Booking, BookingSlots, Order, OrderItem, PaymentMethod, Product, PublicStore, Service } from "@/types/saas";
 import { ApiError, api } from "@/lib/api";
 
 export const STORE_UNAVAILABLE = "STORE_UNAVAILABLE";
@@ -17,6 +17,9 @@ export async function getStoreBySlug(slug: string): Promise<PublicStore> {
 /** Draft products are hidden; sold-out products stay visible but can't be bought. */
 export const listStoreProducts = (slug: string) => api.get<Product[]>(`/store/${encodeURIComponent(slug)}/products`, undefined, { auth: false });
 
+/** Draft services are hidden. */
+export const listStoreServices = (slug: string) => api.get<Service[]>(`/store/${encodeURIComponent(slug)}/services`, undefined, { auth: false });
+
 /** The business's own categories that currently have something on sale, alphabetically, with their pictures. */
 export const listStoreCategories = (slug: string) => api.get<{ name: string; image?: string }[]>(`/store/${encodeURIComponent(slug)}/categories`, undefined, { auth: false });
 
@@ -31,12 +34,13 @@ export interface PlaceOrderInput {
   notes?: string;
   paymentMethod: PaymentMethod;
   couponCode?: string;
-  items: { productId: string | number; variantId?: string; qty: number }[];
+  /** Each line is a product (productId, variantId) or a service (serviceId, optionId). */
+  items: { productId?: string | number; variantId?: string; serviceId?: string; optionId?: string; qty: number }[];
 }
 
 /** Places the order. `publicToken` is what the confirmation page uses to find it again. */
 export async function placeOrder({ slug, ...body }: PlaceOrderInput): Promise<Order & { publicToken: string }> {
-  const items = body.items.map((i) => ({ ...i, productId: String(i.productId) }));
+  const items = body.items.map((i) => ({ ...i, ...(i.productId !== undefined ? { productId: String(i.productId) } : {}) }));
   return api.post(`/store/${encodeURIComponent(slug)}/orders`, { ...body, notes: body.notes?.trim() || undefined, couponCode: body.couponCode || undefined, items }, { auth: false });
 }
 
@@ -49,13 +53,13 @@ export async function getOrderForConfirmation(token: string): Promise<Order & { 
 // ---------- bookings ----------
 
 /** Free start times for a bookable service on one day (YYYY-MM-DD), already in the business's time zone. */
-export const getSlots = (slug: string, productId: string, date: string) =>
-  api.get<BookingSlots>(`/store/${encodeURIComponent(slug)}/services/${encodeURIComponent(productId)}/slots`, { date }, { auth: false });
+export const getSlots = (slug: string, serviceId: string, date: string) =>
+  api.get<BookingSlots>(`/store/${encodeURIComponent(slug)}/services/${encodeURIComponent(serviceId)}/slots`, { date }, { auth: false });
 
 export interface BookInput {
   slug: string;
-  productId: string;
-  variantId?: string;
+  serviceId: string;
+  optionId?: string;
   startsAt: string;
   customer: { name: string; email: string; phone: string };
   notes?: string;

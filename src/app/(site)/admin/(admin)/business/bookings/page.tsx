@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { useBizMoney } from "@/hooks/useBizMoney";
 import { useAsync } from "@/hooks/useAsync";
 import { useAuth } from "@/app/context/AuthContext";
-import { getBookingSettings, listBookings, listProducts, saveBookingSettings, setBookingStatus } from "@/services/business";
+import { getBookingSettings, listBookings, listServices, saveBookingSettings, setBookingStatus } from "@/services/business";
 import { Card, CardHeader, ErrorNote, PageHeader, PageLoading, StatCard } from "@/components/saas/Card";
 import DataTable, { type Column } from "@/components/saas/DataTable";
 import RowActions from "@/components/saas/RowActions";
@@ -32,7 +32,7 @@ export default function BookingsPage() {
   const since = useMemo(() => new Date(Date.now() - 30 * 86_400_000).toISOString(), []);
   const { data, loading, error, reload } = useAsync(() => listBookings({ from: since }), [since]);
   const { data: settings, reload: reloadSettings } = useAsync(() => getBookingSettings(), []);
-  const { data: products } = useAsync(() => listProducts(bid), [bid]);
+  const { data: services } = useAsync(() => listServices(bid), [bid]);
   const [rowError, setRowError] = useState<string | null>(null);
   const [adding, setAdding] = useState<{ date?: string; time?: string } | null>(null);
   const [view, setView] = useState<"calendar" | "list">("calendar");
@@ -51,7 +51,7 @@ export default function BookingsPage() {
   const upcoming = data.filter((b) => isOpen(b) && new Date(b.endsAt).getTime() > now);
   const pending = data.filter((b) => b.status === "pending");
   const today = data.filter((b) => isOpen(b) && new Date(b.startsAt).toDateString() === new Date().toDateString());
-  const bookable = (products ?? []).filter((p) => p.kind === "service" && p.bookable && p.status !== "draft");
+  const bookable = (services ?? []).filter((p) => p.bookable && p.status !== "draft");
 
   const columns: Column<Booking>[] = [
     { key: "when", header: "When", sortValue: (b) => b.startsAt, render: (b) => <span className="font-medium text-gray-800 dark:text-white/90">{formatShort(b.startsAt, b.timezone)}</span> },
@@ -88,7 +88,7 @@ export default function BookingsPage() {
         <StatCard label="To confirm" value={String(pending.length)} hint={settings?.autoConfirm === false ? "waiting for you" : "none needed (auto-confirm is on)"} />
       </div>
       {bookable.length === 0 && (
-        <div className="mb-6"><ErrorNote message="No bookable services yet. Add a service on the Products page and switch on “Customers book a time slot”." /></div>
+        <div className="mb-6"><ErrorNote message="No bookable services yet. Add a service on the Services page and switch on “Customers book a time slot”." /></div>
       )}
       <div className="mb-4 inline-flex rounded-lg bg-gray-100 p-1 dark:bg-gray-800" role="tablist" aria-label="Bookings view">
         {(["calendar", "list"] as const).map((v) => (

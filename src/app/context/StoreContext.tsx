@@ -1,9 +1,9 @@
 "use client";
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
-import type { Product as StoreProductRow, PublicStore } from "@/types/saas";
+import type { Product as StoreProductRow, PublicStore, Service as StoreServiceRow } from "@/types/saas";
 import type { Product } from "@/types/product";
-import { getStoreBySlug, listStoreCategories, listStoreProducts, STORE_UNAVAILABLE } from "@/services/store";
+import { getStoreBySlug, listStoreCategories, listStoreProducts, listStoreServices, STORE_UNAVAILABLE } from "@/services/store";
 import { syncCartToStore } from "@/redux/features/cart-slice";
 import type { AppDispatch } from "@/redux/store";
 import { storePalette } from "@/lib/storeTheme";
@@ -51,21 +51,45 @@ export const toTemplateProduct = (p: StoreProductRow): Product => ({
   category: p.category,
   description: p.description,
   // a service has no stock: leaving it undefined means "always available" everywhere the storefront checks
-  stock: p.kind === "service" ? undefined : p.status === "out_of_stock" ? 0 : p.stock,
-  kind: p.kind,
-  durationMins: p.durationMins,
-  bookable: p.bookable,
+  stock: p.status === "out_of_stock" ? 0 : p.stock,
+  kind: "product",
   color: p.imageColor,
   imgs: (() => {
     const all = p.images?.length ? p.images : p.image ? [p.image] : [];
     return all.length ? { thumbnails: all, previews: all } : undefined;
   })(),
-  // a service's options never run out
-  variants: p.variants?.length ? p.variants.map((v) => ({ ...v, stock: p.kind === "service" ? SERVICE_OPTION_STOCK : v.stock })) : undefined,
+  variants: p.variants?.length ? p.variants.map((v) => ({ ...v })) : undefined,
   sku: p.sku,
   specs: p.specs?.length ? p.specs.map((s) => ({ ...s })) : undefined,
   createdAt: p.createdAt,
   sold: p.sold,
+});
+
+// A service is shown beside products in the storefront, so it is mapped to the same view model (kind: "service").
+export const toTemplateService = (s: StoreServiceRow): Product => ({
+  id: s.id,
+  title: s.name,
+  reviews: 0,
+  price: s.price,
+  discountedPrice: s.price,
+  storeId: s.businessId,
+  category: s.category,
+  description: s.description,
+  // no stock to run out: undefined means "always available" everywhere the storefront checks
+  stock: undefined,
+  kind: "service",
+  durationMins: s.durationMins,
+  bookable: s.bookable,
+  color: s.imageColor,
+  imgs: (() => {
+    const all = s.images?.length ? s.images : s.image ? [s.image] : [];
+    return all.length ? { thumbnails: all, previews: all } : undefined;
+  })(),
+  // an option's "stock" is a ceiling so quantity pickers stay finite
+  variants: s.options?.length ? s.options.map((o) => ({ ...o, stock: SERVICE_OPTION_STOCK })) : undefined,
+  specs: s.specs?.length ? s.specs.map((x) => ({ ...x })) : undefined,
+  createdAt: s.createdAt,
+  sold: s.sold,
 });
 
 export function StoreProvider({ slug, children }: { slug?: string; children: React.ReactNode }) {
@@ -83,10 +107,10 @@ export function StoreProvider({ slug, children }: { slug?: string; children: Rea
     (async () => {
       try {
         const s = await getStoreBySlug(slug);
-        const [rows, cats] = await Promise.all([listStoreProducts(slug), listStoreCategories(slug)]);
+        const [rows, svcs, cats] = await Promise.all([listStoreProducts(slug), listStoreServices(slug), listStoreCategories(slug)]);
         if (cancelled) return;
         setStore(s);
-        setProducts(rows.map(toTemplateProduct));
+        setProducts([...rows.map(toTemplateProduct), ...svcs.map(toTemplateService)].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))));
         setCategoryList(cats);
         setStatus("ready");
         dispatch(syncCartToStore(s.id));
