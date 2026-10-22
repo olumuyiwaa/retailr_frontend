@@ -52,9 +52,9 @@ export default function ReportsPage() {
         <div className="space-y-6">
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <StatCard label="Sales" value={fmt(data.revenue)} change={data.revenueChangePct} hint="vs the previous period" />
-            <StatCard label="Paid orders" value={String(data.orders)} change={data.ordersChangePct} hint={`${data.itemsSold} items sold`} />
-            <StatCard label="Average order" value={fmt(data.avgOrderValue)} hint="Per paid order" />
-            <StatCard label="Still owed to you" value={fmt(data.outstanding)} hint={`${data.newCustomers} new customers in this period`} />
+            <StatCard label="Expenses" value={fmt(data.expenses ?? 0)} hint="In this period" />
+            <StatCard label="Profit" value={fmt(data.profit ?? data.revenue)} hint="Sales minus expenses" />
+            <StatCard label="Still owed to you" value={fmt(data.outstanding)} hint={`${data.orders} paid orders · ${data.newCustomers} new customers`} />
           </div>
 
           <Card>

@@ -26,6 +26,7 @@ export interface PlanLimits {
   staff: number;
   ordersPerMonth: number;
   storageGb: number;
+  smsPerMonth: number;
 }
 
 export interface Plan {
@@ -510,4 +511,23 @@ export interface BookingSlots {
   timezone: string;
   durationMins: number;
   slots: { startsAt: string; label: string }[];
+}
+
+
+export type ExpenseCategory = "rent" | "utilities" | "supplies" | "marketing" | "salaries" | "transport" | "other";
+
+export interface Expense {
+  id: string;
+  businessId: string;
+  amount: number;
+  category: ExpenseCategory;
+  note: string;
+  spentAt: string;
+  createdAt: string;
+}
+
+export interface SmsCredits {
+  used: number;
+  limit: number;
+  remaining: number;
 }

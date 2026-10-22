@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import { useAsync } from "@/hooks/useAsync";
-import { countRecipients, getBusinessProfile, listGroups, listMessages, sendMessage } from "@/services/business";
+import { countRecipients, getBusinessProfile, getSmsCredits, listGroups, listMessages, sendMessage } from "@/services/business";
 import { Card, CardHeader, EmptyState, ErrorNote, PageHeader, PageLoading } from "@/components/saas/Card";
 import { Field, inputCls, PrimaryButton } from "@/components/saas/Form";
 import { relativeTime } from "@/lib/format";
@@ -19,6 +19,7 @@ export default function MessagesPage() {
   const { user } = useAuth();
   const bid = user!.businessId!;
   const params = useSearchParams();
+  const credits = useAsync(() => getSmsCredits(bid), [bid]);
   const { data, loading, error, reload } = useAsync(async () => {
     const [groups, messages] = await Promise.all([listGroups(bid), listMessages(bid)]);
     return { groups, messages };
@@ -96,6 +97,14 @@ export default function MessagesPage() {
               <p className="-mt-2 text-theme-xs text-gray-500" aria-live="polite">
                 Will reach <strong className="text-gray-700 dark:text-gray-300">{reach.count}</strong> {reach.count === 1 ? "customer" : "customers"}
                 {reach.skipped > 0 && ` (${reach.skipped} skipped: no ${channel === "email" ? "email address" : "phone number"})`}.
+              </p>
+            )}
+            {channel === "sms" && credits.data && (
+              <p className="-mt-2 text-theme-xs text-gray-500">
+                SMS credits this month:{" "}
+                <strong className="text-gray-700 dark:text-gray-300">
+                  {credits.data.limit === -1 ? `${credits.data.used} used (unlimited)` : `${credits.data.used} / ${credits.data.limit} (${credits.data.remaining} left)`}
+                </strong>
               </p>
             )}
             {channel === "email" && (

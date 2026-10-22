@@ -263,3 +263,11 @@ export type CreatedCalendarFeed = CalendarFeed & { url: string; webcalUrl: strin
 export const listCalendarFeeds = () => api.get<CalendarFeed[]>("/business/calendar/feeds");
 export const createCalendarFeed = (label?: string) => api.post<CreatedCalendarFeed>("/business/calendar/feeds", label ? { label } : {});
 export const revokeCalendarFeed = (id: string) => api.del(`/business/calendar/feeds/${id}`);
+
+export const getSmsCredits = (_b: string) => api.get<import("@/types/saas").SmsCredits>("/business/messages/sms-credits");
+export const listExpenses = (_b: string, query?: { from?: string; to?: string }) =>
+  api.get<import("@/types/saas").Expense[]>("/business/expenses", query);
+export const createExpense = (_b: string, body: { amount: number; category: string; note?: string; spentAt: string }) =>
+  api.post<import("@/types/saas").Expense>("/business/expenses", body);
+export const deleteExpense = (_b: string, id: string) => api.del(`/business/expenses/${id}`);
+
