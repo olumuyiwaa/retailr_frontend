@@ -43,6 +43,7 @@ export default function PlansPage() {
         staff: num(f.get("staff")),
         ordersPerMonth: num(f.get("orders")),
         storageGb: num(f.get("storage")),
+        smsPerMonth: num(f.get("sms")),
       },
       features: String(f.get("features")).split("\n").map((s) => s.trim()).filter(Boolean),
       themes: ["classic", ...f.getAll("themes").map(String).filter((t) => t !== "classic")],
@@ -108,6 +109,8 @@ export default function PlansPage() {
               <Field label="Team member limit"><input name="staff" type="number" min="-1" defaultValue={editing.limits.staff} className={inputCls} /></Field>
               <Field label="Orders / month limit"><input name="orders" type="number" min="-1" defaultValue={editing.limits.ordersPerMonth} className={inputCls} /></Field>
               <Field label="Storage (GB)"><input name="storage" type="number" min="0" defaultValue={editing.limits.storageGb} className={inputCls} /></Field>
+              <Field label="SMS / month limit"><input name="sms" type="number" min="-1" defaultValue={editing.limits.smsPerMonth ?? 50} className={inputCls}/>
+              </Field>
             </div>
             <Field label="Description"><input name="description" defaultValue={editing.description} className={inputCls} /></Field>
             <Field label="Features" hint="One per line">
