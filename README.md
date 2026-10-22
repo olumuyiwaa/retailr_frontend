@@ -112,6 +112,7 @@ UI code never calls `fetch` directly. It calls typed async functions in `src/ser
 - [ ] Delivery fees, zones and courier integrations
 - [x] Password reset and email verification
 - [x] Bookable services with opening hours and appointment slots (customers pay on arrival)
+- [x] Bookings calendar (month, week, day; click a time to book someone in) and a private link to sync bookings to Google, Apple or Outlook calendar
 - [ ] Take payment or a deposit when booking
 - [ ] Subdomain routing and custom domains
 - [x] NestJS + Prisma backend (the retailr repo)

@@ -226,9 +226,9 @@ export const sendMessage = (_b: string, input: MessageInput) => api.post<Message
 
 // ---------- bookings ----------
 
-export const listBookings = (q: { status?: BookingStatus; from?: string; to?: string; q?: string } = {}) => {
+export const listBookings = (q: { status?: BookingStatus; from?: string; to?: string; q?: string; limit?: number } = {}) => {
   const p = new URLSearchParams();
-  for (const [k, v] of Object.entries(q)) if (v) p.set(k, v);
+  for (const [k, v] of Object.entries(q)) if (v) p.set(k, String(v));
   return api.get<Booking[]>(`/business/bookings${p.size ? `?${p}` : ""}`);
 };
 export const setBookingStatus = (id: string, status: Exclude<BookingStatus, "pending">) => api.patch<Booking>(`/business/bookings/${id}/status`, { status });
@@ -236,3 +236,12 @@ export const createBooking = (b: { productId: string; variantId?: string; starts
   api.post<Booking>("/business/bookings", b);
 export const getBookingSettings = () => api.get<BookingSettings>("/business/booking-settings");
 export const saveBookingSettings = (s: Pick<BookingSettings, "timezone" | "hours" | "noticeHours" | "autoConfirm">) => api.put<BookingSettings>("/business/booking-settings", s);
+
+// ---------- calendar subscription links (iCalendar) ----------
+
+export interface CalendarFeed { id: string; label: string | null; createdAt: string; lastAccessedAt: string | null }
+/** Returned once, when the link is made. The secret can't be shown again, only revoked. */
+export type CreatedCalendarFeed = CalendarFeed & { url: string; webcalUrl: string };
+export const listCalendarFeeds = () => api.get<CalendarFeed[]>("/business/calendar/feeds");
+export const createCalendarFeed = (label?: string) => api.post<CreatedCalendarFeed>("/business/calendar/feeds", label ? { label } : {});
+export const revokeCalendarFeed = (id: string) => api.del(`/business/calendar/feeds/${id}`);

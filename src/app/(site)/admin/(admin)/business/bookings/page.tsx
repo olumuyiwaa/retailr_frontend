@@ -3,14 +3,17 @@ import { useMemo, useState } from "react";
 import { useBizMoney } from "@/hooks/useBizMoney";
 import { useAsync } from "@/hooks/useAsync";
 import { useAuth } from "@/app/context/AuthContext";
-import { createBooking, getBookingSettings, listBookings, listProducts, saveBookingSettings, setBookingStatus } from "@/services/business";
+import { getBookingSettings, listBookings, listProducts, saveBookingSettings, setBookingStatus } from "@/services/business";
 import { Card, CardHeader, ErrorNote, PageHeader, PageLoading, StatCard } from "@/components/saas/Card";
 import DataTable, { type Column } from "@/components/saas/DataTable";
 import RowActions from "@/components/saas/RowActions";
 import StatusBadge from "@/components/saas/StatusBadge";
-import { Field, inputCls, OutlineButton, PrimaryButton } from "@/components/saas/Form";
+import { Field, inputCls, PrimaryButton } from "@/components/saas/Form";
+import BookingCalendar from "@/components/calendar/BookingCalendar";
+import CalendarSync from "@/components/calendar/CalendarSync";
+import NewBookingForm from "@/components/saas/NewBookingForm";
 import { Modal } from "@/components/ui/modal";
-import { formatShort, zonedToIso } from "@/lib/zoned";
+import { formatShort } from "@/lib/zoned";
 import type { Booking, BookingSettings, OpeningPeriod, WeekDay } from "@/types/saas";
 
 const DAYS: { key: WeekDay; label: string }[] = [
@@ -31,7 +34,9 @@ export default function BookingsPage() {
   const { data: settings, reload: reloadSettings } = useAsync(() => getBookingSettings(), []);
   const { data: products } = useAsync(() => listProducts(bid), [bid]);
   const [rowError, setRowError] = useState<string | null>(null);
-  const [adding, setAdding] = useState(false);
+  const [adding, setAdding] = useState<{ date?: string; time?: string } | null>(null);
+  const [view, setView] = useState<"calendar" | "list">("calendar");
+  const [refreshKey, setRefreshKey] = useState(0);
 
   if (loading) return <PageLoading />;
   if (error || !data) return <ErrorNote message={error ?? "Could not load bookings."} onRetry={reload} />;
@@ -75,7 +80,7 @@ export default function BookingsPage() {
       <PageHeader
         title="Bookings"
         subtitle="Appointments customers book from your store"
-        action={<PrimaryButton onClick={() => setAdding(true)} disabled={bookable.length === 0}>+ New booking</PrimaryButton>}
+        action={<div className="flex flex-wrap gap-2"><CalendarSync /><PrimaryButton onClick={() => setAdding({})} disabled={bookable.length === 0}>+ New booking</PrimaryButton></div>}
       />
       <div className="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-3">
         <StatCard label="Today" value={String(today.length)} hint="bookings" />
@@ -85,6 +90,20 @@ export default function BookingsPage() {
       {bookable.length === 0 && (
         <div className="mb-6"><ErrorNote message="No bookable services yet. Add a service on the Products page and switch on “Customers book a time slot”." /></div>
       )}
+      <div className="mb-4 inline-flex rounded-lg bg-gray-100 p-1 dark:bg-gray-800" role="tablist" aria-label="Bookings view">
+        {(["calendar", "list"] as const).map((v) => (
+          <button key={v} type="button" role="tab" aria-selected={view === v} onClick={() => setView(v)}
+            className={`rounded-md px-4 py-1.5 text-theme-sm font-medium transition ${view === v ? "bg-white text-gray-800 shadow-theme-xs dark:bg-gray-900 dark:text-white/90" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}`}>
+            {v === "calendar" ? "Calendar" : "List"}
+          </button>
+        ))}
+      </div>
+      {view === "calendar" ? (
+        settings ? (
+          <BookingCalendar timezone={settings.timezone} refreshKey={refreshKey} onBook={(date, time) => bookable.length && setAdding({ date, time })} onChanged={reload} />
+        ) : <PageLoading />
+      ) : (
+        <>
       {rowError && <div className="mb-4"><ErrorNote message={rowError} /></div>}
       <DataTable
         rows={data}
@@ -100,73 +119,17 @@ export default function BookingsPage() {
         emptyTitle="No bookings yet"
         emptyBody="Once customers book a service, it shows up here."
       />
+        </>
+      )}
 
       {settings && <HoursCard key={JSON.stringify(settings)} settings={settings} canEdit={canEditHours} onSaved={reloadSettings} />}
 
-      <Modal isOpen={adding} onClose={() => setAdding(false)} className="max-w-[520px] p-6 sm:p-8 m-4 max-h-[92vh] overflow-y-auto">
-        {adding && settings && <NewBookingForm services={bookable} tz={settings.timezone} onDone={() => { setAdding(false); reload(); }} />}
+      <Modal isOpen={!!adding} onClose={() => setAdding(null)} className="max-w-[520px] p-6 sm:p-8 m-4 max-h-[92vh] overflow-y-auto">
+        {adding && settings && (
+          <NewBookingForm services={bookable} tz={settings.timezone} initialDate={adding.date} initialTime={adding.time} onDone={() => { setAdding(null); reload(); setRefreshKey((k) => k + 1); }} />
+        )}
       </Modal>
     </>
-  );
-}
-
-function NewBookingForm({ services, tz, onDone }: { services: Awaited<ReturnType<typeof listProducts>>; tz: string; onDone: () => void }) {
-  const [productId, setProductId] = useState(services[0]?.id ?? "");
-  const [variantId, setVariantId] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
-  const [time, setTime] = useState("10:00");
-  const [c, setC] = useState({ name: "", phone: "", email: "", notes: "" });
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const svc = services.find((s) => s.id === productId);
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!c.name.trim()) return setError("Enter the customer's name.");
-    if (svc?.variants?.length && !variantId) return setError("Choose an option.");
-    setBusy(true);
-    setError(null);
-    try {
-      await createBooking({
-        productId, variantId: variantId || undefined, startsAt: zonedToIso(date, time, tz),
-        customer: { name: c.name, phone: c.phone || undefined, email: c.email || undefined }, notes: c.notes || undefined,
-      });
-      onDone();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not save the booking.");
-      setBusy(false);
-    }
-  };
-
-  return (
-    <form onSubmit={submit} className="space-y-4">
-      <h3 className="text-xl font-semibold text-gray-800 dark:text-white/90">New booking</h3>
-      <Field label="Service">
-        <select value={productId} onChange={(e) => { setProductId(e.target.value); setVariantId(""); }} className={inputCls}>
-          {services.map((s) => <option key={s.id} value={s.id}>{s.name}{s.durationMins ? ` (${s.durationMins} min)` : ""}</option>)}
-        </select>
-      </Field>
-      {!!svc?.variants?.length && (
-        <Field label="Option">
-          <select value={variantId} onChange={(e) => setVariantId(e.target.value)} className={inputCls}>
-            <option value="">Choose…</option>
-            {svc.variants.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
-          </select>
-        </Field>
-      )}
-      <div className="grid grid-cols-2 gap-4">
-        <Field label="Date"><input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputCls} /></Field>
-        <Field label={`Time (${tz})`}><input type="time" step={900} value={time} onChange={(e) => setTime(e.target.value)} className={inputCls} /></Field>
-      </div>
-      <Field label="Customer name"><input value={c.name} onChange={(e) => setC({ ...c, name: e.target.value })} className={inputCls} /></Field>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field label="Phone"><input type="tel" value={c.phone} onChange={(e) => setC({ ...c, phone: e.target.value })} className={inputCls} /></Field>
-        <Field label="Email (optional)"><input type="email" value={c.email} onChange={(e) => setC({ ...c, email: e.target.value })} className={inputCls} /></Field>
-      </div>
-      <Field label="Notes (optional)"><textarea rows={2} value={c.notes} onChange={(e) => setC({ ...c, notes: e.target.value })} className={inputCls} /></Field>
-      {error && <p role="alert" className="rounded-lg bg-error-50 px-4 py-3 text-sm text-error-600">{error}</p>}
-      <div className="flex justify-end gap-3"><OutlineButton type="button" onClick={onDone}>Cancel</OutlineButton><PrimaryButton disabled={busy}>{busy ? "Saving…" : "Book it"}</PrimaryButton></div>
-    </form>
   );
 }
 

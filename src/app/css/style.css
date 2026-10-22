@@ -703,3 +703,108 @@ span.flatpickr-weekday,
   .animate-overlay-in,
   .animate-modal-in { animation: none; }
 }
+
+/* ---- Bookings calendar (FullCalendar), ported from CleanSera ---- */
+.fc .fc-view-harness {
+  @apply max-w-full overflow-x-auto custom-scrollbar;
+}
+.fc-dayGridMonth-view.fc-view.fc-daygrid {
+  @apply min-w-[718px];
+}
+.fc .fc-scrollgrid-section > * {
+  border-right-width: 0;
+  border-bottom-width: 0;
+}
+.fc .fc-scrollgrid {
+  border-left-width: 0;
+}
+.fc .fc-toolbar.fc-header-toolbar {
+  @apply flex-col gap-4 px-6 pt-6 sm:flex-row;
+}
+.fc-button-group {
+  @apply gap-2;
+}
+.fc-button-group .fc-button {
+  @apply flex h-10 w-10 items-center justify-center !rounded-lg border border-gray-200 bg-transparent hover:border-gray-200 hover:bg-gray-50 focus:shadow-none active:!border-gray-200 active:!bg-transparent active:!shadow-none dark:border-gray-800 dark:hover:border-gray-800 dark:hover:bg-gray-900 dark:active:!border-gray-800;
+}
+.fc-button-group .fc-button.fc-prev-button:before {
+  @apply inline-block mt-1;
+  content: url("data:image/svg+xml,%3Csvg width='25' height='24' viewBox='0 0 25 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16.0068 6L9.75684 12.25L16.0068 18.5' stroke='%23344054' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E%0A");
+}
+.fc-button-group .fc-button.fc-next-button:before {
+  @apply inline-block mt-1;
+  content: url("data:image/svg+xml,%3Csvg width='25' height='24' viewBox='0 0 25 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M9.50684 19L15.7568 12.75L9.50684 6.5' stroke='%23344054' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E%0A");
+}
+.dark .fc-button-group .fc-button.fc-prev-button:before {
+  content: url("data:image/svg+xml,%3Csvg width='25' height='24' viewBox='0 0 25 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16.0068 6L9.75684 12.25L16.0068 18.5' stroke='%2398A2B3' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E%0A");
+}
+.dark .fc-button-group .fc-button.fc-next-button:before {
+  content: url("data:image/svg+xml,%3Csvg width='25' height='24' viewBox='0 0 25 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M9.50684 19L15.7568 12.75L9.50684 6.5' stroke='%2398A2B3' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E%0A");
+}
+.fc-button-group .fc-button .fc-icon {
+  @apply hidden;
+}
+.fc-today-button {
+  @apply !rounded-lg !border !border-gray-200 !bg-transparent !px-4 !py-2 !text-sm !font-medium !text-gray-700 hover:!bg-gray-50 focus:!shadow-none disabled:!opacity-50 dark:!border-gray-800 dark:!text-gray-300 dark:hover:!bg-gray-900;
+}
+.fc-toolbar-title {
+  @apply !text-lg !font-medium text-gray-800 dark:text-white/90;
+}
+.fc-header-toolbar.fc-toolbar .fc-toolbar-chunk:last-child {
+  @apply rounded-lg bg-gray-100 p-0.5 dark:bg-gray-900;
+}
+.fc-header-toolbar.fc-toolbar .fc-toolbar-chunk:last-child .fc-button {
+  @apply !h-auto !w-auto rounded-md !border-0 bg-transparent !px-5 !py-2 text-sm font-medium text-gray-500 hover:text-gray-700 focus:!shadow-none dark:text-gray-400;
+}
+.fc-header-toolbar.fc-toolbar .fc-toolbar-chunk:last-child .fc-button.fc-button-active {
+  @apply text-gray-900 bg-white dark:bg-gray-800 dark:text-white;
+}
+.fc-theme-standard th {
+  @apply !border-x-0 border-t !border-gray-200 bg-gray-50 !text-left dark:!border-gray-800 dark:bg-gray-900;
+}
+.fc-theme-standard td,
+.fc-theme-standard .fc-scrollgrid {
+  @apply !border-gray-200 dark:!border-gray-800;
+}
+.fc .fc-col-header-cell-cushion {
+  @apply !px-5 !py-4 text-sm font-medium uppercase text-gray-400;
+}
+.fc .fc-daygrid-day.fc-day-today {
+  @apply bg-transparent;
+}
+.fc .fc-daygrid-day {
+  @apply p-2;
+}
+.fc .fc-daygrid-day.fc-day-today .fc-scrollgrid-sync-inner {
+  @apply rounded-sm bg-gray-100 dark:bg-white/[0.03];
+}
+.fc .fc-daygrid-day-number {
+  @apply !p-3 text-sm font-medium text-gray-700 dark:text-gray-400;
+}
+.fc .fc-daygrid-day-top {
+  @apply !flex-row;
+}
+.fc .fc-day-other .fc-daygrid-day-top {
+  opacity: 1;
+}
+.fc .fc-day-other .fc-daygrid-day-top .fc-daygrid-day-number {
+  @apply text-gray-400 dark:text-white/30;
+}
+.fc-event {
+  @apply focus:shadow-none;
+}
+.fc-direction-ltr .fc-timegrid-slot-label-frame {
+  @apply px-3 py-1.5 text-left text-sm font-medium text-gray-500 dark:text-gray-400;
+}
+.fc .fc-timegrid-axis-cushion {
+  @apply text-sm font-medium text-gray-500 dark:text-gray-400;
+}
+.custom-calendar .fc-h-event {
+  background-color: transparent;
+  border: none;
+  color: black;
+}
+.custom-calendar .fc-timegrid-event,
+.custom-calendar .fc-daygrid-event {
+  cursor: pointer;
+}
