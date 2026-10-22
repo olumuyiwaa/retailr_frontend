@@ -115,7 +115,7 @@ export default function MarketFooter() {
           </p>
           <p>
             Store powered by{" "}
-            <span className="font-semibold text-white/80">Retailr</span>
+            <Link href="/" className="font-semibold text-white/80 hover:text-white hover:underline">Retailr</Link>
           </p>
         </div>
       </div>

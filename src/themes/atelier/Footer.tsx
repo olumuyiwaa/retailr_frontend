@@ -39,7 +39,7 @@ export default function AtelierFooter() {
         </div>
         <div className="flex flex-wrap justify-between gap-3 border-t py-6 text-custom-sm" style={{ borderColor: "rgba(255,255,255,.14)" }}>
           <p>&copy; {new Date().getFullYear()} {store.name}</p>
-          <p>Store powered by <span className="font-medium text-white">Retailr</span></p>
+          <p>Store powered by{" "}<Link href="/" className="font-medium text-white hover:underline">Retailr</Link></p>
         </div>
       </div>
     </footer>
