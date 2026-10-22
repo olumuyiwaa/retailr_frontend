@@ -111,6 +111,10 @@ export interface SalesReport {
   byPayment: { method: PaymentMethod | "unknown"; orders: number; revenue: number }[];
   topProducts: { name: string; qty: number; revenue: number }[];
   topCustomers: { id: string; name: string; orders: number; revenue: number }[];
+  /** Sum of expenses in the same period (paid sales window). */
+  expenses: number;
+  /** revenue - expenses */
+  profit: number;
 }
 
 export const getSalesReport = (_b: string, days: ReportDays) => api.get<SalesReport>("/business/reports/sales", { days });
