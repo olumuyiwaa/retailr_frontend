@@ -19,14 +19,16 @@ export const DEMO_PHOTOS = [
 
 /** Named products from the Scentora seed — labels for marketing previews. */
 export const DEMO_PRODUCTS = [
-  { name: "Lagos Nights", price: "₦28,500", photo: DEMO_PHOTOS[0] },
-  { name: "Harmattan Rose", price: "₦26,000", photo: DEMO_PHOTOS[1] },
-  { name: "Iron & Cedar", price: "₦30,000", photo: DEMO_PHOTOS[2] },
-  { name: "Sahel Oud", price: "₦45,000", photo: DEMO_PHOTOS[3] },
-  { name: "Cotton Bloom", price: "₦9,500", photo: DEMO_PHOTOS[4] },
-  { name: "Discovery Set", price: "₦22,000", photo: DEMO_PHOTOS[5] },
-  { name: "Amber Attar", price: "₦12,500", photo: DEMO_PHOTOS[6] },
-  { name: "Vanilla Sugar", price: "₦9,500", photo: DEMO_PHOTOS[7] },
+  { name: "Lagos Nights", price: "₦28,500", photo: DEMO_PHOTOS[0], cat: "Women", badge: "Bestseller" as const },
+  { name: "Harmattan Rose", price: "₦26,000", photo: DEMO_PHOTOS[1], cat: "Women", badge: null },
+  { name: "Iron & Cedar", price: "₦30,000", photo: DEMO_PHOTOS[2], cat: "Men", badge: "New" as const },
+  { name: "Sahel Oud", price: "₦45,000", photo: DEMO_PHOTOS[3], cat: "Oud & Attar", badge: null },
+  { name: "Cotton Bloom", price: "₦9,500", photo: DEMO_PHOTOS[4], cat: "Body Mist", badge: "Sale" as const },
+  { name: "Discovery Set", price: "₦22,000", photo: DEMO_PHOTOS[5], cat: "Gift Sets", badge: null },
+  { name: "Amber Attar", price: "₦12,500", photo: DEMO_PHOTOS[6], cat: "Oud & Attar", badge: null },
+  { name: "Vanilla Sugar", price: "₦9,500", photo: DEMO_PHOTOS[7], cat: "Body Mist", badge: "Sale" as const },
 ] as const;
+
+export const DEMO_CATEGORIES = ["Women", "Men", "Unisex", "Oud & Attar", "Body Mist", "Gift Sets"] as const;
 
 export type ThemeLayout = "classic" | "showcase" | "atelier" | "market";
