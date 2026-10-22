@@ -51,3 +51,14 @@ export const forgotPassword = (email: string) => api.post("/auth/forgot-password
 export const resetPassword = (token: string, password: string) => api.post("/auth/reset-password", { token, password }, { auth: false });
 export const verifyEmail = (token: string) => api.post("/auth/verify-email", { token }, { auth: false });
 export const resendVerification = () => api.post("/auth/resend-verification");
+
+/** Update the signed-in person's display name. */
+export const updateMe = (name: string) => api.patch<import("@/types/saas").AuthUser>("/auth/me", { name: name.trim() });
+
+/** Change password while signed in. All other sessions are signed out on the server. */
+export const changePassword = (currentPassword: string, newPassword: string) =>
+  api.post<void>("/auth/change-password", { currentPassword, newPassword });
+
+/** Permanently delete the signed-in account (and the business if they are the owner). */
+export const deleteAccount = (password: string) => api.post<void>("/auth/delete-account", { password });
+

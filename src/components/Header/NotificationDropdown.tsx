@@ -152,8 +152,18 @@ export default function NotificationDropdown() {
           )}
         </ul>
 
+        <div className="mt-2 border-t border-gray-100 pt-2 dark:border-gray-800">
+          <button
+            type="button"
+            className="w-full rounded-lg py-2 text-center text-theme-sm font-medium text-brand-500 hover:bg-gray-50 dark:hover:bg-white/[0.03]"
+            onClick={() => { setIsOpen(false); router.push("/admin/notifications"); }}
+          >
+            View all notifications
+          </button>
+        </div>
+
         {push && push !== "unsupported" && push !== "off-on-server" && (
-          <div className="mt-3 border-t border-gray-100 pt-3 dark:border-gray-800">
+          <div className="mt-1 border-t border-gray-100 pt-3 dark:border-gray-800">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-theme-sm font-medium text-gray-800 dark:text-white/90">Push notifications</p>

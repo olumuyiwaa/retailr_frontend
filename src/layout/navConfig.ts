@@ -14,6 +14,7 @@ import {
   PlugInIcon,
   TaskIcon,
   UserCircleIcon,
+  BellIcon,
 } from "@/icons";
 
 export type TeamRole = NonNullable<AuthUser["teamRole"]>;
@@ -64,7 +65,11 @@ export const navFor = (role: Role, teamRole?: TeamRole): NavSection[] => {
         },
         {
           title: "System",
-          items: [{ name: "Settings", path: "/admin/super/settings", icon: PlugInIcon }],
+          items: [
+            { name: "Notifications", path: "/admin/notifications", icon: BellIcon },
+            { name: "My account", path: "/admin/account", icon: UserCircleIcon },
+            { name: "Settings", path: "/admin/super/settings", icon: PlugInIcon },
+          ],
         },
       ]
     : [
@@ -92,6 +97,8 @@ export const navFor = (role: Role, teamRole?: TeamRole): NavSection[] => {
             { name: "Team", path: "/admin/business/team", icon: UserCircleIcon },
             { name: "Billing & plan", path: "/admin/business/billing", icon: DollarLineIcon },
             { name: "Store settings", path: "/admin/business/settings", icon: PlugInIcon },
+            { name: "Notifications", path: "/admin/notifications", icon: BellIcon },
+            { name: "My account", path: "/admin/account", icon: UserCircleIcon },
           ],
         },
       ];

@@ -16,7 +16,8 @@ export interface AppNotification {
 
 export interface NotificationList { unreadCount: number; items: AppNotification[] }
 
-export const listNotifications = (limit = 20) => api.get<NotificationList>("/notifications", { limit });
+export const listNotifications = (limit = 20, unreadOnly = false) =>
+  api.get<NotificationList>("/notifications", { limit, ...(unreadOnly ? { unread: "true" } : {}) });
 export const markNotificationRead = (id: string) => api.post<void>(`/notifications/${id}/read`);
 export const markAllNotificationsRead = () => api.post<void>("/notifications/read-all");
 
