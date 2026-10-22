@@ -7,6 +7,7 @@ import { Field, inputCls, OutlineButton, PrimaryButton } from "@/components/saas
 import { Modal } from "@/components/ui/modal";
 import { money } from "@/lib/format";
 import { formatCurrency, planAmount } from "@/lib/currency";
+import { THEMES } from "@/themes/registry";
 import type { Plan } from "@/types/saas";
 
 type PlanRow = Plan & { subscribers: number };
@@ -44,6 +45,7 @@ export default function PlansPage() {
         storageGb: num(f.get("storage")),
       },
       features: String(f.get("features")).split("\n").map((s) => s.trim()).filter(Boolean),
+      themes: ["classic", ...f.getAll("themes").map(String).filter((t) => t !== "classic")],
       isActive: f.get("isActive") === "on",
     };
     if (!next.name) return setFormError("Plan name is required.");
@@ -110,6 +112,16 @@ export default function PlansPage() {
             <Field label="Description"><input name="description" defaultValue={editing.description} className={inputCls} /></Field>
             <Field label="Features" hint="One per line">
               <textarea name="features" rows={6} defaultValue={editing.features.join("\n")} className={`${inputCls} h-auto py-3`} />
+            </Field>
+            <Field label="Storefront themes" hint="Themes businesses on this plan can choose. Classic is always included.">
+              <div className="flex flex-wrap gap-x-5 gap-y-2 pt-1">
+                {THEMES.map((t) => (
+                  <label key={t.id} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-400">
+                    <input type="checkbox" name="themes" value={t.id} defaultChecked={t.id === "classic" || editing.themes.includes(t.id)} disabled={t.id === "classic"} />
+                    {t.name}
+                  </label>
+                ))}
+              </div>
             </Field>
             <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-400">
               <input type="checkbox" name="isActive" defaultChecked={editing.isActive} /> Available for new subscriptions

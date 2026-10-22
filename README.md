@@ -106,7 +106,8 @@ UI code never calls `fetch` directly. It calls typed async functions in `src/ser
 - [x] Customer groups and messaging
 - [x] Storefront themes, managed categories and product details
 - [x] Site analytics for businesses and the platform
-- [ ] More themes, and gating themes by plan
+- [x] Gating themes by plan (platform admin picks the themes per plan)
+- [ ] More themes
 - [x] Subscription payments (Paystack and Flutterwave) and owner-chosen checkout payment options (pay on delivery, bank transfer)
 - [ ] Online card payments at storefront checkout (the card option is a demo)
 - [ ] Delivery fees, zones and courier integrations

@@ -37,6 +37,8 @@ export interface Plan {
   transactionFeePct: number;
   limits: PlanLimits;
   features: string[];
+  /** Storefront theme ids this plan includes; "classic" is always included. */
+  themes: string[];
   highlighted?: boolean;
   isActive: boolean;
   /** Hand-set local prices so each market sees a clean number (USD stays the accounting currency). */
