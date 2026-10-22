@@ -29,6 +29,7 @@ export default function ThemeThumb({
       {layout === "showcase" && <ShowcaseThumb bg={bg} surface={surface} accent={accent} large={large} />}
       {layout === "atelier" && <AtelierThumb bg={bg} surface={surface} accent={accent} large={large} />}
       {layout === "market" && <MarketThumb bg={bg} surface={surface} accent={accent} large={large} />}
+      {layout === "shop" && <ShopThumb bg={bg} surface={surface} accent={accent} large={large} />}
     </div>
   );
 }
@@ -343,6 +344,94 @@ function MarketThumb({ surface, accent, large }: Props) {
           Shop all deals →
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ── Shop: clean white marketplace ────────────────────────────────────── */
+
+function ShopThumb({ accent, large }: Props) {
+  const pills = DEMO_CATEGORIES.slice(0, large ? 6 : 4);
+  const grid = DEMO_PRODUCTS.slice(0, large ? 6 : 4);
+  const hero = DEMO_PRODUCTS[2];
+  return (
+    <div className="flex h-full flex-col bg-white">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-gray-100 px-2.5 py-1.5">
+        <span className="text-[9px] font-bold text-gray-900">SCENTORA</span>
+        <div className="flex items-center gap-2 text-[7px] text-gray-500">
+          <span>Products</span>
+          <span>Services</span>
+          {large && <span>Women</span>}
+          <span className="relative flex h-5 w-5 items-center justify-center rounded-full bg-gray-100">
+            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+          </span>
+          <span className="relative">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <path d="M16 10a4 4 0 0 1-8 0" />
+            </svg>
+          </span>
+        </div>
+      </div>
+      {/* Category pill strip */}
+      <div className="flex gap-1 overflow-hidden border-b border-gray-100 px-2 py-1">
+        <span className="shrink-0 rounded-full bg-gray-900 px-2 py-0.5 text-[6px] font-medium text-white">All</span>
+        {pills.map((c) => (
+          <span key={c} className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[6px] font-medium text-gray-600">
+            {c}
+          </span>
+        ))}
+      </div>
+      {/* Hero */}
+      <div className="relative mx-2 mt-1.5 overflow-hidden rounded-xl" style={{ height: large ? "28%" : "24%" }}>
+        <img src={hero.photo} alt="" className="h-full w-full object-cover" loading="lazy" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+        <div className="absolute bottom-1.5 left-2 right-2">
+          <p className="text-[8px] font-bold text-white">SCENTORA</p>
+          <p className="text-[6.5px] text-white/85">Niche and everyday fragrances</p>
+          <span className="mt-0.5 inline-block rounded-full bg-white px-1.5 py-0.5 text-[6px] font-semibold text-gray-900">
+            Shop now
+          </span>
+        </div>
+      </div>
+      {/* Section heading */}
+      <div className="mx-2 mt-1.5 flex items-center justify-between">
+        <p className="text-[7.5px] font-bold text-gray-800">What&apos;s new</p>
+        <p className="text-[6.5px] text-gray-500">See all →</p>
+      </div>
+      {/* Product grid — square cards with heart */}
+      <div className={`mx-2 mt-1 grid flex-1 content-start gap-1.5 pb-2 ${large ? "grid-cols-3" : "grid-cols-2"}`}>
+        {grid.map((p) => (
+          <div key={p.name} className="overflow-hidden rounded-lg bg-white ring-1 ring-black/5">
+            <div className="relative aspect-square overflow-hidden">
+              <img src={p.photo} alt="" className="h-full w-full object-cover" loading="lazy" />
+              <span className="absolute bottom-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-white shadow-sm">
+                <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                </svg>
+              </span>
+              {p.badge === "Sale" && (
+                <span className="absolute left-1 top-1 rounded-full bg-rose-500 px-1 py-px text-[5.5px] font-semibold text-white">
+                  Sale
+                </span>
+              )}
+            </div>
+            <div className="px-1 py-0.5">
+              <p className="truncate text-[7px] font-medium text-gray-800">{p.name}</p>
+              <p className="text-[6.5px] font-semibold" style={{ color: accent || "#1A1A1A" }}>{p.price}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+      {large && (
+        <div className="border-t border-gray-100 px-2 py-1 text-center text-[7px] text-gray-400">
+          © Scentora · Lagos · retailr.com/s/scentora
+        </div>
+      )}
     </div>
   );
 }

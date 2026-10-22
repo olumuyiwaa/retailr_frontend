@@ -204,7 +204,7 @@ export default function LandingPage() {
             <p className="mt-3 text-gray-500">Choose a theme, add your logo and brand colour, and switch whenever you like.</p>
           </div>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {THEMES.map((t) => (
+            {THEMES.slice(0, 4).map((t) => (
               <div key={t.id} className="flex flex-col rounded-2xl bg-white p-4 shadow-theme-xs ring-1 ring-gray-200">
                 <ThemeThumb
                   swatches={t.swatches}

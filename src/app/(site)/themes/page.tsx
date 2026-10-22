@@ -5,6 +5,7 @@ import MarketingShell, { MARKETING_WIDTH } from "@/components/saas/MarketingShel
 import ThemeThumb from "@/components/saas/ThemeThumb";
 import type { ThemeLayout } from "@/components/saas/ThemeThumb";
 import { THEMES } from "@/themes/registry";
+import ThemesMarketplace from "@/components/saas/ThemesMarketplace";
 
 export const metadata: Metadata = {
   title: "Storefront Themes — Retailr",
@@ -12,34 +13,36 @@ export const metadata: Metadata = {
     "Browse every Retailr storefront theme. Each one is fully branded with your logo and colour, and you can switch any time without losing your products or orders.",
 };
 
-/* ── Per-theme editorial content ──────────────────────────────────────── */
+/* ── Helpers ──────────────────────────────────────────────────────────── */
 
-interface ThemeMeta {
+export interface ThemeMeta {
   layout: ThemeLayout;
   tagline: string;
   bestFor: string[];
+  category: string; // used for marketplace filter
   highlights: string[];
-  /** Colour name labels that map to swatches[0..2] */
   paletteLabels: [string, string, string];
 }
 
-const themeMeta: Record<string, ThemeMeta> = {
+export const THEME_META: Record<string, ThemeMeta> = {
   classic: {
     layout: "classic",
+    category: "General",
     tagline: "Clean, rounded and airy — the versatile default.",
     bestFor: ["General retail", "Food & grocery", "Electronics", "Home goods"],
     highlights: [
       "Big hero headline with your brand colour",
       "Soft rounded cards, spacious product grid",
       "Category browsing with full-width filters",
-      "Gentle, light feel that works for any niche",
+      "Works for any niche right out of the box",
     ],
     paletteLabels: ["Page background", "Card surface", "Brand accent"],
   },
   showcase: {
     layout: "showcase",
+    category: "Fashion",
     tagline: "Bold grid layout with an integrated search bar.",
-    bestFor: ["Fashion & apparel", "Beauty products", "Multi-category stores", "Stores with large catalogues"],
+    bestFor: ["Fashion & apparel", "Beauty products", "Multi-category stores", "Large catalogues"],
     highlights: [
       "Prominent top search bar for quick discovery",
       "Hero banner with spotlight product tiles",
@@ -50,8 +53,9 @@ const themeMeta: Record<string, ThemeMeta> = {
   },
   atelier: {
     layout: "atelier",
+    category: "Boutique",
     tagline: "Warm editorial boutique — cream paper and deep brown ink.",
-    bestFor: ["Fashion & boutiques", "Jewellery & accessories", "Hair & beauty", "Artisan & handmade goods"],
+    bestFor: ["Fashion & boutiques", "Jewellery & accessories", "Hair & beauty", "Artisan goods"],
     highlights: [
       "Cream paper background with editorial typography",
       "Tall portrait photography cards (4:5 ratio)",
@@ -62,8 +66,9 @@ const themeMeta: Record<string, ThemeMeta> = {
   },
   market: {
     layout: "market",
+    category: "Marketplace",
     tagline: "Bold marketplace: navy header, red CTAs and a dense product grid.",
-    bestFor: ["Marketplace-style stores", "Electronics & tech", "Supermarkets & FMCG", "Stores with 50+ products"],
+    bestFor: ["Marketplace-style stores", "Electronics & tech", "Supermarkets & FMCG", "50+ products"],
     highlights: [
       "Two-row navy header with search and category strip",
       "Hero showcase grid of up to 4 products",
@@ -72,28 +77,26 @@ const themeMeta: Record<string, ThemeMeta> = {
     ],
     paletteLabels: ["Navy background", "White surface", "Red action colour"],
   },
+  shop: {
+    layout: "shop",
+    category: "Marketplace",
+    tagline: "Clean white marketplace: pill categories, rounded cards and a save-to-favourites button.",
+    bestFor: ["Beauty & skincare", "Fashion", "Sporting goods", "General merchandise"],
+    highlights: [
+      "Scrollable pill category strip in the header",
+      "Square product cards with heart / favourites button",
+      "Full-bleed hero image with gradient overlay",
+      "Minimal white palette that lets your products shine",
+    ],
+    paletteLabels: ["White background", "Light grey surface", "Near-black accent"],
+  },
 };
 
-/* ── Theme layout helper ──────────────────────────────────────────────── */
+/* ── Browser chrome frame ─────────────────────────────────────────────── */
 
-const layoutFor = (id: string): ThemeLayout =>
-  id === "showcase" ? "showcase"
-  : id === "atelier" ? "atelier"
-  : id === "market" ? "market"
-  : "classic";
-
-/* ── Browser chrome mock ──────────────────────────────────────────────── */
-
-function BrowserFrame({
-  swatches,
-  layout,
-}: {
-  swatches: [string, string, string];
-  layout: ThemeLayout;
-}) {
+function BrowserFrame({ swatches, layout }: { swatches: [string, string, string]; layout: ThemeLayout }) {
   return (
     <div className="overflow-hidden rounded-2xl shadow-theme-xl ring-1 ring-gray-200" aria-hidden>
-      {/* Browser chrome */}
       <div className="flex items-center gap-2 border-b border-gray-100 bg-gray-50 px-4 py-2.5">
         <span className="h-3 w-3 rounded-full bg-[#FF5F57]" />
         <span className="h-3 w-3 rounded-full bg-[#FFBD2E]" />
@@ -102,27 +105,21 @@ function BrowserFrame({
           retailr.com/s/your-store
         </span>
       </div>
-      {/* Theme preview — tall enough to show real structure */}
       <ThemeThumb swatches={swatches} layout={layout} large />
     </div>
   );
 }
 
-/* ── Swatch dot ───────────────────────────────────────────────────────── */
-
 function SwatchDot({ color, label }: { color: string; label: string }) {
   return (
     <div className="flex items-center gap-2">
-      <span
-        className="h-5 w-5 shrink-0 rounded-full ring-1 ring-gray-200"
-        style={{ background: color }}
-      />
+      <span className="h-5 w-5 shrink-0 rounded-full ring-1 ring-gray-200" style={{ background: color }} />
       <span className="text-sm text-gray-600">{label}</span>
     </div>
   );
 }
 
-/* ── Main page ────────────────────────────────────────────────────────── */
+/* ── Page ─────────────────────────────────────────────────────────────── */
 
 export default function ThemesPage() {
   return (
@@ -130,30 +127,24 @@ export default function ThemesPage() {
 
       {/* ── Hero ── */}
       <section className="border-b border-gray-100 bg-white">
-        <div className={`${MARKETING_WIDTH} py-16 lg:py-20`}>
+        <div className={`${MARKETING_WIDTH} py-14 lg:py-18`}>
           <div className="mx-auto max-w-3xl text-center">
             <p className="mb-4 inline-block rounded-full bg-brand-50 px-4 py-1.5 text-sm font-medium text-brand-600">
               Storefront themes
             </p>
             <h1 className="text-4xl font-semibold leading-tight lg:text-5xl">
-              A storefront that looks exactly like you
+              Pick a look. Start selling.
             </h1>
             <p className="mt-4 text-lg leading-relaxed text-gray-500">
-              Every Retailr theme is built for your products, branded with your logo and colour, and
-              switchable at any time — your catalogue, orders and settings always stay intact.
+              Every theme is branded with your logo and colours, works on any device, and can be
+              switched at any time — your products and orders are never touched.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <Link
-                href="/get-started"
-                className="rounded-lg bg-brand-500 px-6 py-3 text-sm font-semibold text-white hover:bg-brand-600"
-              >
+              <Link href="/get-started" className="rounded-lg bg-brand-500 px-6 py-3 text-sm font-semibold text-white hover:bg-brand-600">
                 Start free trial
               </Link>
               {DEMO_ENABLED && (
-                <Link
-                  href={DEMO_STORE_HREF}
-                  className="rounded-lg px-6 py-3 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                >
+                <Link href={DEMO_STORE_HREF} className="rounded-lg px-6 py-3 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
                   Browse demo store
                 </Link>
               )}
@@ -162,82 +153,34 @@ export default function ThemesPage() {
         </div>
       </section>
 
-      {/* ── Quick overview grid ── */}
+      {/* ── Marketplace grid (client component for filter/sort interactivity) ── */}
       <section className="border-b border-gray-100 bg-gray-50">
-        <div className={`${MARKETING_WIDTH} py-12`}>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {THEMES.map((t) => {
-              const layout = layoutFor(t.id);
-              return (
-                <a
-                  key={t.id}
-                  href={`#${t.id}`}
-                  className="group rounded-2xl border border-gray-200 bg-white p-4 transition hover:border-brand-300 hover:shadow-theme-sm"
-                >
-                  <ThemeThumb swatches={t.swatches} layout={layout} />
-                  <p className="mt-3 font-semibold text-gray-800 group-hover:text-brand-600">{t.name}</p>
-                  <p className="mt-1 text-sm text-gray-500 line-clamp-2">{t.description}</p>
-                </a>
-              );
-            })}
-          </div>
-        </div>
+        <ThemesMarketplace themes={THEMES.map((t) => ({ id: t.id, name: t.name, description: t.description, swatches: t.swatches, meta: THEME_META[t.id] ?? null }))} />
       </section>
 
-      {/* ── Per-theme detail sections ── */}
+      {/* ── Per-theme deep-dive sections ── */}
       {THEMES.map((t, idx) => {
-        const meta = themeMeta[t.id];
+        const meta = THEME_META[t.id];
         if (!meta) return null;
         const [bg, , accent] = t.swatches;
         const isEven = idx % 2 === 0;
-
         return (
-          <section
-            key={t.id}
-            id={t.id}
-            className={`border-b border-gray-100 ${isEven ? "bg-white" : "bg-gray-50"}`}
-          >
+          <section key={t.id} id={t.id} className={`border-b border-gray-100 ${isEven ? "bg-white" : "bg-gray-50"}`}>
             <div className={`${MARKETING_WIDTH} py-16 lg:py-20`}>
-              <div
-                className={`grid items-center gap-12 lg:grid-cols-2 lg:gap-16 ${
-                  isEven ? "" : "lg:[&>*:first-child]:order-last"
-                }`}
-              >
-                {/* Browser frame */}
+              <div className={`grid items-center gap-12 lg:grid-cols-2 lg:gap-16 ${isEven ? "" : "lg:[&>*:first-child]:order-last"}`}>
                 <BrowserFrame swatches={t.swatches} layout={meta.layout} />
-
-                {/* Copy */}
                 <div>
-                  {/* Theme name badge */}
-                  <span
-                    className="mb-4 inline-block rounded-full px-3 py-1 text-sm font-semibold"
-                    style={{ background: bg, color: accent }}
-                  >
+                  <span className="mb-4 inline-block rounded-full px-3 py-1 text-sm font-semibold" style={{ background: bg, color: accent }}>
                     {t.name}
                   </span>
+                  <h2 className="text-3xl font-semibold leading-snug text-gray-900 lg:text-4xl">{meta.tagline}</h2>
+                  <p className="mt-4 leading-relaxed text-gray-500">{t.description}</p>
 
-                  <h2 className="text-3xl font-semibold leading-snug text-gray-900 lg:text-4xl">
-                    {meta.tagline}
-                  </h2>
-
-                  <p className="mt-4 text-gray-500 leading-relaxed">{t.description}</p>
-
-                  {/* Highlights */}
                   <ul className="mt-7 space-y-3">
                     {meta.highlights.map((h) => (
                       <li key={h} className="flex items-start gap-3">
                         <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600">
-                          <svg
-                            width={11}
-                            height={11}
-                            viewBox="0 0 12 12"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth={2.2}
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            aria-hidden
-                          >
+                          <svg width={11} height={11} viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                             <path d="m2 6 3 3 5-5" />
                           </svg>
                         </span>
@@ -246,37 +189,28 @@ export default function ThemesPage() {
                     ))}
                   </ul>
 
-                  {/* Best for */}
                   <div className="mt-7 rounded-xl border border-gray-100 bg-gray-50 p-4">
-                    <p className="mb-2.5 text-xs font-semibold uppercase tracking-widest text-gray-400">
-                      Best for
-                    </p>
+                    <p className="mb-2.5 text-xs font-semibold uppercase tracking-widest text-gray-400">Best for</p>
                     <div className="flex flex-wrap gap-2">
                       {meta.bestFor.map((b) => (
-                        <span
-                          key={b}
-                          className="rounded-full bg-white px-3 py-1 text-sm font-medium text-gray-700 ring-1 ring-gray-200"
-                        >
-                          {b}
-                        </span>
+                        <span key={b} className="rounded-full bg-white px-3 py-1 text-sm font-medium text-gray-700 ring-1 ring-gray-200">{b}</span>
                       ))}
                     </div>
                   </div>
 
-                  {/* Palette */}
                   <div className="mt-6">
-                    <p className="mb-2.5 text-xs font-semibold uppercase tracking-widest text-gray-400">
-                      Default palette
-                    </p>
+                    <p className="mb-2.5 text-xs font-semibold uppercase tracking-widest text-gray-400">Default palette</p>
                     <div className="flex flex-col gap-2">
                       {t.swatches.map((color, i) => (
                         <SwatchDot key={color} color={color} label={meta.paletteLabels[i]} />
                       ))}
                     </div>
-                    <p className="mt-3 text-xs text-gray-400">
-                      All colours adapt to your brand colour set in Store settings.
-                    </p>
+                    <p className="mt-3 text-xs text-gray-400">All colours adapt to your brand colour set in Store settings.</p>
                   </div>
+
+                  <Link href="/get-started" className="mt-8 inline-flex h-11 items-center rounded-lg bg-brand-500 px-6 text-sm font-semibold text-white hover:bg-brand-600">
+                    Use this theme — start free
+                  </Link>
                 </div>
               </div>
             </div>
@@ -284,84 +218,23 @@ export default function ThemesPage() {
         );
       })}
 
-      {/* ── Shared features callout ── */}
-      <section className="bg-white border-b border-gray-100">
+      {/* ── Shared features ── */}
+      <section className="border-b border-gray-100 bg-white">
         <div className={`${MARKETING_WIDTH} py-16 lg:py-20`}>
           <div className="mx-auto max-w-2xl text-center mb-12">
             <h2 className="text-3xl font-semibold">Every theme includes</h2>
-            <p className="mt-3 text-gray-500">
-              These features are built into the platform and work identically across all themes.
-            </p>
+            <p className="mt-3 text-gray-500">Built into the platform — works identically across all themes.</p>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {[
-              {
-                icon: (
-                  <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                    <path d="M12 20h9M3 20h1M6 4h12v12H6z" />
-                    <path d="M9 20v-4h6v4" />
-                  </svg>
-                ),
-                title: "Your logo & brand colour",
-                body: "Upload a logo and pick a hex colour. Every theme maps it to headers, buttons and accents automatically.",
-              },
-              {
-                icon: (
-                  <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                    <rect x="5" y="2" width="14" height="20" rx="2" />
-                    <path d="M9 7h6M9 11h6M9 15h4" />
-                  </svg>
-                ),
-                title: "Full product catalogue",
-                body: "All themes render your entire product grid with photos, pricing, variants, stock status and categories.",
-              },
-              {
-                icon: (
-                  <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
-                    <path d="M3 6h18M16 10a4 4 0 0 1-8 0" />
-                  </svg>
-                ),
-                title: "Cart & checkout",
-                body: "Add-to-cart, quantity controls, order summary and checkout flow — fully functional in every theme.",
-              },
-              {
-                icon: (
-                  <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                    <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
-                  </svg>
-                ),
-                title: "Built-in search",
-                body: "Every theme lets shoppers search by name, category or description — no plugins needed.",
-              },
-              {
-                icon: (
-                  <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                    <path d="M12 18H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h8" />
-                    <path d="M8 21h8M12 18v3M17 3l4 4-4 4M21 7H11" />
-                  </svg>
-                ),
-                title: "Switch themes any time",
-                body: "Change your look in one click from Store settings. Your products, orders and customers are never affected.",
-              },
-              {
-                icon: (
-                  <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                    <rect x="5" y="2" width="14" height="20" rx="2" />
-                    <path d="M12 18h.01" />
-                  </svg>
-                ),
-                title: "Mobile-first & responsive",
-                body: "Every layout is optimised for phones first, where most of your shoppers will browse.",
-              },
+              { title: "Your logo & brand colour", body: "Upload a logo and pick a hex colour. Every theme maps it to headers, buttons and accents automatically." },
+              { title: "Full product catalogue", body: "All themes render your entire product grid with photos, pricing, variants, stock status and categories." },
+              { title: "Cart & checkout", body: "Add-to-cart, quantity controls, order summary and checkout — fully functional in every theme." },
+              { title: "Save to favourites", body: "Shoppers can heart any product to save it. Favourites persist in the browser across sessions." },
+              { title: "Built-in search", body: "Every theme lets shoppers search by name, category or description — no plugins needed." },
+              { title: "Switch any time", body: "Change your look in one click from Store settings. Your products, orders and customers are never affected." },
             ].map((f) => (
-              <div
-                key={f.title}
-                className="rounded-2xl border border-gray-200 p-6 transition hover:border-brand-200 hover:shadow-theme-sm"
-              >
-                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
-                  {f.icon}
-                </div>
+              <div key={f.title} className="rounded-2xl border border-gray-200 p-6 transition hover:border-brand-200 hover:shadow-theme-sm">
                 <h3 className="font-semibold text-gray-800">{f.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-gray-500">{f.body}</p>
               </div>
@@ -371,41 +244,21 @@ export default function ThemesPage() {
       </section>
 
       {/* ── FAQ ── */}
-      <section className="bg-gray-50 border-b border-gray-100">
+      <section className="border-b border-gray-100 bg-gray-50">
         <div className={`${MARKETING_WIDTH} py-16 lg:py-20`}>
           <h2 className="mb-10 text-center text-3xl font-semibold">Theme questions</h2>
           <div className="mx-auto max-w-3xl divide-y divide-gray-200 border-y border-gray-200">
             {[
-              [
-                "Can I switch themes without losing my products?",
-                "Yes. Your products, categories, orders, customers and store settings are all independent of your theme. You can switch as many times as you like.",
-              ],
-              [
-                "Can I customise a theme's colours?",
-                "Every theme adapts to your brand colour, which you set in Store settings. The theme maps it to its header, buttons and accents automatically.",
-              ],
-              [
-                "Do all themes support services as well as products?",
-                "Yes. Every theme renders both product and service listings, with separate browsing tabs when you have both.",
-              ],
-              [
-                "Which theme is right for me?",
-                "Classic works for almost any business. Atelier suits boutiques that lead with photography. Showcase and Market both suit larger catalogues — Market has the denser grid and navigation.",
-              ],
-              [
-                "Are more themes coming?",
-                "Yes. New themes are released periodically and added to your plan automatically. You'll always be able to switch to the latest ones.",
-              ],
+              ["Can I switch themes without losing my products?", "Yes. Your products, categories, orders, customers and store settings are all independent of your theme."],
+              ["Can I customise colours?", "Every theme adapts to your brand colour set in Store settings. The theme maps it to its header, buttons and accents automatically."],
+              ["Do all themes support services?", "Yes. Every theme renders both product and service listings, with separate tabs when you have both."],
+              ["Which theme is right for me?", "Classic works for almost any business. Atelier suits boutiques. Shop and Market suit larger catalogues — Shop has the cleaner white look, Market has a denser grid and navy header."],
+              ["Are more themes coming?", "Yes. New themes are released periodically and available on all plans automatically."],
             ].map(([q, a]) => (
               <details key={q as string} className="group py-5">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-gray-800">
                   {q}
-                  <span
-                    className="text-xl leading-none text-gray-400 transition-transform group-open:rotate-45"
-                    aria-hidden
-                  >
-                    +
-                  </span>
+                  <span className="text-xl leading-none text-gray-400 transition-transform group-open:rotate-45" aria-hidden>+</span>
                 </summary>
                 <p className="mt-3 text-sm leading-relaxed text-gray-500">{a}</p>
               </details>
@@ -421,20 +274,14 @@ export default function ThemesPage() {
             Pick your look and start selling today.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-brand-100/80">
-            Every plan includes all themes. Switch whenever you like, no technical setup required.
+            Every plan includes all themes. Switch whenever you like — no technical setup required.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link
-              href="/get-started"
-              className="rounded-lg bg-white px-7 py-3.5 text-sm font-semibold text-brand-700 hover:bg-brand-50"
-            >
+            <Link href="/get-started" className="rounded-lg bg-white px-7 py-3.5 text-sm font-semibold text-brand-700 hover:bg-brand-50">
               Start free trial
             </Link>
             {DEMO_ENABLED && (
-              <Link
-                href={DEMO_STORE_HREF}
-                className="rounded-lg px-7 py-3.5 text-sm font-semibold ring-1 ring-inset ring-white/30 hover:bg-white/10"
-              >
+              <Link href={DEMO_STORE_HREF} className="rounded-lg px-7 py-3.5 text-sm font-semibold ring-1 ring-inset ring-white/30 hover:bg-white/10">
                 Browse demo store
               </Link>
             )}
