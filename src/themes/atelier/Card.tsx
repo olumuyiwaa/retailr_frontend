@@ -3,6 +3,7 @@ import React from "react";
 import Link from "next/link";
 import type { Product } from "@/types/product";
 import ProductArt from "@/components/Store/ProductArt";
+import FaveButton from "@/components/Store/FaveButton";
 import { useStore } from "@/app/context/StoreContext";
 
 const NEW_DAYS = 30;
@@ -40,6 +41,7 @@ export default function AtelierCard({ item }: { item: Product }) {
     <Link href={href(`/product/${item.id}`)} className="group block">
       <div className="relative">
         <Photo item={item} className="aspect-[4/5] rounded-md" />
+        <FaveButton item={item} className="absolute bottom-2 right-2" />
         {isNew(item) && !soldOut && <span className="absolute left-3 top-3 rounded bg-white px-2 py-0.5 text-2xs font-medium text-dark">New</span>}
         {soldOut && <span className="absolute left-3 top-3 rounded bg-dark px-2 py-0.5 text-2xs font-medium text-white">Sold out</span>}
       </div>

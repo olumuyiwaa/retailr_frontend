@@ -119,13 +119,13 @@ export default function StoreCheckout() {
 
   return (
     <>
-      <section className="overflow-hidden pb-8 pt-8 sm:pt-10">
-        <div className="store-container w-full mx-auto px-4 sm:px-8">
+      <section className="pb-8 pt-8 sm:pt-10">
+        <div className="store-container mx-auto">
           <StoreCrumbs trail={[{ label: "Cart", to: href("/cart") }, { label: "Checkout" }]} />
           <h1 className="mb-8 mt-5 text-4xl font-bold text-dark sm:text-5xl">Checkout</h1>
           <form onSubmit={submit} noValidate>
             <div className="flex flex-col lg:flex-row gap-7.5 xl:gap-11">
-              <div className="lg:max-w-[920px] w-full">
+              <div className="min-w-0 flex-1">
                 <h2 className="mb-5 font-display text-2xl font-bold text-dark">Delivery details</h2>
                 <div className="bg-white rounded-3xl ring-1 ring-inset ring-[color:var(--line)] p-4 sm:p-8.5">
                   <div className="flex flex-col lg:flex-row gap-5 sm:gap-8 mb-5">
@@ -169,7 +169,7 @@ export default function StoreCheckout() {
                 </div>
               </div>
 
-              <div className="max-w-[455px] w-full">
+              <div className="w-full shrink-0 lg:w-[420px] xl:w-[455px]">
                 <div className="bg-white rounded-3xl ring-1 ring-inset ring-[color:var(--line)]">
                   <div className="border-b border-[color:var(--line)] py-5 px-4 sm:px-8.5">
                     <h3 className="font-display text-xl font-bold text-dark">Your order</h3>

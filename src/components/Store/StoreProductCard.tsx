@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import type { Product } from "@/types/product";
 import ProductThumb from "@/components/Common/ProductThumb";
+import FaveButton from "@/components/Store/FaveButton";
 import { useStoreHref, useStoreMoney } from "@/app/context/StoreContext";
 import { useCartModalContext } from "@/app/context/CartSidebarModalContext";
 import { addItemToCart } from "@/redux/features/cart-slice";
@@ -56,6 +57,8 @@ export default function StoreProductCard({ item }: { item: Product }) {
             {soldOut ? "Sold out" : `Only ${item.stock} left`}
           </span>
         )}
+
+        <FaveButton item={item} className="absolute right-3 top-3" iconSize={15} />
 
         <button
           type="button"

@@ -8,6 +8,7 @@ import { useStore } from "@/app/context/StoreContext";
 import { useCartModalContext } from "@/app/context/CartSidebarModalContext";
 import { useAppSelector } from "@/redux/store";
 import { selectTotalPrice } from "@/redux/features/cart-slice";
+import { selectWishlistItems } from "@/redux/features/wishlist-slice";
 
 const BagIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -21,6 +22,11 @@ const SearchIcon = () => (
     <path d="m20 20-4-4" />
   </svg>
 );
+const HeartIcon = ({ filled }: { filled?: boolean }) => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+  </svg>
+);
 
 export default function StoreHeader() {
   const ctx = useStore();
@@ -29,6 +35,7 @@ export default function StoreHeader() {
   const { openCartModal } = useCartModalContext();
   const count = useAppSelector((s) => s.cartReducer.items.reduce((n, i) => n + i.quantity, 0));
   const total = useSelector(selectTotalPrice);
+  const wishCount = useAppSelector((s) => selectWishlistItems(s).length);
   const [menu, setMenu] = useState(false);
   const [q, setQ] = useState("");
 
@@ -126,6 +133,20 @@ export default function StoreHeader() {
             </label>
           </form>
 
+          {/* Favourites */}
+          <Link
+            href={href("/wishlist")}
+            aria-label={`Favourites${wishCount > 0 ? `, ${wishCount} saved` : ""}`}
+            className="relative flex h-10 w-10 items-center justify-center rounded-full text-dark transition-colors hover:bg-[color:var(--tint)] md:ml-0 ml-auto"
+          >
+            <HeartIcon filled={wishCount > 0} />
+            {wishCount > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-dark text-2xs font-bold text-white" aria-hidden>
+                {wishCount > 9 ? "9+" : wishCount}
+              </span>
+            )}
+          </Link>
+
           <button
             type="button"
             onClick={openCartModal}
@@ -168,6 +189,11 @@ export default function StoreHeader() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link href={href("/wishlist")} className="flex items-center justify-between border-b py-3 font-medium text-dark" style={{ borderColor: "var(--line)" }}>
+                  Favourites {wishCount > 0 && <span className="text-custom-sm font-normal" style={{ color: "var(--muted)" }}>({wishCount})</span>}
+                </Link>
+              </li>
             </ul>
           </div>
         )}

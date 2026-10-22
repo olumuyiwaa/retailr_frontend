@@ -3,6 +3,7 @@ import React from "react";
 import Link from "next/link";
 import type { Product } from "@/types/product";
 import ProductArt from "@/components/Store/ProductArt";
+import FaveButton from "@/components/Store/FaveButton";
 import { useStore } from "@/app/context/StoreContext";
 
 const NEW_DAYS = 30;
@@ -78,6 +79,7 @@ export default function MarketCard({ item }: { item: Product }) {
       {/* Image */}
       <div className="relative overflow-hidden rounded-t">
         <ProductPhoto item={item} className="aspect-square w-full" />
+        <FaveButton item={item} className="absolute bottom-2 right-2" />
         {/* Badge */}
         {isNew(item) && !soldOut && (
           <span
