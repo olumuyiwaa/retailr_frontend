@@ -36,6 +36,8 @@ export default function StoreCheckout() {
     address: "", city: "", country: ctx?.store?.country ?? "", notes: "",
   });
   const [chosen, setChosen] = useState<StorePaymentMethod>("cod");
+  const [chosenMethod, setChosenMethod] = useState<"delivery" | "pickup">("delivery");
+  const [zoneId, setZoneId] = useState("");
   const [couponInput, setCouponInput] = useState("");
   const [coupon, setCoupon] = useState<{ code: string; discount: number } | null>(null);
   const [couponMsg, setCouponMsg] = useState<string | null>(null);
@@ -49,6 +51,13 @@ export default function StoreCheckout() {
   const offered = store.paymentMethods ?? METHODS.map((m) => m.id);
   const methods = METHODS.filter((m) => offered.includes(m.id));
   const payment = methods.some((m) => m.id === chosen) ? chosen : methods[0]?.id;
+  // delivery: what the owner set up. With nothing set up, shoppers just give an address and delivery is arranged by the store.
+  const dc = store.delivery;
+  const configured = !!dc?.configured;
+  const zones = dc?.zones ?? [];
+  const pickupOn = !!dc?.pickup.enabled;
+  const method: "delivery" | "pickup" = !configured ? "delivery" : !zones.length ? "pickup" : !pickupOn ? "delivery" : chosenMethod;
+  const zone = zones.find((z) => z.id === zoneId) ?? (zones.length === 1 ? zones[0] : undefined);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setF((v) => ({ ...v, [k]: e.target.value }));
 
@@ -67,7 +76,10 @@ export default function StoreCheckout() {
   }
 
   const discount = coupon?.discount ?? 0;
-  const payable = Math.round((total - discount) * 100) / 100;
+  const net = Math.round((total - discount) * 100) / 100;
+  const freeShip = dc?.freeShippingThreshold != null && net >= dc.freeShippingThreshold;
+  const shipping = !configured || method === "pickup" || !zone ? 0 : freeShip ? 0 : zone.fee;
+  const payable = Math.round((net + shipping) * 100) / 100;
 
   const applyCoupon = async () => {
     if (!couponInput.trim()) return;
@@ -91,14 +103,16 @@ export default function StoreCheckout() {
     if (!/^\S+@\S+\.\S+$/.test(f.email.trim())) return setError("Please enter a valid email address.");
     if (f.phone.replace(/\D/g, "").length < 7) return setError("Please enter a valid phone number.");
     if (!payment) return setError("This store isn't taking orders online right now. Please contact the business.");
-    if (!f.address.trim() || !f.city.trim() || !f.country.trim()) return setError("Please enter your full delivery address.");
+    if (configured && method === "delivery" && !zone) return setError("Choose where we should deliver to.");
+    if (method === "delivery" && (!f.address.trim() || !f.city.trim() || !f.country.trim())) return setError("Please enter your full delivery address.");
 
     setBusy(true);
     try {
       const order = await placeOrder({
         slug: store.slug,
         customer: { name: `${f.firstName.trim()} ${f.lastName.trim()}`, email: f.email, phone: f.phone },
-        shippingAddress: `${f.address.trim()}, ${f.city.trim()}, ${f.country.trim()}`,
+        ...(method === "delivery" ? { shippingAddress: `${f.address.trim()}, ${f.city.trim()}, ${f.country.trim()}` } : {}),
+        ...(configured ? { deliveryMethod: method, ...(method === "delivery" && zone ? { deliveryZoneId: zone.id } : {}) } : {}),
         notes: f.notes,
         paymentMethod: payment,
         couponCode: coupon?.code,
@@ -149,6 +163,48 @@ export default function StoreCheckout() {
                       <input id="phone" type="tel" className={input} value={f.phone} onChange={set("phone")} autoComplete="tel" />
                     </div>
                   </div>
+                  {configured && (
+                    <div className="mb-5" role="radiogroup" aria-label="Delivery option">
+                      {zones.length > 0 && pickupOn && (
+                        <div className="mb-4 grid grid-cols-2 gap-3">
+                          {(["delivery", "pickup"] as const).map((m) => (
+                            <button key={m} type="button" role="radio" aria-checked={method === m} onClick={() => setChosenMethod(m)}
+                              className={`rounded-2xl border py-3 px-4 text-left ${method === m ? "border-[color:var(--brand)] bg-[color:var(--tint)]" : "border-[color:var(--line)] bg-white"}`}>
+                              <span className="block font-medium text-dark">{m === "delivery" ? "Delivery" : "Pickup"}</span>
+                              <span className="block text-custom-sm text-dark-4">{m === "delivery" ? "We bring it to you" : "Collect it, no delivery fee"}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {method === "delivery" ? (
+                        <>
+                          <label htmlFor="zone" className="block mb-2.5">Deliver to <span className="text-red">*</span></label>
+                          <select id="zone" className={input} value={zone?.id ?? ""} onChange={(e) => setZoneId(e.target.value)}>
+                            <option value="" disabled>Choose a location</option>
+                            {(["local", "international"] as const).map((k) => {
+                              const list = zones.filter((z) => z.kind === k);
+                              return list.length ? (
+                                <optgroup key={k} label={k === "local" ? "Delivery zones" : "International"}>
+                                  {list.map((z) => <option key={z.id} value={z.id}>{z.name} · {z.fee === 0 || freeShip ? "Free" : fmt(z.fee)}</option>)}
+                                </optgroup>
+                              ) : null;
+                            })}
+                          </select>
+                          {zone?.note && <p className="mt-2 text-custom-sm text-dark-4">{zone.note}</p>}
+                          {dc?.note && <p className="mt-2 text-custom-sm text-dark-4">{dc.note}</p>}
+                          {dc?.freeShippingThreshold != null && !freeShip && <p className="mt-2 text-custom-sm text-dark-4">Free delivery on orders of {fmt(dc.freeShippingThreshold)} or more.</p>}
+                        </>
+                      ) : (
+                        <div className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--tint)] p-4 text-custom-sm text-dark">
+                          <p className="font-medium">Collect from</p>
+                          <p>{dc?.pickup.address}</p>
+                          {dc?.pickup.hours && <p className="text-dark-4">{dc.pickup.hours}</p>}
+                          {dc?.pickup.instructions && <p className="text-dark-4">{dc.pickup.instructions}</p>}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {method === "delivery" && (<>
                   <div className="mb-5">
                     <label htmlFor="address" className="block mb-2.5">Street address <span className="text-red">*</span></label>
                     <input id="address" className={input} value={f.address} onChange={set("address")} placeholder="House number and street name" autoComplete="street-address" />
@@ -163,6 +219,7 @@ export default function StoreCheckout() {
                       <input id="country" className={input} value={f.country} onChange={set("country")} autoComplete="country-name" />
                     </div>
                   </div>
+                  </>)}
                   <div>
                     <label htmlFor="notes" className="block mb-2.5">Order notes (optional)</label>
                     <textarea id="notes" rows={4} className={input} value={f.notes} onChange={set("notes")} placeholder="Notes about your order, e.g. special notes for delivery." />
@@ -193,7 +250,7 @@ export default function StoreCheckout() {
                     ))}
                     <div className="flex items-center justify-between py-5 border-b border-[color:var(--line)]">
                       <p className="text-dark">Delivery</p>
-                      <p className="text-dark text-right">Arranged by {store.name}</p>
+                      <p className="text-dark text-right">{!configured ? `Arranged by ${store.name}` : method === "pickup" ? "Pickup · Free" : !zone ? "Choose a location" : shipping === 0 ? "Free" : fmt(shipping)}</p>
                     </div>
                     <div className="py-5 border-b border-[color:var(--line)]">
                       {coupon ? (

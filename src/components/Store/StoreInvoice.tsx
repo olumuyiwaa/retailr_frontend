@@ -70,6 +70,7 @@ export default function StoreInvoice({ orderId }: { orderId: string }) {
               {order.customerEmail && <p>{order.customerEmail}</p>}
               {order.customerPhone && <p>{order.customerPhone}</p>}
               {order.shippingAddress && <p>{order.shippingAddress}</p>}
+              {order.deliveryMethod === "pickup" && <p>Pickup order</p>}
             </div>
             <div className="sm:text-right">
               <p className="mb-1 text-dark-4">Payment</p>
@@ -106,6 +107,7 @@ export default function StoreInvoice({ orderId }: { orderId: string }) {
           <dl className="ml-auto mt-6 w-full max-w-[280px] space-y-2 text-custom-sm text-dark">
             <div className="flex justify-between"><dt>Subtotal</dt><dd>{fmt(subtotal)}</dd></div>
             {order.discount ? <div className="flex justify-between"><dt>Discount{order.couponCode ? ` (${order.couponCode})` : ""}</dt><dd>−{fmt(order.discount)}</dd></div> : null}
+            {order.deliveryMethod ? <div className="flex justify-between"><dt>{order.deliveryMethod === "pickup" ? "Pickup" : `Delivery${order.deliveryZone ? ` (${order.deliveryZone})` : ""}`}</dt><dd>{order.shippingFee ? fmt(order.shippingFee) : "Free"}</dd></div> : null}
             <div className="flex justify-between border-t border-[color:var(--line)] pt-3 text-lg font-semibold"><dt>Total</dt><dd>{fmt(order.total)}</dd></div>
             <div className="flex justify-between text-dark-4"><dt>{paid ? "Amount paid" : "Amount due"}</dt><dd>{fmt(order.total)}</dd></div>
           </dl>

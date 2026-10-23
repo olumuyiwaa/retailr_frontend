@@ -74,6 +74,9 @@ export interface Business {
   paymentMethods?: StorePaymentMethod[];
   /** The account shoppers transfer to. Bank transfer is only offered once bank name, account number and account name are set. */
   bankAccount?: BankAccount | null;
+  delivery?: DeliveryConfig;
+  /** Free-shipping thresholds are a paid-plan feature. */
+  canSetFreeShipping?: boolean;
   /** The saved choice minus anything that can't work yet (card outside demo mode, bank without details). */
   availableMethods?: StorePaymentMethod[];
   /** Card is a demo; the server only allows it in demo mode. */
@@ -255,6 +258,22 @@ export interface OrderItem {
   price: number;
 }
 
+export interface DeliveryZone {
+  id: string;
+  /** Local zones are areas (a state, a neighbourhood); international zones are countries. */
+  kind: "local" | "international";
+  name: string;
+  fee: number;
+  note?: string;
+}
+export interface DeliveryConfig {
+  pickup: { enabled: boolean; address?: string; hours?: string; instructions?: string };
+  zones: DeliveryZone[];
+  /** Orders at or above this ship free. Paid plans only; null when unset or not on the plan. */
+  freeShippingThreshold: number | null;
+  note?: string;
+}
+
 export interface Order {
   id: string;
   businessId: string;
@@ -277,6 +296,10 @@ export interface Order {
   /** Shopper discount applied at checkout; `total` is already net of it. */
   couponCode?: string;
   discount?: number;
+  /** Added to `total`. 0 for pickup, free-shipping orders and orders from before delivery options. */
+  shippingFee?: number;
+  deliveryMethod?: "delivery" | "pickup";
+  deliveryZone?: string;
   receiptSentAt?: string;
 }
 
@@ -315,6 +338,8 @@ export interface PublicStore {
   paymentMethods?: StorePaymentMethod[];
   /** Present only while bank transfer is offered. */
   bankAccount?: BankAccount;
+  /** `configured` is false until the owner adds a zone or pickup; checkout then asks for an address only. */
+  delivery?: DeliveryConfig & { configured: boolean };
 }
 
 export interface Customer {

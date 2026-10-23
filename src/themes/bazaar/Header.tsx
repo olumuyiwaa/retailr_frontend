@@ -57,7 +57,7 @@ export default function BazaarHeader() {
       <header className="sticky top-0 z-50 border-b bg-white shadow-sm" style={{ borderColor: "var(--line)" }}>
         <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-3 px-4 py-3 sm:px-6 lg:gap-5 lg:px-10">
           <Link href={href("/")} className="flex shrink-0 items-center gap-2" aria-label={`${store.name} home`}>
-            {store.logo && <StoreLogo name={store.name} logo={store.logo} className="h-9 w-9 rounded object-cover" />}
+            {store.logo && <StoreLogo name={store.name} logo={store.logo} size={36} />}
             <span className="text-lg font-extrabold tracking-tight text-dark sm:text-xl">{store.name}</span>
           </Link>
 

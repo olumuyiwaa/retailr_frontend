@@ -11,6 +11,7 @@ import { setBizCurrency } from "@/hooks/useBizMoney";
 import { fileToDataUrl } from "@/lib/image";
 import ThemePicker from "@/components/saas/ThemePicker";
 import PaymentOptions from "@/components/saas/PaymentOptions";
+import DeliveryOptions from "@/components/saas/DeliveryOptions";
 import type { Currency } from "@/types/saas";
 
 const CATEGORIES = ["Fashion & Textiles", "Food & Groceries", "Beauty & Wellness", "Crafts & Decor", "Coffee & Tea", "Jewellery", "Other"];
@@ -141,6 +142,8 @@ export default function StoreSettingsPage() {
           </Card>
 
           <PaymentOptions businessId={bid} business={data} className="mb-0" />
+
+          <DeliveryOptions businessId={bid} business={data} />
 
           <Card>
             <CardHeader title="Business profile" subtitle="Shown on your storefront." />

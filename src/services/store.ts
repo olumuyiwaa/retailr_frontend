@@ -30,7 +30,10 @@ export const validateCoupon = (slug: string, code: string, subtotal: number) =>
 export interface PlaceOrderInput {
   slug: string;
   customer: { name: string; email: string; phone: string };
-  shippingAddress: string;
+  /** Not needed for pickup. */
+  shippingAddress?: string;
+  deliveryMethod?: "delivery" | "pickup";
+  deliveryZoneId?: string;
   notes?: string;
   paymentMethod: PaymentMethod;
   couponCode?: string;

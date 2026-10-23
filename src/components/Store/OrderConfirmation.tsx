@@ -77,6 +77,12 @@ export default function OrderConfirmation({ orderId }: { orderId: string }) {
                   <p className="text-dark">−{fmt(order.discount)}</p>
                 </div>
               ) : null}
+              {order.deliveryMethod ? (
+                <div className="flex items-center justify-between px-5 py-4 border-b border-[color:var(--line)]">
+                  <p className="text-dark">{order.deliveryMethod === "pickup" ? "Pickup" : `Delivery${order.deliveryZone ? ` (${order.deliveryZone})` : ""}`}</p>
+                  <p className="text-dark">{order.shippingFee ? fmt(order.shippingFee) : "Free"}</p>
+                </div>
+              ) : null}
               <div className="flex items-center justify-between px-5 py-4">
                 <p className="font-medium text-dark">Total</p>
                 <p className="font-medium text-dark">{fmt(order.total)}</p>
@@ -84,7 +90,11 @@ export default function OrderConfirmation({ orderId }: { orderId: string }) {
             </div>
 
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 mb-8 text-custom-sm">
-              <div><dt className="text-dark-4">Deliver to</dt><dd className="text-dark">{order.shippingAddress}</dd></div>
+              {order.deliveryMethod === "pickup" ? (
+                <div><dt className="text-dark-4">Collect from</dt><dd className="text-dark">{store.delivery?.pickup.address}{store.delivery?.pickup.hours ? ` · ${store.delivery.pickup.hours}` : ""}</dd></div>
+              ) : (
+                <div><dt className="text-dark-4">Deliver to</dt><dd className="text-dark">{order.shippingAddress}</dd></div>
+              )}
               <div><dt className="text-dark-4">Contact</dt><dd className="text-dark">{order.customerEmail} · {order.customerPhone}</dd></div>
               <div className="sm:col-span-2"><dt className="text-dark-4">What happens next</dt><dd className="text-dark">{order.paymentMethod ? NEXT_STEPS[order.paymentMethod] : ""}</dd></div>
             </dl>

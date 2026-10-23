@@ -1,6 +1,6 @@
 // Business admin services. The API works out which business you are from your sign-in, so the businessId arguments are kept only so
 // the screens read the same as before: they are not sent.
-import type {
+import type { DeliveryConfig, DeliveryZone,
   BankAccount, Booking, BookingSettings, BookingStatus,
   Audience, Business, BusinessOverview, BusinessUsage, Category, Coupon, Customer, CustomerGroup, GroupRuleType, Invoice, Message,
   MessageChannel, Order, OrderStatus, PaymentMethod, Plan, Product, SalesChannel, Service, Subscription, TeamMember, TimeSeriesPoint,
@@ -189,7 +189,7 @@ export async function updateBusinessProfile(
   _b: string,
   patch: Partial<Pick<Business, "name" | "description" | "phone" | "country" | "city" | "brandColor" | "category" | "currency" | "theme" | "paymentMethods">> & {
     /** The bank account for transfers; null removes it (not while bank transfer is on). */
-    bankAccount?: BankAccount | null;
+    bankAccount?: BankAccount | null; delivery?: Omit<DeliveryConfig, "zones"> & { zones: (Omit<DeliveryZone, "id"> & { id?: string })[] };
     /** picked file as a data URL to set, null to remove, undefined to leave unchanged */
     logo?: string | null;
   }

@@ -132,8 +132,9 @@ export default function OrdersPage() {
                 </span>
               )}
             </div>
-            {(selected.shippingAddress || selected.customerEmail || selected.notes) && (
+            {(selected.shippingAddress || selected.customerEmail || selected.notes || selected.deliveryMethod) && (
               <dl className="grid grid-cols-3 gap-y-3 rounded-xl bg-gray-50 p-4 text-theme-sm dark:bg-white/5">
+                {selected.deliveryMethod && (<><dt className="text-gray-500">Delivery</dt><dd className="col-span-2 text-gray-800 dark:text-white/90">{selected.deliveryMethod === "pickup" ? "Customer pickup" : selected.deliveryZone ?? "Delivery"}{selected.shippingFee ? ` · ${fmt(selected.shippingFee)}` : " · Free"}</dd></>)}
                 {selected.shippingAddress && (<><dt className="text-gray-500">Deliver to</dt><dd className="col-span-2 text-gray-800 dark:text-white/90">{selected.shippingAddress}</dd></>)}
                 {selected.customerEmail && (<><dt className="text-gray-500">Email</dt><dd className="col-span-2 break-all text-gray-800 dark:text-white/90">{selected.customerEmail}</dd></>)}
                 {selected.customerPhone && (<><dt className="text-gray-500">Phone</dt><dd className="col-span-2 text-gray-800 dark:text-white/90">{selected.customerPhone}</dd></>)}
