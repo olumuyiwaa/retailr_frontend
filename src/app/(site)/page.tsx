@@ -208,7 +208,7 @@ export default function LandingPage() {
               <div key={t.id} className="flex flex-col rounded-2xl bg-white p-4 shadow-theme-xs ring-1 ring-gray-200">
                 <ThemeThumb
                   swatches={t.swatches}
-                  layout={t.id === "showcase" ? "showcase" : t.id === "atelier" ? "atelier" : t.id === "market" ? "market" : "classic"}
+                  layout={t.id === "showcase" ? "showcase" : t.id === "atelier" ? "atelier" : t.id === "market" ? "market" : t.id === "bazaar" ? "bazaar" : t.id === "shop" ? "shop" : t.id === "bazaar" ? "bazaar" : "classic"}
                 />
                 <h3 className="mt-4 font-semibold">{t.name}</h3>
                 <p className="mt-1 flex-1 text-sm text-gray-500">{t.description}</p>

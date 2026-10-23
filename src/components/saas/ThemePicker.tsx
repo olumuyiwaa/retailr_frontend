@@ -53,7 +53,7 @@ export default function ThemePicker({ businessId, planId, current, onSaved }: { 
               } ${locked ? "cursor-not-allowed opacity-60" : ""
               }`}
             >
-              <ThemeThumb swatches={t.swatches} layout={t.id === "showcase" ? "showcase" : t.id === "atelier" ? "atelier" : t.id === "market" ? "market" : t.id === "shop" ? "shop" : "classic"} />
+              <ThemeThumb swatches={t.swatches} layout={t.id === "showcase" ? "showcase" : t.id === "atelier" ? "atelier" : t.id === "market" ? "market" : t.id === "bazaar" ? "bazaar" : t.id === "shop" ? "shop" : "classic"} />
               <div className="mt-3 flex items-center justify-between gap-2">
                 <span className="font-medium text-gray-800 dark:text-white/90">{t.name}</span>
                 {locked && <span className="rounded-full bg-gray-100 px-2 py-0.5 text-theme-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300">Upgrade</span>}

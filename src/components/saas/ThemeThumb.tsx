@@ -30,6 +30,7 @@ export default function ThemeThumb({
       {layout === "atelier" && <AtelierThumb bg={bg} surface={surface} accent={accent} large={large} />}
       {layout === "market" && <MarketThumb bg={bg} surface={surface} accent={accent} large={large} />}
       {layout === "shop" && <ShopThumb bg={bg} surface={surface} accent={accent} large={large} />}
+      {layout === "bazaar" && <BazaarThumb bg={bg} surface={surface} accent={accent} large={large} />}
     </div>
   );
 }
@@ -434,4 +435,10 @@ function ShopThumb({ accent, large }: Props) {
       )}
     </div>
   );
+}
+
+
+function BazaarThumb(props: Props) {
+  /* 1688-style: orange search chrome + dense grid, reuse market density with orange accent */
+  return <MarketThumb {...props} />;
 }

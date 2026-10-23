@@ -90,6 +90,19 @@ export const THEME_META: Record<string, ThemeMeta> = {
     ],
     paletteLabels: ["White background", "Light grey surface", "Near-black accent"],
   },
+  bazaar: {
+    layout: "bazaar",
+    category: "Marketplace",
+    tagline: "Wholesale marketplace: orange search, category sidebar and price-first dense grids — inspired by 1688.",
+    bestFor: ["Wholesale & bulk catalogues", "Electronics & accessories", "Multi-category stores", "High SKU counts"],
+    highlights: [
+      "Orange search bar and CTAs",
+      "Left category sidebar on home",
+      "Dense product grids (up to 6 columns)",
+      "Price-forward cards with stock hints",
+    ],
+    paletteLabels: ["Warm wash", "White surface", "Orange accent"],
+  },
 };
 
 /* ── Browser chrome frame ─────────────────────────────────────────────── */

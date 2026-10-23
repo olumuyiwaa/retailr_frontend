@@ -31,4 +31,4 @@ export const DEMO_PRODUCTS = [
 
 export const DEMO_CATEGORIES = ["Women", "Men", "Unisex", "Oud & Attar", "Body Mist", "Gift Sets"] as const;
 
-export type ThemeLayout = "classic" | "showcase" | "atelier" | "market" | "shop";
+export type ThemeLayout = "classic" | "showcase" | "atelier" | "market" | "shop" | "bazaar";
