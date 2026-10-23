@@ -70,9 +70,14 @@ export interface Business {
   logo?: string;
   /** Currency the store sells in; product prices are entered in it. */
   currency: Currency;
+  /** What the owner chose. Shoppers only see the ones that work (see `availableMethods`). */
   paymentMethods?: StorePaymentMethod[];
-  /** Shown to shoppers who choose bank transfer. */
-  bankDetails?: string;
+  /** The account shoppers transfer to. Bank transfer is only offered once bank name, account number and account name are set. */
+  bankAccount?: BankAccount | null;
+  /** The saved choice minus anything that can't work yet (card outside demo mode, bank without details). */
+  availableMethods?: StorePaymentMethod[];
+  /** Card is a demo; the server only allows it in demo mode. */
+  cardAvailable?: boolean;
   description: string;
   status: BusinessStatus;
   planId: string;
@@ -84,6 +89,17 @@ export interface Business {
 export interface ProductSpec {
   label: string;
   value: string;
+}
+
+export interface BankAccount {
+  bankName: string;
+  accountNumber: string;
+  accountName: string;
+  instructions?: string;
+  branch?: string;
+  sortCode?: string;
+  swiftCode?: string;
+  iban?: string;
 }
 
 export interface Category {
@@ -297,7 +313,8 @@ export interface PublicStore {
   logo?: string;
   currency: Currency;
   paymentMethods?: StorePaymentMethod[];
-  bankDetails?: string;
+  /** Present only while bank transfer is offered. */
+  bankAccount?: BankAccount;
 }
 
 export interface Customer {

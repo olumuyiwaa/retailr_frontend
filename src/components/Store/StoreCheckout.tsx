@@ -13,12 +13,13 @@ import { placeOrder, validateCoupon } from "@/services/store";
 import { track } from "@/services/analytics";
 import type { StorePaymentMethod } from "@/types/saas";
 
+import BankTransferDetails from "./BankTransferDetails";
 const input =
   "rounded-xl border border-[color:var(--line)] bg-white placeholder:text-dark-5 w-full py-3 px-4 text-dark outline-none duration-200 focus:border-[color:var(--brand)] focus:ring-2 focus:ring-blue/20";
 
 const METHODS: { id: StorePaymentMethod; title: string; hint: string }[] = [
   { id: "cod", title: "Pay on delivery", hint: "Pay in cash when your order arrives." },
-  { id: "bank", title: "Direct bank transfer", hint: "The business will contact you with their bank details." },
+  { id: "bank", title: "Direct bank transfer", hint: "Transfer to the business's account; they confirm your order once it arrives." },
   { id: "card", title: "Card (demo)", hint: "Demo only — no real payment is taken." },
 ];
 
@@ -255,9 +256,9 @@ export default function StoreCheckout() {
                             }`}
                           >
                             <span className="block text-dark">{m.title}</span>
-                            <span className="block text-custom-sm text-dark-4">{m.id === "bank" && store.bankDetails ? "Transfer to the account below; the business confirms your order once it arrives." : m.hint}</span>
-                            {m.id === "bank" && store.bankDetails && payment === "bank" && (
-                              <span className="mt-2 block whitespace-pre-line rounded-lg bg-white/70 px-3 py-2 text-custom-sm font-medium text-dark">{store.bankDetails}</span>
+                            <span className="block text-custom-sm text-dark-4">{m.hint}</span>
+                            {m.id === "bank" && store.bankAccount && payment === "bank" && (
+                              <span className="mt-2 block"><BankTransferDetails account={store.bankAccount} /></span>
                             )}
                           </span>
                         </label>

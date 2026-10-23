@@ -1,7 +1,7 @@
 // Business admin services. The API works out which business you are from your sign-in, so the businessId arguments are kept only so
 // the screens read the same as before: they are not sent.
 import type {
-  Booking, BookingSettings, BookingStatus,
+  BankAccount, Booking, BookingSettings, BookingStatus,
   Audience, Business, BusinessOverview, BusinessUsage, Category, Coupon, Customer, CustomerGroup, GroupRuleType, Invoice, Message,
   MessageChannel, Order, OrderStatus, PaymentMethod, Plan, Product, SalesChannel, Service, Subscription, TeamMember, TimeSeriesPoint,
 } from "@/types/saas";
@@ -187,7 +187,9 @@ export async function changePlan(_b: string, planId: string, cycle: "monthly" | 
 export const getBusinessProfile = (_b: string) => api.get<Business>("/business/profile");
 export async function updateBusinessProfile(
   _b: string,
-  patch: Partial<Pick<Business, "name" | "description" | "phone" | "country" | "city" | "brandColor" | "category" | "currency" | "theme" | "paymentMethods" | "bankDetails">> & {
+  patch: Partial<Pick<Business, "name" | "description" | "phone" | "country" | "city" | "brandColor" | "category" | "currency" | "theme" | "paymentMethods">> & {
+    /** The bank account for transfers; null removes it (not while bank transfer is on). */
+    bankAccount?: BankAccount | null;
     /** picked file as a data URL to set, null to remove, undefined to leave unchanged */
     logo?: string | null;
   }

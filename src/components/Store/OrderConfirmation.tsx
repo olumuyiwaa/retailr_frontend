@@ -4,10 +4,11 @@ import Link from "next/link";
 import { useStore } from "@/app/context/StoreContext";
 import { getOrderForConfirmation } from "@/services/store";
 import type { Order } from "@/types/saas";
+import BankTransferDetails from "./BankTransferDetails";
 
 const NEXT_STEPS: Record<string, string> = {
   cod: "Please have the exact amount ready — you'll pay when your order is delivered.",
-  bank: "The business will contact you shortly with their bank details so you can complete payment.",
+  bank: "Please transfer the total to the account below, using your order number as the reference. The business confirms your order once the money arrives.",
   card: "Your demo card payment went through. No real money was taken.",
   cash: "Your cash payment has been recorded.",
   pos: "Your card payment has been recorded.",
@@ -87,6 +88,12 @@ export default function OrderConfirmation({ orderId }: { orderId: string }) {
               <div><dt className="text-dark-4">Contact</dt><dd className="text-dark">{order.customerEmail} · {order.customerPhone}</dd></div>
               <div className="sm:col-span-2"><dt className="text-dark-4">What happens next</dt><dd className="text-dark">{order.paymentMethod ? NEXT_STEPS[order.paymentMethod] : ""}</dd></div>
             </dl>
+            {order.paymentMethod === "bank" && store.bankAccount && (
+              <div className="mb-8 rounded-2xl border border-[color:var(--line)] bg-[color:var(--tint)] p-4">
+                <p className="mb-2 font-medium text-dark">Pay {fmt(order.total)} to</p>
+                <BankTransferDetails account={store.bankAccount} reference={order.number} />
+              </div>
+            )}
 
             <div className="flex flex-wrap items-center justify-center gap-3">
               <Link href={href(`/invoice/${order.id}`)} className="inline-flex h-12 items-center rounded-full px-8 font-medium text-dark ring-1 ring-inset ring-[color:var(--line)] hover:bg-[color:var(--tint)]">
