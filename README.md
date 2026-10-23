@@ -1,126 +1,237 @@
-# Retailr
+# Retailr — Frontend
 
-A multi-tenant SaaS platform that lets small African businesses subscribe, get their own online storefront and run it from a simple admin. Think Bumpa-style commerce for sellers: products, orders, customers, discounts, invoices and billing, with local-currency pricing.
+A multi-tenant SaaS platform that lets small African businesses subscribe, get their own branded online storefront and run everything from a simple admin dashboard. Think Bumpa-style commerce: products, orders, customers, discounts, bookings, invoices and billing, all in one place.
 
-> **Status:** connected to the [Retailr API](https://github.com/olumuyiwaa/retailr) (NestJS + Prisma + PostgreSQL). Set `NEXT_PUBLIC_API_URL` to its `/api/v1` address (see `.env.example`); there is no mock data any more.
+> **Status:** fully connected to the [Retailr API](https://github.com/olumuyiwaa/retailr) (NestJS + Prisma + PostgreSQL). There is no mock data. Set `NEXT_PUBLIC_API_URL` to the API's `/api/v1` address before starting.
 
-## What's in it
+---
 
-**Three surfaces**
+## The three surfaces
 
-| Surface | URL | Who |
-| --- | --- | --- |
-| Marketing + sign-up | `/`, `/get-started` | Prospective businesses |
+| Surface | URL pattern | Who uses it |
+|---|---|---|
+| Marketing + sign-up | `/`, `/themes`, `/get-started` | Prospective businesses |
 | Business admin | `/admin/business/*` | Store owners and staff |
-| Super admin | `/admin/super/*` | The Retailr team |
-| Public storefront | `/s/<slug>` | Shoppers |
+| Super admin | `/admin/super/*` | The Retailr platform team |
+| Public storefront | `/s/<slug>/*` | Shoppers |
 
-**Business admin:** dashboard with setup checklist, KPIs and needs-attention panel; one search box in the header that finds orders, customers, products and services (or jumps to a page); separate Products and Services pages and API tables (a service has no stock, an optional duration, a bookable switch and options such as Basic or Premium; products get up to 6 photos with a cover image, size/colour variants with their own stock and price, and up to 10 custom details such as Material or Density, with suggested names for the business type); categories the business creates and manages itself, each with a cover picture (rename moves its products, delete leaves them uncategorised); orders (status updates, invoice link, send receipt); customers (filter by group); record a sale (in person, WhatsApp, Instagram or phone sales with custom prices, discount, paid/owing and walk-in or saved customers; stock updates immediately); reports (sales over time, by channel and payment method, best sellers, top customers, money still owed); site analytics (visitors, visits, page views, conversion, a visit-to-order funnel, traffic sources, devices, countries, most visited pages and products); customer groups (automatic rules like "spent over X" or hand-picked); messages (email or SMS to everyone or a group, with {{first_name}} and {{store}} personalisation; the history shows how many were sent and how many failed); discounts and coupons; team; billing and plan changes (with a discount-code box); store settings (logo, currency, storefront theme, profile, and which payment options checkout offers: pay on delivery, bank transfer with your account details, or the card demo).
+---
 
-**Notifications:** the bell in the admin header shows new orders (whole team), low and sold-out stock (owner and managers) and, for super admins, new business sign-ups, refreshed every 30 seconds. Under it, a switch turns on browser push for this device (`public/sw.js` is the service worker); the API needs VAPID keys for that, see its `docs/DEPLOY.md`. Push works on HTTPS, and on iPhone and iPad only once the site is added to the home screen.
+## Business admin
 
-**Super admin:** platform overview (MRR, churn, sign-ups, alerts); site analytics (marketing-site traffic and sign-up funnel, plus traffic and conversion across all stores, busiest stores); business approvals, suspend/reactivate; plans editor; subscriptions; invoices; subscription discounts (percentage or fixed USD codes, optionally limited to certain plans or one business, with a use limit and expiry; businesses enter them at sign-up or when changing plan, and the discount comes off every billing period while they stay on that plan).
+- **Dashboard** — setup checklist, KPI cards (revenue, orders, customers, GMV), needs-attention panel (low stock, unpaid orders).
+- **Header search (⌘K)** — finds orders, customers, products and services instantly, or jumps to any admin page.
+- **Products** — up to 6 photos with a cover image, size/colour variants with individual stock and price, up to 10 custom detail fields (e.g. Material, Density), SKU, and a status (Active / Draft / Out of stock).
+- **Services** — separate from products: no stock, optional duration, bookable switch, and options like "Basic" or "Premium" with their own price.
+- **Categories** — the business creates and manages its own categories, each with a cover picture. Renaming moves its products; deleting leaves them uncategorised.
+- **Orders** — status updates (Pending → Processing → Shipped → Delivered), invoice link, send receipt by email.
+- **Record a sale** — in-person, WhatsApp, Instagram or phone sales with a custom price, discount, paid/owing toggle and walk-in or saved customers; stock decrements immediately.
+- **Customers** — list with filter by group, individual view with order history and spend.
+- **Bookings** — calendar view (month / week / day), click a time slot to book manually; bookable services set opening hours, notice period and capacity per slot. Customers get a public link to cancel. A private iCalendar link lets the team sync bookings to Google, Apple or Outlook Calendar.
+- **Reports** — sales over time, breakdown by channel and payment method, best sellers, top customers, money still owed.
+- **Analytics** — visitors, visits, page views, conversion rate, visit-to-order funnel, traffic sources, devices, countries, top pages and top products.
+- **Customer groups** — automatic rules ("spent over X", "ordered at least N times", etc.) or hand-picked lists.
+- **Messaging** — email or SMS to everyone or a group, with `{{first_name}}` and `{{store}}` personalisation; history shows sent and failed counts.
+- **Coupons** — percent or fixed discount with minimum order, max uses and expiry date.
+- **Team** — invite staff by email (manager or staff role); accepted invites create a login. Plan limits enforced.
+- **Billing** — current plan, upgrade/downgrade with a discount-code box, invoice history.
+- **Store settings** — logo upload, brand colour, currency, storefront theme (with live preview thumbnails), profile, and which payment options checkout offers (pay on delivery, bank transfer with account details, or card).
+- **Notifications** — bell in the header shows new orders, low and sold-out stock; browser push available (HTTPS + VAPID keys required; iPhone/iPad need the site added to the home screen first).
 
-**Storefront:** each business gets a store with its own logo, categories and a photo gallery on every product page (home, shop, product, cart, checkout, order confirmation, printable invoice/receipt). Owners pick a **theme** under Store settings, and the store switches instantly (see Themes below). Only `active` and `trial` businesses are live; suspended or pending ones show an unavailable page.
+---
 
-**Themes:** three storefront looks ship today, **Classic** (default; soft and rounded, follows the brand colour), **Showcase** (marketplace layout from the original template: boxed hero, filter sidebar) and **Atelier** (warm editorial boutique with big portrait photos, built from a real hair-store design). A theme can restyle any page, header or footer and anything it skips falls back to Classic. Adding a theme is a new folder under `src/themes/` plus one line in `src/themes/registry.ts`; see `src/themes/README.md`. Gating themes by plan is planned.
+## Super admin
 
-**Pricing:** a free Basic plan plus Starter, Growth and Scale. Prices display in NGN, GHS, KES or USD via a currency switcher; platform accounting (MRR, invoices) stays in USD.
+- **Platform overview** — MRR, churn rate, new sign-ups, active businesses, GMV, alerts.
+- **Analytics** — marketing-site traffic and sign-up funnel; aggregate traffic and conversion across all storefronts; busiest stores.
+- **Businesses** — approve, suspend, reactivate; view each business's orders, customers and subscription.
+- **Plans editor** — create or edit plans (name, price, limits, features, which storefront themes the plan includes).
+- **Subscriptions** — view and manage all active subscriptions.
+- **Invoices** — platform billing history.
+- **Plan discount codes** — percent or fixed USD codes, optionally scoped to certain plans or a single business, with a use limit and expiry; businesses enter them at sign-up or plan change and the discount comes off every billing period.
 
-**Store currency:** each business picks the currency it sells in (NGN, GHS, KES or USD) under Store settings; the storefront, invoices and merchant reports all use it. New businesses default from their country.
+---
 
-**Discounts:** percent or fixed coupons with minimum order, max uses and expiry, validated again when the order is placed.
+## Public storefront
+
+Each business gets a store at `/s/<slug>`. Only `active` and `trial` businesses are live; others show an unavailable page.
+
+**Pages:** home, shop (with search, category filter, sort), product detail (photo gallery, variants, add to cart, bookings), cart, checkout (delivery details + payment method), order confirmation, printable invoice/receipt, wishlist/favourites, booking confirmation.
+
+**Favourites** — shoppers can heart any product card to save it. The wishlist persists in `localStorage` across sessions. A heart icon in every theme's header links to `/s/<slug>/wishlist`.
+
+**Themes** — five storefront looks ship today:
+
+| Theme | Style | Best for |
+|---|---|---|
+| **Classic** | Soft, rounded, follows brand colour | Any business |
+| **Showcase** | Marketplace grid with filter sidebar | Fashion, beauty, large catalogues |
+| **Atelier** | Warm editorial boutique, cream & brown, portrait cards | Boutiques, jewellery, hair & beauty |
+| **Market** | Bold navy header, dense grid, search bar | Electronics, FMCG, 50+ products |
+| **Shop** | Clean white, pill category strip, square cards with heart button | Beauty, fashion, sporting goods |
+
+Every theme has its own header, footer, home page, shop page, product page and cart page. Any page a theme doesn't implement falls back to Classic. Themes are gated per plan: the platform admin sets which themes each plan includes. Adding a new theme is a new folder in `src/themes/` plus one line in `registry.ts` — see `src/themes/README.md`.
+
+---
 
 ## Tech stack
 
-- Next.js 16 (App Router, Turbopack) and React 19
-- TypeScript, Tailwind CSS 3
-- Redux Toolkit (storefront cart, persisted in localStorage)
-- ApexCharts for dashboards
-- Built on the NextMerce free template and the TailAdmin design tokens
+| Layer | Choice |
+|---|---|
+| Framework | Next.js 16 (App Router, Turbopack) |
+| UI | React 19, TypeScript, Tailwind CSS 3 |
+| State | Redux Toolkit — cart and wishlist persisted in `localStorage` |
+| Charts | ApexCharts |
+| Foundation | NextMerce template + TailAdmin design tokens |
+
+---
 
 ## Getting started
 
 ```bash
+cp .env.example .env.local     # then fill in the values below
 npm install
-npm run dev
+npm run dev                    # http://localhost:3000
 ```
 
-Open http://localhost:3000. Production build: `npm run build && npm start`.
+**Required env vars:**
 
-Requires Node 20.9+ (Next.js 16). Other scripts: `npm run lint` (ESLint) and `npm run typecheck`.
+| Variable | Description |
+|---|---|
+| `NEXT_PUBLIC_API_URL` | API base URL, e.g. `http://localhost:4000/api/v1` |
+| `NEXT_PUBLIC_IMAGE_HOSTS` | Comma-separated extra image hostnames (your S3/R2/CDN domain) |
+| `NEXT_PUBLIC_DEMO_ENABLED` | Set `false` to hide demo buttons on production deployments |
 
-Copy `.env.example` to `.env.local` and point `NEXT_PUBLIC_API_URL` at the API (`http://localhost:4000/api/v1` by default). `NEXT_PUBLIC_IMAGE_HOSTS` lists extra hosts product photos are served from (your S3/R2/CDN domain), and `NEXT_PUBLIC_DEMO_ENABLED=false` hides the demo links and one-click demo sign-in on a deployment that hasn't run the API's `seed:demo`.
+Other scripts: `npm run build`, `npm run lint` (ESLint), `npm run typecheck`.
 
-### Demo accounts
+Requires Node 20.9+ (Next.js 16 minimum).
 
-Start the API first (see its README): run the migrations and `npm run seed` to create the plans and the super admin, and `npm run seed:demo` for a demo shop.
+---
+
+## Demo accounts
+
+Start the API first — run migrations and `npm run seed`, then `npm run seed:demo` for the demo shop.
 
 | Role | Email | Password |
-| --- | --- | --- |
-| Super admin | `admin@retailr.com` (or your `SEED_SUPER_ADMIN_EMAIL`) | `SEED_SUPER_ADMIN_PASSWORD` from the API's `.env` |
+|---|---|---|
+| Super admin | `admin@retailr.com` (or `SEED_SUPER_ADMIN_EMAIL`) | `SEED_SUPER_ADMIN_PASSWORD` from the API's `.env` |
 | Demo store owner (Scentora) | `demo@scentora.example` | `Demo@12345` |
-| Demo store manager / staff | `manager@scentora.example`, `staff@scentora.example` | `Demo@12345` |
+| Demo store manager | `manager@scentora.example` | `Demo@12345` |
+| Demo store staff | `staff@scentora.example` | `Demo@12345` |
 
-The sign-in page also has one-click demo buttons for the owner, manager and staff. Try the demo storefront at `/s/scentora`; the coupon `WELCOME10` gives 10% off. Or sign up at `/get-started` to create your own business. All data lives in the API's database; nothing is stored in the browser except your session and your cart.
+The sign-in page has one-click demo buttons for each role. The demo storefront is at `/s/scentora`; the coupon `WELCOME10` gives 10% off.
+
+---
 
 ## Project structure
 
 ```
 src/
   app/(site)/
-    page.tsx              marketing landing + pricing
-    get-started/          business sign-up
-    s/[slug]/…            public storefront routes
-    admin/login           sign-in
-    admin/(admin)/
-      super/…             super admin pages
-      business/…          business admin pages
+    page.tsx                  Marketing landing page
+    themes/                   Theme marketplace page (/themes)
+    get-started/              Business sign-up
+    s/[slug]/                 Public storefront routes
+      page.tsx                  Store home
+      shop/                     Shop / browse
+      product/[id]/             Product detail
+      cart/                     Cart
+      checkout/                 Checkout
+      order/[token]/            Order confirmation
+      invoice/[token]/          Printable invoice
+      wishlist/                 Saved favourites
+      booking/[token]/          Booking confirmation
+    admin/
+      login/                  Sign-in page
+      (admin)/
+        super/                Super admin pages
+        business/             Business admin pages
   components/
-    saas/                 admin UI kit (cards, tables, dashboard widgets, pricing)
-    Store/                Classic theme storefront components
-  themes/                 storefront themes (registry, classic, showcase, atelier)
-  services/               typed functions the screens call; each one is an HTTP call to the API
-  lib/api.ts              fetch client: session tokens, refresh-and-retry, error messages, paging
-  lib/upload.ts           image uploads (picked photos go to the API's upload URLs)
-  types/saas.ts           shared domain types
-  lib/                    currency, formatting, store theming, detail-name presets
-  redux/                  cart state
+    saas/                     Admin UI kit: cards, tables, widgets, ThemePicker, ThemeThumb,
+                              ThemesMarketplace, PricingCards, MarketingShell, …
+    Store/                    Shared storefront components (StoreHeader, StoreCart,
+                              StoreCheckout, StoreWishlist, FaveButton, …)
+    Common/                   Shared primitive components
+  themes/
+    registry.ts               THEMES array + getTheme() — register a theme here
+    ThemedPage.tsx            Lazy-loads the active theme's page or falls back to Classic
+    types.ts                  StoreTheme, ThemePage, ThemePageProps, ThemePalette types
+    classic/                  Default theme (delegates to src/components/Store/*)
+    showcase/                 Marketplace grid theme
+    atelier/                  Editorial boutique theme
+    market/                   Bold navy marketplace theme
+    shop/                     Clean white marketplace theme
+  services/                   Typed API call functions (one file per domain)
+  lib/
+    api.ts                    Fetch client: auth headers, refresh-and-retry, error parsing
+    upload.ts                 Image upload helpers (presigned PUT flow)
+    demoPhotos.ts             Unsplash demo assets for theme thumbnails
+  redux/
+    store.ts                  Redux store with manual localStorage persistence
+    features/
+      cart-slice.ts           Cart state (persisted under retailr:cart:v1)
+      wishlist-slice.ts       Wishlist/favourites state (persisted under retailr:wishlist:v1)
+  types/saas.ts               Shared domain types (Business, Product, Order, Plan, …)
 ```
 
-### How the data layer works
+---
 
-UI code never calls `fetch` directly. It calls typed async functions in `src/services/` (`auth`, `platform`, `business`, `store`, `analytics`, `plans`, `planCoupons`), which call the API through `src/lib/api.ts`. The business-admin functions still take a `businessId` first argument so the screens read as before, but the API works out the business from your sign-in and the argument is not sent. Sessions are an access token plus a rotating refresh token kept in localStorage; a 401 triggers one refresh and a retry, and a failed refresh signs you out. Visitor tracking is batched and sent to `/track` (browsers announcing themselves as headless or bots are ignored by the API). Plan payments redirect to the payment page and come back to `/admin/business/billing?reference=...`, which confirms the payment with the API. Team invites arrive by email and open `/admin/accept-invite?token=...`.
+## How the data layer works
 
-### Site analytics
+UI code never calls `fetch` directly. Every screen calls a typed function in `src/services/` which goes through `src/lib/api.ts`. The fetch client attaches the access token, retries once on a 401 (refreshes the token first), and signs the user out if the refresh fails.
 
-`StoreTracker` (storefronts) and `MarketingTracker` (landing and sign-up pages) send visits, page views, product views, add-to-cart, checkout and order events to the API's `/track` in small batches (`src/services/analytics.ts`); the pages read `getBusinessAnalytics` and `getPlatformAnalytics`. Visitors are counted once per day per browser, visits once per tab session, and the traffic source comes from `utm_source` or the referrer (try `/s/scentora?utm_source=whatsapp`). Each funnel step counts visits that reached it, and "Placed an order" counts visits that placed an order, so the funnel and conversion rate never exceed the number of visits.
+**Sessions** — access token + rotating refresh token, both stored in `localStorage`. A 401 triggers one silent refresh-and-retry; a second 401 signs the user out.
+
+**Cart and wishlist** — Redux slices that serialise their state to `localStorage` (`retailr:cart:v1` and `retailr:wishlist:v1`) on every change and reload it on startup. The cart is scoped to a single store (switching stores clears it). The wishlist is also store-scoped and persists across page refreshes.
+
+**Billing payments** — plan checkouts redirect to the payment provider page and return to `/admin/business/billing?reference=...`, which confirms the payment with the API.
+
+**Team invites** — arrive by email and open `/admin/accept-invite?token=...`.
+
+**Analytics** — `StoreTracker` (storefronts) and `MarketingTracker` (landing pages) batch events and send them to `/track`. Visitors are counted once per day per browser, sessions once per tab session.
+
+---
+
+## Adding a new storefront theme
+
+1. Create `src/themes/<id>/index.ts` exporting a `StoreTheme` (copy `atelier/index.ts` as a starting point).
+2. Build whichever pages you need (`Home.tsx`, `Shop.tsx`, `Product.tsx`, `Cart.tsx`, `Header.tsx`, `Footer.tsx`). Read data with `useStore()`.
+3. Register it in `src/themes/registry.ts` by adding it to the `THEMES` array.
+4. Add it to the `Plan.themes` default array in the Prisma schema (backend) and to `THEME_IDS` in `src/business/dto/business.dto.ts` (backend validation allowlist).
+
+Any page a theme doesn't provide falls back to Classic. Never rename a theme `id` once live stores use it.
+
+---
 
 ## Roadmap
 
 - [x] Storefronts, admin dashboards, plans and subscriptions
-- [x] Free plan and local-currency pricing
+- [x] Free plan and local-currency pricing (NGN, GHS, KES, USD)
 - [x] Discounts and coupons
 - [x] Invoices and receipts
 - [x] Product variants and photo upload
-- [x] Customer groups and messaging
-- [x] Storefront themes, managed categories and product details
+- [x] Customer groups and messaging (email + SMS)
+- [x] Storefront themes (Classic, Showcase, Atelier, Market, Shop)
+- [x] Theme marketplace page (`/themes`) with filter, search and per-theme deep-dive
+- [x] Gating themes by plan (platform admin sets which themes each plan includes)
 - [x] Site analytics for businesses and the platform
-- [x] Gating themes by plan (platform admin picks the themes per plan)
-- [ ] More themes
-- [x] Subscription payments (Paystack and Flutterwave) and owner-chosen checkout payment options (pay on delivery, bank transfer)
-- [ ] Online card payments at storefront checkout (the card option is a demo)
-- [ ] Delivery fees, zones and courier integrations
+- [x] Subscription payments (Paystack and Flutterwave)
+- [x] Owner-chosen checkout payment options (pay on delivery, bank transfer)
 - [x] Password reset and email verification
-- [x] Bookable services with opening hours and appointment slots (customers pay on arrival)
-- [x] Bookings calendar (month, week, day; click a time to book someone in) and a private link to sync bookings to Google, Apple or Outlook calendar
-- [ ] Take payment or a deposit when booking
+- [x] Bookable services with opening hours and appointment slots
+- [x] Bookings calendar and private iCalendar sync link
+- [x] Header search (⌘K) to jump to any admin page
+- [x] Notifications: new orders, low/sold-out stock, new sign-ups (bell + browser push)
+- [x] Save to favourites (heart button on every theme, persisted in localStorage)
+- [x] Wishlist page (`/s/<slug>/wishlist`) with add-to-cart from saved items
+- [ ] Online card payments at storefront checkout
+- [ ] Delivery fees, zones and courier integrations
+- [ ] Customer accounts for shoppers (saved addresses, order history)
 - [ ] Subdomain routing and custom domains
-- [x] NestJS + Prisma backend (the retailr repo)
-- [x] Header search to jump to any admin page (⌘K)
-- [x] Notifications for admins: new orders, low and sold-out stock, and new sign-ups for the platform, in the bell and as browser push
-- [x] Search across orders, customers and products (admin header search)
+- [ ] Take a deposit when booking
+
+---
 
 ## Credits
 
-Storefront scaffolding comes from the [NextMerce](https://nextmerce.com/) free Next.js eCommerce template; admin styling follows [TailAdmin](https://tailadmin.com/) conventions. Check each project's licence before commercial use.
+Storefront scaffolding from [NextMerce](https://nextmerce.com/) (free Next.js eCommerce template). Admin styling follows [TailAdmin](https://tailadmin.com/) conventions. Check each project's licence before commercial use.
