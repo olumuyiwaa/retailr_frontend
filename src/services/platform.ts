@@ -36,6 +36,22 @@ export const listInvoices = () => listAll<InvoiceRow>("/platform/invoices");
 export const listPlans = () => api.get<(Plan & { subscribers: number })[]>("/platform/plans");
 export const savePlan = (plan: Plan) => api.put<Plan>(`/platform/plans/${encodeURIComponent(plan.id)}`, plan);
 
+// ---------- payment providers ----------
+
+export interface PaymentProviderRow {
+  name: string;
+  label: string;
+  /** Its keys are set in the server's environment. */
+  configured: boolean;
+  /** Offered to businesses for new payments. */
+  enabled: boolean;
+  isDefault: boolean;
+  requiredEnv: string[];
+}
+export interface PaymentProviders { paymentsEnabled: boolean; providers: PaymentProviderRow[] }
+export const getPaymentProviders = () => api.get<PaymentProviders>("/platform/payment-providers");
+export const savePaymentProviders = (enabled: string[], def: string) => api.put<PaymentProviders>("/platform/payment-providers", { enabled, default: def });
+
 // ---------- subscription discounts ----------
 
 export type PlanCouponRow = PlanCoupon & { businessName?: string; planNames: string[]; redeemed: number; discountPerMonth: number };
