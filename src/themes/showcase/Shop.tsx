@@ -4,6 +4,10 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import ProductItem from "@/components/Common/ProductItem";
 import { useStore } from "@/app/context/StoreContext";
+import Pager from "@/components/Store/Pager";
+import { usePagination } from "@/lib/usePagination";
+
+const PAGE_SIZE = 12;
 
 type Sort = "latest" | "best" | "price-asc" | "price-desc";
 
@@ -13,6 +17,7 @@ export default function ShowcaseShop() {
   const [sort, setSort] = useState<Sort>("latest");
   const [inStock, setInStock] = useState(false);
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false); // phones only: the sidebar folds away so results come first
   const q = (params.get("q") ?? "").trim();
   const category = params.get("category") ?? "";
   const kind = params.get("kind") === "service" ? "service" : "product";
@@ -37,6 +42,8 @@ export default function ShowcaseShop() {
     return by;
   }, [ctx?.products, category, q, sort, kind, inStock, maxPrice]);
 
+  const paged = usePagination(list, `${kind}|${category}|${q}|${sort}|${inStock}|${maxPrice}`, PAGE_SIZE);
+
   if (!ctx?.store) return null;
   const { categories, href, fmt, products } = ctx;
   const goods = products.filter((p) => (p.kind ?? "product") === "product");
@@ -59,7 +66,7 @@ export default function ShowcaseShop() {
     category || (q ? `Results for “${q}”` : kind === "service" ? "Services" : services.length ? "Products" : "All products");
 
   return (
-    <section className="bg-[#F3F4F6] pb-16 pt-8">
+    <section className="pb-16 pt-8" style={{ background: "var(--wash)" }}>
       <div className="store-container mx-auto px-4 sm:px-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-lg bg-white px-5 py-4 shadow-1">
           <h1 className="text-xl font-semibold text-dark">{title}</h1>
@@ -78,8 +85,19 @@ export default function ShowcaseShop() {
           </label>
         </div>
 
+        <button
+          type="button"
+          onClick={() => setFiltersOpen((o) => !o)}
+          aria-expanded={filtersOpen}
+          aria-controls="shop-filters"
+          className="mb-4 flex h-11 w-full items-center justify-between rounded-lg bg-white px-5 text-custom-sm font-medium text-dark shadow-1 lg:hidden"
+        >
+          <span>Filters{category || inStock || maxPrice !== null ? " (active)" : ""}</span>
+          <span aria-hidden>{filtersOpen ? "−" : "+"}</span>
+        </button>
+
         <div className="flex flex-col gap-7 lg:flex-row">
-          <aside className="w-full shrink-0 space-y-5 lg:w-[270px]">
+          <aside id="shop-filters" className={`${filtersOpen ? "block" : "hidden"} w-full shrink-0 space-y-5 lg:block lg:w-[270px]`}>
             {goods.length > 0 && services.length > 0 && (
               <div className="rounded-lg bg-white p-5 shadow-1">
                 <h2 className="mb-3 font-medium text-dark">Type</h2>
@@ -155,11 +173,12 @@ export default function ShowcaseShop() {
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-x-7.5 gap-y-9 sm:grid-cols-2 xl:grid-cols-3">
-                {list.map((p) => (
+                {paged.visible.map((p) => (
                   <ProductItem item={p} key={p.id} />
                 ))}
               </div>
             )}
+            <Pager current={paged.current} total={paged.totalPages} onChange={paged.setPage} rounded="rounded-md" />
           </div>
         </div>
       </div>

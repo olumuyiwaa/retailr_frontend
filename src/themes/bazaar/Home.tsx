@@ -73,7 +73,7 @@ export default function BazaarHome() {
                 <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
                   <p className="text-[11px] font-semibold uppercase tracking-wider text-white">Featured deal</p>
                   <p className="mt-1 text-lg font-extrabold leading-snug sm:text-xl">{deal.title}</p>
-                  <p className="mt-1 text-base font-bold" style={{ color: "#FFD4B0" }}>
+                  <p className="mt-1 text-base font-bold" style={{ color: "var(--brand-fg)", opacity: 0.85 }}>
                     {fmt(deal.discountedPrice)}
                   </p>
                 </div>

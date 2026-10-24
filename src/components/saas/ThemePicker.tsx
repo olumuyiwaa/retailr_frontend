@@ -7,7 +7,7 @@ import { useAsync } from "@/hooks/useAsync";
 import { ErrorNote } from "./Card";
 import ThemeThumb, { themeLayout } from "./ThemeThumb";
 
-export default function ThemePicker({ businessId, planId, current, onSaved }: { businessId: string; planId?: string; current?: string; onSaved?: () => void }) {
+export default function ThemePicker({ businessId, planId, current, brand, onSaved }: { businessId: string; planId?: string; current?: string; /** The business's brand colour: previews show the accent in it, as the live store will. */ brand?: string; onSaved?: () => void }) {
   const { data: plans } = useAsync(() => listPlans(), []);
   const plan = plans?.find((p) => p.id === planId);
   // until the plans load (or if the plan is unknown) nothing is locked; the server still enforces it
@@ -53,7 +53,7 @@ export default function ThemePicker({ businessId, planId, current, onSaved }: { 
               } ${locked ? "cursor-not-allowed opacity-60" : ""
               }`}
             >
-              <ThemeThumb swatches={t.swatches} layout={themeLayout(t.id)} />
+              <ThemeThumb swatches={brand ? [t.swatches[0], t.swatches[1], brand] : t.swatches} layout={themeLayout(t.id)} />
               <div className="mt-3 flex items-center justify-between gap-2">
                 <span className="font-medium text-gray-800 dark:text-white/90">{t.name}</span>
                 {locked && <span className="rounded-full bg-gray-100 px-2 py-0.5 text-theme-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300">Upgrade</span>}

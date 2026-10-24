@@ -138,7 +138,7 @@ export default function StoreSettingsPage() {
 
           <Card>
             <CardHeader title="Storefront theme" subtitle="Change how your store looks to shoppers. Your products and settings stay the same." />
-            <ThemePicker businessId={bid} planId={data.planId} current={data.theme} />
+            <ThemePicker businessId={bid} planId={data.planId} current={data.theme} brand={data.brandColor} />
           </Card>
 
           <PaymentOptions businessId={bid} business={data} className="mb-0" />

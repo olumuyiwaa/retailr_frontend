@@ -26,7 +26,7 @@ export default function ShowcaseHome() {
 
   return (
     <main>
-      <section className="bg-[#E5EAF4] py-8 sm:py-10">
+      <section className="bg-[color:var(--tint)] py-8 sm:py-10">
         <Wrap>
           <div className="flex flex-wrap gap-5">
             <div className="relative w-full overflow-hidden rounded-[10px] bg-white xl:max-w-[800px] xl:flex-1">
@@ -72,7 +72,7 @@ export default function ShowcaseHome() {
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
                   {categories.map((c) => (
                     <Link key={c} href={href(`/shop?category=${encodeURIComponent(c)}`)} className="group flex flex-col items-center text-center">
-                      <span className="relative mb-3 block h-28 w-28 overflow-hidden rounded-full bg-[#F2F3F8]">
+                      <span className="relative mb-3 block h-28 w-28 overflow-hidden rounded-full bg-[color:var(--wash)]">
                         <CategoryPicture name={c} />
                       </span>
                       <span className="font-medium text-dark ease-out duration-200 group-hover:text-blue">{c}</span>

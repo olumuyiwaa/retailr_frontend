@@ -2,6 +2,7 @@
 import BookingPanel from "@/components/Store/BookingPanel";
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { useStore } from "@/app/context/StoreContext";
 import { useCartModalContext } from "@/app/context/CartSidebarModalContext";
@@ -20,6 +21,7 @@ export default function MarketProduct({ productId }: { productId: string }) {
 function ProductView({ productId }: { productId: string }) {
   const ctx = useStore();
   const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
   const { openCartModal } = useCartModalContext();
   const cartItems = useAppSelector((s) => s.cartReducer.items);
   const [qty, setQty] = useState(1);
@@ -73,7 +75,7 @@ function ProductView({ productId }: { productId: string }) {
   const hasOriginal =
     product.price !== undefined && product.price > product.discountedPrice;
 
-  const add = () => {
+  const put = () => {
     if (room <= 0) return;
     dispatch(
       addItemToCart({
@@ -88,7 +90,15 @@ function ProductView({ productId }: { productId: string }) {
         quantity: Math.min(qty, room),
       })
     );
+  };
+  const add = () => {
+    if (room <= 0) return;
+    put();
     openCartModal();
+  };
+  const buyNow = () => {
+    put();
+    router.push(href("/checkout"));
   };
 
   const step =
@@ -255,7 +265,7 @@ function ProductView({ productId }: { productId: string }) {
             ) : (
               <>
             {/* Qty + Add to cart */}
-            <div className="mt-6 flex gap-3">
+            <div className="mt-6 flex flex-wrap gap-3">
               <div
                 className="flex items-center rounded border bg-white"
                 style={divider}
@@ -290,10 +300,19 @@ function ProductView({ productId }: { productId: string }) {
                 type="button"
                 disabled={soldOut || room <= 0}
                 onClick={add}
-                className="h-11 flex-1 rounded font-bold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-11 min-w-[9rem] flex-1 rounded font-bold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 style={{ background: soldOut ? "var(--muted)" : "var(--brand)" }}
               >
                 {soldOut ? "Sold Out" : room <= 0 ? "Max in Cart" : "Add to Cart"}
+              </button>
+              <button
+                type="button"
+                disabled={soldOut || (room <= 0 && inCart === 0)}
+                onClick={buyNow}
+                className="h-11 rounded border bg-white px-5 font-bold text-dark transition-colors hover:bg-[color:var(--tint)] disabled:cursor-not-allowed disabled:opacity-50"
+                style={{ borderColor: "var(--ink)" }}
+              >
+                Buy Now
               </button>
             </div>
 

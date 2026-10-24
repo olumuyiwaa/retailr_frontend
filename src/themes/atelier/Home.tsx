@@ -39,7 +39,7 @@ export default function AtelierHome() {
     <main>
       <Wrap className="grid items-center gap-12 py-12 sm:py-16 lg:grid-cols-[1fr_1.05fr] lg:gap-16 lg:py-20">
         <div>
-          <p className="mb-5 text-custom-sm font-medium" style={{ color: "#9A4A36" }}>{store.category} · {store.city}</p>
+          <p className="mb-5 text-custom-sm font-medium" style={{ color: "color-mix(in srgb, var(--brand) 65%, var(--ink))" }}>{store.category} · {store.city}</p>
           <h1 className="text-[clamp(2.5rem,6vw,4.25rem)] font-bold leading-[1.02] text-dark">{store.name}</h1>
           <p className="mt-6 max-w-[34rem] text-lg leading-relaxed">{store.description || `${store.category} from ${store.city}, ${store.country}.`}</p>
           <div className="mt-8 flex flex-wrap gap-3">

@@ -59,6 +59,26 @@ export function storePalette(brand: string): StorePalette {
   };
 }
 
+/**
+ * The colours a theme renders with. A theme's own palette sets the look (paper, ink, borders), but the
+ * business's brand colour always drives the accent (buttons, links, badges) and gently tints the surfaces,
+ * so every theme reads as that business's own.
+ */
+export function themePalette(brand: string, themed?: Partial<StorePalette>): StorePalette {
+  const base = storePalette(brand);
+  if (!themed) return base;
+  const p = { ...base, ...themed };
+  return {
+    ...p,
+    brand: base.brand,
+    brandFg: base.brandFg,
+    ink: mix(p.ink, brand, 0.18),
+    tint: mix(p.tint, brand, 0.12),
+    wash: mix(p.wash, brand, 0.04),
+    line: mix(p.line, brand, 0.1),
+  };
+}
+
 /** Small deterministic string hash, used to pick artwork per product. */
 export function hash(str: string): number {
   let h = 2166136261;

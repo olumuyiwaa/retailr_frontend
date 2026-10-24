@@ -3,7 +3,11 @@ import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useStore } from "@/app/context/StoreContext";
+import Pager from "@/components/Store/Pager";
+import { usePagination } from "@/lib/usePagination";
 import MarketCard from "./Card";
+
+const PAGE_SIZE = 20;
 
 type Sort = "featured" | "latest" | "price-asc" | "price-desc";
 
@@ -14,6 +18,7 @@ export default function MarketShop() {
   const ctx = useStore();
   const params = useSearchParams();
   const [sort, setSort] = useState<Sort>("featured");
+  const [inStockOnly, setInStockOnly] = useState(false);
   const [term, setTerm] = useState(params.get("q") ?? "");
   const category = params.get("category") ?? "";
   const onlyServices =
@@ -32,6 +37,7 @@ export default function MarketShop() {
     let l = ctx?.products ?? [];
     l = l.filter((p) => (p.kind ?? "product") === kind);
     if (category) l = l.filter((p) => p.category === category);
+    if (inStockOnly && kind === "product") l = l.filter((p) => p.stock === undefined || p.stock > 0);
     if (q)
       l = l.filter((p) =>
         `${p.title} ${p.category ?? ""} ${p.description ?? ""}`.toLowerCase().includes(q)
@@ -50,7 +56,8 @@ export default function MarketShop() {
     if (sort === "price-asc") by.sort((a, b) => a.discountedPrice - b.discountedPrice);
     if (sort === "price-desc") by.sort((a, b) => b.discountedPrice - a.discountedPrice);
     return by;
-  }, [ctx?.products, category, q, sort, kind]);
+  }, [ctx?.products, category, q, sort, kind, inStockOnly]);
+  const paged = usePagination(list, `${kind}|${category}|${q}|${sort}|${inStockOnly}`, PAGE_SIZE);
 
   if (!ctx?.store) return null;
   const { store, categories, href, products } = ctx;
@@ -176,6 +183,12 @@ export default function MarketShop() {
               <option value="price-asc">Price: Low → High</option>
               <option value="price-desc">Price: High → Low</option>
             </select>
+            {kind === "product" && (
+              <label className="flex h-11 shrink-0 items-center gap-2 rounded border bg-white px-3 text-custom-sm text-dark" style={{ borderColor: "var(--line)" }}>
+                <input type="checkbox" checked={inStockOnly} onChange={(e) => setInStockOnly(e.target.checked)} className="h-4 w-4 accent-[var(--brand)]" />
+                In stock
+              </label>
+            )}
           </div>
         </div>
 
@@ -190,6 +203,7 @@ export default function MarketShop() {
               ? "product"
               : "products"}
           {category && ` in "${category}"`}
+          {paged.totalPages > 1 && ` · page ${paged.current} of ${paged.totalPages}`}
         </p>
 
         {/* Grid */}
@@ -206,11 +220,12 @@ export default function MarketShop() {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {list.map((p) => (
+            {paged.visible.map((p) => (
               <MarketCard key={p.id} item={p} />
             ))}
           </div>
         )}
+        <Pager current={paged.current} total={paged.totalPages} onChange={paged.setPage} rounded="rounded" />
       </div>
     </section>
   );

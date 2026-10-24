@@ -6,7 +6,7 @@ import type { Product } from "@/types/product";
 import { getStoreBySlug, listStoreCategories, listStoreProducts, listStoreServices, STORE_UNAVAILABLE } from "@/services/store";
 import { syncCartToStore } from "@/redux/features/cart-slice";
 import type { AppDispatch } from "@/redux/store";
-import { storePalette } from "@/lib/storeTheme";
+import { themePalette } from "@/lib/storeTheme";
 import { getTheme } from "@/themes/registry";
 import { formatCurrency } from "@/lib/money";
 
@@ -141,7 +141,7 @@ export function StoreProvider({ slug, children }: { slug?: string; children: Rea
 
   if (!slug) return <>{children}</>;
 
-  const pal = { ...storePalette(store?.brandColor ?? "#3C50E0"), ...getTheme(store?.theme).palette };
+  const pal = themePalette(store?.brandColor ?? "#3C50E0", getTheme(store?.theme).palette);
   return (
     <StoreContext.Provider value={value}>
       <div
@@ -168,6 +168,8 @@ export function StoreProvider({ slug, children }: { slug?: string; children: Rea
           .store-themed .border-blue{border-color:var(--brand)!important}
           .store-themed .before\\:bg-blue::before{background-color:var(--brand)!important}
           .store-themed .focus\\:ring-blue\\/20:focus{--tw-ring-color:color-mix(in srgb,var(--brand) 20%,transparent)!important}
+          /* text on a brand-coloured surface stays readable whatever colour the business chose (white on yellow would not be) */
+          .store-themed [style*="background: var(--brand)"],.store-themed [style*="background-color: var(--brand)"]{color:var(--brand-fg)!important}
           .store-themed :focus-visible{outline:2px solid var(--brand);outline-offset:2px}
         `}</style>
         {children}
