@@ -19,7 +19,7 @@ const spotlights = [
   {
     t: "A storefront that looks like your brand",
     d: "Pick a theme, add your logo and colours, and share a link customers can buy from. No developer, no hosting, live in minutes.",
-    points: ["Four ready-made themes", "Product photos, variants and categories", "Cart, checkout and invoices built in"],
+    points: ["Multiple ready-made themes", "Product photos, variants and categories", "Cart, checkout and invoices built in"],
     photo: {
       src: "https://images.pexels.com/photos/11739182/pexels-photo-11739182.jpeg?auto=compress&cs=tinysrgb&w=800",
       alt: "Colourful shirts on a clothing rack in a boutique window",
@@ -172,7 +172,7 @@ export default function LandingPage() {
                   ))}
                 </ul>
               </div>
-              <div className="h-64 overflow-hidden rounded-2xl shadow-theme-xs ring-1 ring-gray-100 sm:h-72 lg:h-80">
+              <div className="h-64 overflow-hidden rounded-2xl shadow-theme-xs ring-1 ring-gray-100 sm:h-72 lg:h-110">
                 <img
                   src={s.photo.src}
                   alt={s.photo.alt}
