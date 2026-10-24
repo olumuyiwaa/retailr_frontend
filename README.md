@@ -225,8 +225,12 @@ Any page a theme doesn't provide falls back to Classic. Never rename a theme `id
 - [x] Notifications: new orders, low/sold-out stock, new sign-ups (bell + browser push)
 - [x] Save to favourites (heart button on every theme, persisted in localStorage)
 - [x] Wishlist page (`/s/<slug>/wishlist`) with add-to-cart from saved items
+- [x] Bank transfer with structured bank details (offered only once complete; card hidden unless demo mode)
+- [x] Delivery zones, international shipping, store pickup and free-shipping threshold (paid plans)
+- [x] Brand colour drives every storefront theme
+- [x] Platform admin switches subscription payments between Paystack and Flutterwave
 - [ ] Online card payments at storefront checkout
-- [ ] Delivery fees, zones and courier integrations
+- [ ] Courier integrations (Shipbubble, Fez) with order sync
 - [ ] Customer accounts for shoppers (saved addresses, order history)
 - [ ] Subdomain routing and custom domains
 - [ ] Take a deposit when booking
