@@ -10,15 +10,15 @@ const bazaar: StoreTheme = {
   name: "Bazaar",
   description:
     "Wholesale marketplace style: orange search bar, dense product grids, category sidebar and price-first cards — inspired by 1688.",
-  swatches: ["#FFF7F0", "#FFFFFF", "#FF6A00"],
+  swatches: ["#FFF7F0", "#FFFFFF", "#CC4E00"],
   palette: {
-    brand: "#FF6A00",
+    brand: "#CC4E00",
     brandFg: "#FFFFFF",
     ink: "#222222",
     tint: "#FFF1E6",
     wash: "#F7F8FA",
     line: "#E8E8E8",
-    muted: "#8C8C8C",
+    muted: "#666666",
   },
   header: () => import("./Header"),
   footer: () => import("./Footer"),

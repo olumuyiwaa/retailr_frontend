@@ -2,6 +2,7 @@
 import React from "react";
 import Link from "next/link";
 import { useStore } from "@/app/context/StoreContext";
+import { payPhrase } from "@/lib/paymentCopy";
 
 export default function MarketFooter() {
   const ctx = useStore();
@@ -20,7 +21,7 @@ export default function MarketFooter() {
       >
         <div className="mx-auto flex w-full max-w-[1680px] flex-wrap items-center justify-between gap-4 px-5 py-3 sm:px-8 lg:px-12 2xl:px-20">
           <p className="text-custom-sm font-semibold text-white">
-            {store.name} — {store.category}
+            {store.category ? `${store.name} — ${store.category}` : store.name}
           </p>
           <Link
             href={href("/shop")}
@@ -39,14 +40,14 @@ export default function MarketFooter() {
             <p className="text-xl font-extrabold text-white">{store.name}</p>
             <p className="mt-3 max-w-[340px] text-custom-sm text-white/65 leading-relaxed">
               {store.description ||
-                `${store.category} from ${store.city}, ${store.country}. Browse our full catalogue.`}
+                `${[store.category, [store.city, store.country].filter(Boolean).join(", ")].filter(Boolean).join(" from ")}. Browse our full catalogue.`}
             </p>
             {store.phone && (
               <a
                 href={`tel:${store.phone.replace(/\s/g, "")}`}
                 className="mt-4 inline-block text-custom-sm text-white/70 hover:text-white"
               >
-                📞 {store.phone}
+                <span aria-hidden>📞 </span>{store.phone}
               </a>
             )}
           </div>
@@ -93,12 +94,12 @@ export default function MarketFooter() {
               </li>
               <li>
                 <span className={`${colLink} cursor-default`}>
-                  Ships from {store.city}
+                  {store.city ? `Ships from ${store.city}` : "Delivery arranged by the store"}
                 </span>
               </li>
               <li>
                 <span className={`${colLink} cursor-default`}>
-                  Pay on delivery or bank transfer
+                  {payPhrase(store.paymentMethods)}
                 </span>
               </li>
             </ul>

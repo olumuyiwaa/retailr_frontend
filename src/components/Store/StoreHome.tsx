@@ -7,6 +7,7 @@ import CategoryPicture from "./CategoryPicture";
 import ProductThumb from "@/components/Common/ProductThumb";
 import { useStore } from "@/app/context/StoreContext";
 import type { Product } from "@/types/product";
+import { payPhrase } from "@/lib/paymentCopy";
 
 const Container = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
   <div className={`store-container mx-auto w-full px-4 sm:px-8 ${className}`}>{children}</div>
@@ -142,7 +143,7 @@ export default function StoreHome() {
       <Container>
         <dl className="grid gap-y-5 border-b py-8 sm:grid-cols-3" style={{ borderColor: "var(--line)" }}>
           {[
-            ["Pay your way", "Cash on delivery or bank transfer"],
+            ["Pay your way", payPhrase(store.paymentMethods, "cash")],
             [`Based in ${store.city}`, `Orders ship from ${store.city}, ${store.country}`],
             ["Need help ordering?", store.phone ? `Call or message ${store.phone}` : `Ask ${store.name} directly`],
           ].map(([t, d], i) => (

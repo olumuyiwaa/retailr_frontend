@@ -28,13 +28,13 @@ export default function AtelierCart() {
     );
   }
 
-  const step = "flex h-9 w-9 items-center justify-center text-lg text-dark disabled:opacity-35";
+  const step = "flex h-10 w-10 items-center justify-center text-lg text-dark disabled:opacity-35";
   return (
     <section className="mx-auto w-full max-w-[1680px] px-5 pb-8 pt-10 sm:px-8 lg:px-12 2xl:px-20">
       <nav aria-label="Breadcrumb" className="text-custom-sm"><Link href={href("/")} className="hover:text-dark">Home</Link> / <span className="text-dark">Bag</span></nav>
       <div className="mb-8 mt-4 flex flex-wrap items-end justify-between gap-3">
         <h1 className="text-4xl font-bold text-dark sm:text-5xl">Your bag</h1>
-        <button onClick={() => dispatch(removeAllItemsFromCart())} className="pb-1 text-custom-sm text-dark underline underline-offset-4">Clear bag</button>
+        <button onClick={() => dispatch(removeAllItemsFromCart())} className="py-2 text-custom-sm text-dark underline underline-offset-4">Clear bag</button>
       </div>
       <div className="grid items-start gap-10 lg:grid-cols-[1fr_380px]">
         <ul className="divide-y border-y" style={line}>
@@ -59,7 +59,7 @@ export default function AtelierCart() {
                       <span className="w-8 text-center font-medium text-dark" aria-live="polite">{item.quantity}</span>
                       <button className={step} aria-label={`Increase ${item.title}`} disabled={item.quantity >= max} onClick={() => dispatch(updateCartItemQuantity({ id: item.id, quantity: item.quantity + 1 }))}>+</button>
                     </div>
-                    <button onClick={() => dispatch(removeItemFromCart(item.id))} className="text-custom-sm underline underline-offset-4 hover:text-dark">Remove</button>
+                    <button onClick={() => dispatch(removeItemFromCart(item.id))} className="py-2 text-custom-sm underline underline-offset-4 hover:text-dark">Remove</button>
                   </div>
                 </div>
               </li>

@@ -9,6 +9,7 @@ import { useCartModalContext } from "@/app/context/CartSidebarModalContext";
 import { useAppSelector } from "@/redux/store";
 import { selectTotalPrice } from "@/redux/features/cart-slice";
 import { selectWishlistItems } from "@/redux/features/wishlist-slice";
+import { payPhrase } from "@/lib/paymentCopy";
 
 const BagIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -76,7 +77,7 @@ export default function StoreHeader() {
     <>
       <div className="text-custom-xs" style={{ background: "var(--ink)", color: "rgba(255,255,255,.82)" }}>
         <div className="store-container mx-auto flex items-center justify-between gap-4 px-4 py-2 sm:px-8">
-          <span>Pay on delivery or by bank transfer</span>
+          <span>{payPhrase(store.paymentMethods)}</span>
           <span className="hidden sm:inline">
             Shipping from {store.city}, {store.country}
           </span>

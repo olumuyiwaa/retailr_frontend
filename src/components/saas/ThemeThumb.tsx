@@ -2,6 +2,10 @@ import { DEMO_CATEGORIES, DEMO_PRODUCTS, type ThemeLayout } from "@/lib/demoPhot
 
 export type { ThemeLayout };
 
+const LAYOUTS: ThemeLayout[] = ["showcase", "atelier", "market", "shop", "bazaar"];
+/** The preview layout for a theme id; unknown ids use the classic one. */
+export const themeLayout = (id: string): ThemeLayout => (LAYOUTS as string[]).includes(id) ? (id as ThemeLayout) : "classic";
+
 /**
  * Detailed visual preview of a storefront theme using Scentora demo photos.
  * Shows real product imagery, names, prices, nav chrome and layout cues so
@@ -438,7 +442,43 @@ function ShopThumb({ accent, large }: Props) {
 }
 
 
-function BazaarThumb(props: Props) {
-  /* 1688-style: orange search chrome + dense grid, reuse market density with orange accent */
-  return <MarketThumb {...props} />;
+function BazaarThumb({ accent, large }: Props) {
+  /* 1688-style: orange search chrome, left category sidebar and a dense price-first grid */
+  const grid = DEMO_PRODUCTS.slice(0, large ? 8 : 6);
+  return (
+    <div className="flex h-full flex-col bg-[#F7F8FA]">
+      <div className="flex items-center gap-1.5 bg-white px-2 py-1.5">
+        <span className="text-[9px] font-bold" style={{ color: accent }}>
+          SCENTORA
+        </span>
+        <div className="flex h-4 flex-1 items-center justify-between overflow-hidden rounded-sm pl-1.5 text-[6.5px] text-gray-400 ring-1" style={{ ["--tw-ring-color" as string]: accent }}>
+          Search products…
+          <span className="flex h-full items-center px-1.5 font-semibold text-white" style={{ background: accent }}>
+            Search
+          </span>
+        </div>
+        <span className="text-[7.5px] font-medium text-gray-600">Cart 2</span>
+      </div>
+      <div className="flex flex-1 gap-1.5 overflow-hidden p-1.5">
+        <div className="hidden w-[22%] flex-col gap-0.5 rounded bg-white p-1.5 ring-1 ring-black/5 sm:flex">
+          <p className="text-[7px] font-semibold text-gray-700">Categories</p>
+          {DEMO_CATEGORIES.map((c, i) => (
+            <p key={c} className="truncate rounded px-1 py-0.5 text-[6.5px]" style={i === 0 ? { background: accent + "22", color: accent } : { color: "#6B7280" }}>
+              {c}
+            </p>
+          ))}
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <div className="flex h-9 items-center rounded px-2 text-[8px] font-semibold text-white" style={{ background: accent }}>
+            Factory-direct deals
+          </div>
+          <div className={`grid flex-1 content-start gap-1 ${large ? "grid-cols-4" : "grid-cols-3"}`}>
+            {grid.map((p) => (
+              <ProductCard key={p.name} p={p} accent={accent} compact />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

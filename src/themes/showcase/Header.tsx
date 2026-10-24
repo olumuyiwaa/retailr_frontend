@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import StoreLogo from "@/components/Store/StoreLogo";
 import { useStore } from "@/app/context/StoreContext";
 import { useCartModalContext } from "@/app/context/CartSidebarModalContext";
@@ -13,6 +13,7 @@ export default function ShowcaseHeader() {
   const ctx = useStore();
   const router = useRouter();
   const pathname = usePathname();
+  const params = useSearchParams();
   const { openCartModal } = useCartModalContext();
   const count = useAppSelector((s) => s.cartReducer.items.reduce((n, i) => n + i.quantity, 0));
   const total = useSelector(selectTotalPrice);
@@ -28,7 +29,10 @@ export default function ShowcaseHeader() {
     const t = q.trim();
     router.push(href(t ? `/shop?q=${encodeURIComponent(t)}` : "/shop"));
   };
-  const link = (active: boolean) => `font-medium text-custom-sm ease-out duration-200 hover:text-blue ${active ? "text-blue" : "text-dark"}`;
+  const onShop = pathname === href("/shop");
+  const onServices = onShop && params.get("kind") === "service";
+  const activeCat = onShop ? params.get("category") : null;
+  const link = (active: boolean) => `shrink-0 whitespace-nowrap font-medium text-custom-sm ease-out duration-200 hover:text-blue ${active ? "text-blue" : "text-dark"}`;
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-1">
@@ -70,16 +74,17 @@ export default function ShowcaseHeader() {
 
       <nav className="border-t border-gray-3" aria-label="Shop">
         <div className="store-container mx-auto flex items-center gap-6 overflow-x-auto px-4 py-3 sm:px-8">
-          <Link href={href("/")} className={link(pathname === href("/"))}>Home</Link>
-          <Link href={href("/shop")} className={link(pathname === href("/shop"))}>{hasServices && hasProducts ? "Products" : "All products"}</Link>
+          <Link href={href("/")} className={link(pathname === href("/"))} aria-current={pathname === href("/") ? "page" : undefined}>Home</Link>
+          {(hasProducts || !hasServices) && <Link href={href("/shop")} className={link(onShop && !onServices && !activeCat)} aria-current={onShop && !onServices && !activeCat ? "page" : undefined}>{hasServices && hasProducts ? "Products" : "All products"}</Link>}
           {hasServices && (
-            <Link href={href("/shop?kind=service")} className={link(pathname === href("/shop"))}>Services</Link>
+            <Link href={href("/shop?kind=service")} className={link(onServices)} aria-current={onServices ? "page" : undefined}>Services</Link>
           )}
           {categories.slice(0, 6).map((c) => (
-            <Link key={c} href={href(`/shop?category=${encodeURIComponent(c)}`)} className={`${link(false)} whitespace-nowrap`}>
+            <Link key={c} href={href(`/shop?category=${encodeURIComponent(c)}`)} className={`${link(activeCat === c)} whitespace-nowrap`}>
               {c}
             </Link>
           ))}
+          <Link href={href("/wishlist")} className={`${link(pathname === href("/wishlist"))} ml-auto whitespace-nowrap`}>Favourites</Link>
         </div>
       </nav>
     </header>

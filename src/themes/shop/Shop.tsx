@@ -14,7 +14,14 @@ export default function ShopShop() {
   const ctx = useStore();
   const params = useSearchParams();
   const [sort, setSort] = useState<Sort>("featured");
-  const [term, setTerm] = useState(params.get("q") ?? "");
+  const urlQ = params.get("q") ?? "";
+  const [term, setTerm] = useState(urlQ);
+  const [seenQ, setSeenQ] = useState(urlQ);
+  // follow ?q= when it changes (e.g. a search from the header)
+  if (seenQ !== urlQ) {
+    setSeenQ(urlQ);
+    setTerm(urlQ);
+  }
   const category = params.get("category") ?? "";
   const kind = params.get("kind") === "service" ? "service" : "product";
   const q = term.trim().toLowerCase();
@@ -41,7 +48,7 @@ export default function ShopShop() {
   const heading = category || (kind === "service" ? "Services" : goods.length && services.length ? "Products" : "Shop all");
 
   const pill = (active: boolean) =>
-    `shrink-0 rounded-full px-4 py-1.5 text-custom-sm font-medium transition-colors ${
+    `shrink-0 rounded-full px-4 py-2 text-custom-sm font-medium transition-colors ${
       active ? "bg-dark text-white" : "bg-[color:var(--tint)] text-dark hover:bg-[color:var(--line)]"
     }`;
 
@@ -63,36 +70,38 @@ export default function ShopShop() {
       </div>
 
       {/* Filters row */}
-      <div className="border-y bg-white sticky top-[calc(60px+var(--cat-strip,44px))] z-40" style={{ borderColor: "var(--line)" }}>
-        <div className="mx-auto flex w-full max-w-[1680px] items-center gap-3 overflow-x-auto px-5 py-3 sm:px-8 lg:px-12 2xl:px-20 scrollbar-none">
+      <div className="border-y bg-white relative" style={{ borderColor: "var(--line)" }}>
+        <div className="mx-auto flex w-full max-w-[1680px] items-center gap-3 overflow-x-auto px-5 py-3 sm:px-8 lg:px-12 2xl:px-20 no-scrollbar">
           {/* Kind tabs */}
           {goods.length > 0 && services.length > 0 && (
             <>
-              <Link href={href("/shop")} className={pill(kind === "product")}>Products</Link>
-              <Link href={href("/shop?kind=service")} className={pill(kind === "service")}>Services</Link>
+              <Link href={href("/shop")} className={pill(kind === "product")} aria-current={kind === "product" ? "page" : undefined}>Products</Link>
+              <Link href={href("/shop?kind=service")} className={pill(kind === "service")} aria-current={kind === "service" ? "page" : undefined}>Services</Link>
               <span className="mx-1 h-5 w-px shrink-0 bg-[color:var(--line)]" aria-hidden />
             </>
           )}
           {/* Category pills */}
-          <Link href={href(shopBase)} className={pill(!category)}>All</Link>
+          <Link href={href(shopBase)} className={pill(!category)} aria-current={!category ? "page" : undefined}>All</Link>
           {categories.map((c) => (
             <Link
               key={c}
               href={href(`/shop?${kind === "service" ? "kind=service&" : ""}category=${encodeURIComponent(c)}`)}
               className={pill(category === c)}
+              aria-current={category === c ? "page" : undefined}
             >
               {c}
             </Link>
           ))}
 
-          {/* Spacer + controls */}
-          <div className="ml-auto flex shrink-0 items-center gap-2">
+        </div>
+        <div className="mx-auto flex w-full max-w-[1680px] items-center gap-2 px-5 pb-3 sm:px-8 lg:px-12 2xl:px-20">
+          <div className="ml-auto flex w-full items-center gap-2 sm:w-auto">
             <input
               value={term}
               onChange={(e) => setTerm(e.target.value)}
               placeholder="Search…"
               aria-label="Search products"
-              className={`${inputBase} w-36`}
+              className={`${inputBase} min-w-0 flex-1 sm:w-48 sm:flex-none`}
               style={{ borderColor: "var(--line)" }}
             />
             <select
@@ -117,13 +126,20 @@ export default function ShopShop() {
           {list.length} {kind === "service" ? (list.length === 1 ? "service" : "services") : list.length === 1 ? "product" : "products"}
         </p>
         {list.length === 0 ? (
-          <div className="py-24 text-center">
-            <p className="text-lg font-semibold text-dark">Nothing matches that search.</p>
-            <p className="mt-1 text-custom-sm" style={{ color: "var(--muted)" }}>Try different keywords or clear the filters.</p>
-            <Link href={href(shopBase)} className="mt-5 inline-flex h-10 items-center rounded-full bg-dark px-6 text-custom-sm font-medium text-white">
-              Clear filters
-            </Link>
-          </div>
+          (kind === "service" ? services : goods).length === 0 ? (
+            <div className="py-24 text-center">
+              <p className="text-lg font-semibold text-dark">{kind === "service" ? "No services listed yet." : "No products listed yet."}</p>
+              <p className="mt-1 text-custom-sm" style={{ color: "var(--muted)" }}>Check back soon.</p>
+            </div>
+          ) : (
+            <div className="py-24 text-center">
+              <p className="text-lg font-semibold text-dark">Nothing matches that search.</p>
+              <p className="mt-1 text-custom-sm" style={{ color: "var(--muted)" }}>Try different keywords or clear the filters.</p>
+              <Link href={href(shopBase)} onClick={() => setTerm("")} className="mt-5 inline-flex h-11 items-center rounded-full bg-dark px-6 text-custom-sm font-medium text-white">
+                Clear filters
+              </Link>
+            </div>
+          )
         ) : (
           <div className="grid grid-cols-2 gap-x-3 gap-y-7 sm:grid-cols-3 lg:grid-cols-5">
             {list.map((p) => (

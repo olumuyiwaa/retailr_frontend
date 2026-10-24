@@ -8,6 +8,7 @@ import { addItemToCart } from "@/redux/features/cart-slice";
 import { AppDispatch, useAppSelector } from "@/redux/store";
 import BookingPanel from "@/components/Store/BookingPanel";
 import ShopCard, { ShopPhoto } from "./Card";
+import { payPhrase } from "@/lib/paymentCopy";
 
 const WRAP = "mx-auto w-full max-w-[1680px] px-5 sm:px-8 lg:px-12 2xl:px-20";
 const lineStyle = { borderColor: "var(--line)" };
@@ -34,6 +35,14 @@ export default function ShopProduct({ productId }: { productId: string }) {
   const [qty, setQty] = useState(1);
   const [variantId, setVariantId] = useState<string | null>(null);
   const [shot, setShot] = useState(0);
+  const [seenId, setSeenId] = useState(productId);
+  // a different product (e.g. from "You might also like") starts fresh
+  if (seenId !== productId) {
+    setSeenId(productId);
+    setQty(1);
+    setVariantId(null);
+    setShot(0);
+  }
 
   if (!ctx?.store) return null;
   const { store, products, href, fmt } = ctx;
@@ -62,7 +71,7 @@ export default function ShopProduct({ productId }: { productId: string }) {
   const inCart = cartItems.find((i) => i.id === lineId)?.quantity ?? 0;
   const room = Math.max(0, stock - inCart);
   const related = products.filter((p) => p.id !== product.id && (!product.category || p.category === product.category)).slice(0, 5);
-  const hasDiscount = product.price !== undefined && product.price > product.discountedPrice;
+  const hasDiscount = variant?.price === undefined && product.price !== undefined && product.price > product.discountedPrice;
 
   const add = () => {
     if (room <= 0) return;
@@ -86,11 +95,11 @@ export default function ShopProduct({ productId }: { productId: string }) {
     ...(product.specs ?? []).map((s): [string, string] => [s.label, s.value]),
     ...(product.category ? ([["Category", product.category]] as [string, string][]) : []),
     ...(product.sku ? ([["SKU", product.sku]] as [string, string][]) : []),
-    ["Ships from", `${store.city}, ${store.country}`],
-    ["Payment", "Cash on delivery or bank transfer"],
+    ...(product.kind === "service" ? [] : ([["Ships from", `${store.city}, ${store.country}`]] as [string, string][])),
+    ["Payment", payPhrase(store.paymentMethods, "cash")],
   ];
 
-  const qtyBtn = "flex h-9 w-9 items-center justify-center rounded-full text-lg font-medium text-dark transition-colors hover:bg-[color:var(--tint)] disabled:opacity-30";
+  const qtyBtn = "flex h-10 w-10 items-center justify-center rounded-full text-lg font-medium text-dark transition-colors hover:bg-[color:var(--tint)] disabled:opacity-30";
 
   return (
     <>
@@ -156,7 +165,7 @@ export default function ShopProduct({ productId }: { productId: string }) {
                 </>
               )}
             </div>
-            {product.kind === "service" && product.durationMins && (
+            {product.kind === "service" && !!product.durationMins && (
               <p className="mt-1 text-custom-sm" style={{ color: "var(--muted)" }}>{product.durationMins} min</p>
             )}
 
@@ -181,7 +190,7 @@ export default function ShopProduct({ productId }: { productId: string }) {
                         aria-pressed={on}
                         disabled={v.stock <= 0}
                         onClick={() => { setVariantId(v.id); setQty(1); }}
-                        className={`min-w-[3rem] rounded-full border px-4 py-2 text-custom-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${on ? "bg-dark text-white" : "bg-white text-dark hover:border-dark"}`}
+                        className={`min-w-[3rem] rounded-full border px-4 py-2.5 text-custom-sm font-medium transition-colors disabled:cursor-not-allowed disabled:line-through disabled:opacity-40 ${on ? "bg-dark text-white" : "bg-white text-dark hover:border-dark"}`}
                         style={!on ? lineStyle : undefined}
                       >
                         {v.name}
@@ -192,14 +201,8 @@ export default function ShopProduct({ productId }: { productId: string }) {
               </fieldset>
             )}
 
-            {/* Purchase options */}
-            <div className="mt-5 rounded-xl border p-4" style={lineStyle}>
-              <p className="mb-3 text-custom-sm font-semibold text-dark">One time purchase</p>
-              <p className="text-xl font-bold text-dark">{fmt(unit)}</p>
-            </div>
-
             {product.bookable ? (
-              <BookingPanel product={product} variantId={variant?.id} price={unit} />
+              <BookingPanel key={String(product.id)} product={product} variantId={variant?.id} price={unit} />
             ) : (
               <div className="mt-5 flex gap-3">
                 {/* Qty stepper */}
@@ -220,19 +223,16 @@ export default function ShopProduct({ productId }: { productId: string }) {
               </div>
             )}
 
-            {!soldOut && stock <= 5 && <p className="mt-3 text-custom-sm font-semibold text-rose-500">Only {stock} left in stock</p>}
-            {inCart > 0 && <p className="mt-2 text-custom-sm" style={{ color: "var(--muted)" }}>{inCart} already in your cart</p>}
+            {!product.bookable && !soldOut && stock <= 5 && <p className="mt-3 text-custom-sm font-semibold text-rose-700">Only {stock} left in stock</p>}
+            {!product.bookable && inCart > 0 && <p className="mt-2 text-custom-sm" style={{ color: "var(--muted)" }}>{inCart} already in your cart</p>}
 
             {/* Details accordion */}
             <div className="mt-8">
-              <Accordion title="Description">
-                {product.description || "No additional description."}
-              </Accordion>
               <Accordion title="Details & specifications">
                 {details.length ? (
                   <dl className="grid grid-cols-2 gap-x-6 gap-y-3">
-                    {details.map(([k, v]) => (
-                      <div key={k}>
+                    {details.map(([k, v], i) => (
+                      <div key={`${k}-${i}`}>
                         <dt className="font-medium text-dark">{k}</dt>
                         <dd className="mt-0.5">{v}</dd>
                       </div>
@@ -240,8 +240,8 @@ export default function ShopProduct({ productId }: { productId: string }) {
                   </dl>
                 ) : "No additional details."}
               </Accordion>
-              <Accordion title="Delivery & payment">
-                Orders ship from {store.city}, {store.country}. Pay on delivery or by bank transfer
+              <Accordion title={product.kind === "service" ? "Payment" : "Delivery & payment"}>
+                {product.kind === "service" ? "" : `Orders ship from ${store.city}, ${store.country}. `}{payPhrase(store.paymentMethods)}
                 {store.phone ? <>; call {store.phone} for queries.</> : "."}
               </Accordion>
             </div>

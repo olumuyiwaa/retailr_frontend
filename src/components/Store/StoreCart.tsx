@@ -49,14 +49,14 @@ export default function StoreCart() {
             const max = item.stock ?? Infinity;
             return (
               <li key={item.id} className="flex gap-4 py-5 sm:gap-6">
-                <Link href={href(`/product/${item.id}`)} className="block h-24 w-20 shrink-0 overflow-hidden rounded-xl sm:h-28 sm:w-24" aria-label={item.title}>
+                <Link href={href(`/product/${item.productId ?? item.id}`)} className="block h-24 w-20 shrink-0 overflow-hidden rounded-xl sm:h-28 sm:w-24" aria-label={item.title}>
                   <ProductThumb item={item} variant="thumbnail" size={96} />
                 </Link>
                 <div className="flex min-w-0 flex-1 flex-col justify-between">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <h3 className="truncate font-display text-lg font-semibold text-dark">
-                        <Link href={href(`/product/${item.id}`)}>{item.title}</Link>
+                        <Link href={href(`/product/${item.productId ?? item.id}`)}>{item.title}</Link>
                       </h3>
                       <p className="text-custom-sm">{fmt(item.discountedPrice)} each</p>
                     </div>

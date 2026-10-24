@@ -67,7 +67,7 @@ export default function BazaarCart() {
   }
 
   const step =
-    "flex h-9 w-9 items-center justify-center text-lg text-dark disabled:opacity-35";
+    "flex h-11 w-11 items-center justify-center text-lg text-dark disabled:opacity-35";
 
   return (
     <section
@@ -91,12 +91,13 @@ export default function BazaarCart() {
           <h1 className="text-3xl font-extrabold text-dark sm:text-4xl">
             Shopping Cart{" "}
             <span className="text-xl font-semibold" style={{ color: "var(--muted)" }}>
-              ({items.length} item{items.length === 1 ? "" : "s"})
+              ({items.reduce((n, i) => n + i.quantity, 0)} item{items.reduce((n, i) => n + i.quantity, 0) === 1 ? "" : "s"})
             </span>
           </h1>
           <button
+            type="button"
             onClick={() => dispatch(removeAllItemsFromCart())}
-            className="text-custom-sm underline underline-offset-4 hover:text-dark"
+            className="min-h-11 text-custom-sm underline underline-offset-4 hover:text-dark"
             style={{ color: "var(--muted)" }}
           >
             Clear cart
@@ -149,6 +150,7 @@ export default function BazaarCart() {
                           style={divider}
                         >
                           <button
+                            type="button"
                             className={step}
                             aria-label={`Decrease ${item.title}`}
                             disabled={item.quantity <= 1}
@@ -170,6 +172,7 @@ export default function BazaarCart() {
                             {item.quantity}
                           </span>
                           <button
+                            type="button"
                             className={step}
                             aria-label={`Increase ${item.title}`}
                             disabled={item.quantity >= max}
@@ -186,8 +189,10 @@ export default function BazaarCart() {
                           </button>
                         </div>
                         <button
+                          type="button"
                           onClick={() => dispatch(removeItemFromCart(item.id))}
-                          className="text-custom-sm underline underline-offset-4 hover:text-dark"
+                          aria-label={`Remove ${item.title}`}
+                          className="min-h-11 px-1 text-custom-sm underline underline-offset-4 hover:text-dark"
                           style={{ color: "var(--muted)" }}
                         >
                           Remove

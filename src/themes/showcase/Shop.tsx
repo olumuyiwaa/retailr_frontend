@@ -18,7 +18,7 @@ export default function ShowcaseShop() {
   const kind = params.get("kind") === "service" ? "service" : "product";
 
   const top = useMemo(
-    () => Math.ceil(Math.max(0, ...(ctx?.products ?? []).map((p) => p.discountedPrice))),
+    () => Math.ceil(Math.max(0, ...(ctx?.products ?? []).filter((p) => (p.kind ?? "product") === "product").map((p) => p.discountedPrice))),
     [ctx?.products],
   );
 
@@ -27,7 +27,7 @@ export default function ShowcaseShop() {
     l = l.filter((p) => (p.kind ?? "product") === kind);
     if (category) l = l.filter((p) => p.category === category);
     if (inStock && kind === "product") l = l.filter((p) => p.stock === undefined || p.stock > 0);
-    if (maxPrice !== null) l = l.filter((p) => p.discountedPrice <= maxPrice);
+    if (maxPrice !== null && kind === "product") l = l.filter((p) => p.discountedPrice <= maxPrice);
     if (q) l = l.filter((p) => `${p.title} ${p.category ?? ""} ${p.description ?? ""}`.toLowerCase().includes(q.toLowerCase()));
     const by = [...l];
     if (sort === "latest") by.sort((a, b) => +new Date(b.createdAt ?? 0) - +new Date(a.createdAt ?? 0));
@@ -42,7 +42,16 @@ export default function ShowcaseShop() {
   const goods = products.filter((p) => (p.kind ?? "product") === "product");
   const services = products.filter((p) => p.kind === "service");
   const pool = kind === "service" ? services : goods;
-  const shopBase = kind === "service" ? "/shop?kind=service" : "/shop";
+  const qs = (o: Record<string, string>) => {
+    const sp = new URLSearchParams();
+    if (o.kind) sp.set("kind", o.kind);
+    if (o.category) sp.set("category", o.category);
+    if (q) sp.set("q", q);
+    const s = sp.toString();
+    return `/shop${s ? `?${s}` : ""}`;
+  };
+  const kindOpt = kind === "service" ? "service" : "";
+  const shopBase = qs({ kind: kindOpt });
   const cap = maxPrice ?? top;
   const catCls = (on: boolean) =>
     `flex w-full justify-between rounded-md px-3 py-2 text-custom-sm ease-out duration-200 hover:bg-gray-1 hover:text-blue ${on ? "bg-gray-1 font-medium text-blue" : "text-dark"}`;
@@ -74,11 +83,11 @@ export default function ShowcaseShop() {
             {goods.length > 0 && services.length > 0 && (
               <div className="rounded-lg bg-white p-5 shadow-1">
                 <h2 className="mb-3 font-medium text-dark">Type</h2>
-                <Link href={href("/shop")} className={catCls(kind === "product")}>
+                <Link href={href(qs({}))} className={catCls(kind === "product")} aria-current={kind === "product" ? "page" : undefined}>
                   <span>Products</span>
                   <span>{goods.length}</span>
                 </Link>
-                <Link href={href("/shop?kind=service")} className={catCls(kind === "service")}>
+                <Link href={href(qs({ kind: "service" }))} className={catCls(kind === "service")} aria-current={kind === "service" ? "page" : undefined}>
                   <span>Services</span>
                   <span>{services.length}</span>
                 </Link>
@@ -86,15 +95,16 @@ export default function ShowcaseShop() {
             )}
             <div className="rounded-lg bg-white p-5 shadow-1">
               <h2 className="mb-3 font-medium text-dark">Categories</h2>
-              <Link href={href(shopBase)} className={catCls(!category)}>
+              <Link href={href(shopBase)} className={catCls(!category)} aria-current={!category ? "page" : undefined}>
                 <span>All</span>
                 <span>{pool.length}</span>
               </Link>
               {categories.map((c) => (
                 <Link
                   key={c}
-                  href={href(`/shop?${kind === "service" ? "kind=service&" : ""}category=${encodeURIComponent(c)}`)}
+                  href={href(qs({ kind: kindOpt, category: c }))}
                   className={catCls(category === c)}
+                  aria-current={category === c ? "page" : undefined}
                 >
                   <span>{c}</span>
                   <span>{pool.filter((p) => p.category === c).length}</span>
@@ -137,9 +147,9 @@ export default function ShowcaseShop() {
                     ? kind === "service"
                       ? "No services yet."
                       : "No products yet."
-                    : "No matches."}
+                    : "No matches. Try a different word or clear the filters."}
                 </p>
-                <Link href={href(shopBase)} className="mt-3 inline-block text-blue">
+                <Link href={href(kind === "service" ? "/shop?kind=service" : "/shop")} className="mt-3 inline-block text-blue">
                   Clear filters
                 </Link>
               </div>

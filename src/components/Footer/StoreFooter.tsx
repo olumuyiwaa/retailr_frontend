@@ -2,6 +2,7 @@
 import React from "react";
 import Link from "next/link";
 import { useStore } from "@/app/context/StoreContext";
+import { payPhrase } from "@/lib/paymentCopy";
 
 // Footer for a business storefront: a deep brand-ink block with the shop's name
 // set large, and only real details (address, phone, categories).
@@ -53,7 +54,7 @@ const StoreFooter = () => {
                   <a className={linkCls} href={`tel:${store.phone.replace(/\s/g, "")}`}>{store.phone}</a>
                 </li>
               )}
-              <li>Pay on delivery or by bank transfer</li>
+              <li>{payPhrase(store.paymentMethods)}</li>
             </ul>
           </div>
         </div>

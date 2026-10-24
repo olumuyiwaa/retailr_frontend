@@ -8,10 +8,16 @@ import { useCartModalContext } from "@/app/context/CartSidebarModalContext";
 import { addItemToCart } from "@/redux/features/cart-slice";
 import { AppDispatch, useAppSelector } from "@/redux/store";
 import MarketCard, { ProductPhoto } from "./Card";
+import { payPhrase } from "@/lib/paymentCopy";
 
 const divider = { borderColor: "var(--line)" };
 
+/** Keyed by product so quantity, option and photo selection reset when navigating between products. */
 export default function MarketProduct({ productId }: { productId: string }) {
+  return <ProductView key={productId} productId={productId} />;
+}
+
+function ProductView({ productId }: { productId: string }) {
   const ctx = useStore();
   const dispatch = useDispatch<AppDispatch>();
   const { openCartModal } = useCartModalContext();
@@ -60,6 +66,7 @@ export default function MarketProduct({ productId }: { productId: string }) {
     .filter(
       (p) =>
         p.id !== product.id &&
+        (p.kind ?? "product") === (product.kind ?? "product") &&
         (!product.category || p.category === product.category)
     )
     .slice(0, 5);
@@ -195,7 +202,7 @@ export default function MarketProduct({ productId }: { productId: string }) {
               )}
             </div>
 
-            {product.kind === "service" && product.durationMins && (
+            {product.kind === "service" && !!product.durationMins && product.durationMins > 0 && (
               <p className="mt-1 text-custom-sm" style={{ color: "var(--muted)" }}>
                 Duration: {product.durationMins} min
               </p>
@@ -227,19 +234,13 @@ export default function MarketProduct({ productId }: { productId: string }) {
                           setQty(1);
                         }}
                         className={`min-w-[3rem] rounded border px-4 py-2.5 text-custom-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:line-through disabled:opacity-40 ${
-                          on ? "text-white" : "bg-white text-dark hover:text-white"
+                          on ? "text-white" : "bg-white text-dark hover:bg-[color:var(--tint)]"
                         }`}
                         style={
                           on
                             ? { background: "var(--ink)", borderColor: "var(--ink)" }
                             : { borderColor: "var(--line)" }
                         }
-                        onMouseEnter={(e) => {
-                          if (!on) (e.currentTarget as HTMLButtonElement).style.background = "var(--ink)";
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!on) (e.currentTarget as HTMLButtonElement).style.background = "";
-                        }}
                       >
                         {v.name}
                       </button>
@@ -314,7 +315,7 @@ export default function MarketProduct({ productId }: { productId: string }) {
             )}
 
             {/* Specs */}
-            {(product.specs?.length || product.sku) && (
+            {(!!product.specs?.length || !!product.sku || product.kind !== "service") && (
               <dl
                 className="mt-7 grid grid-cols-2 gap-x-6 gap-y-4 border-t pt-6 text-custom-sm"
                 style={divider}
@@ -331,37 +332,44 @@ export default function MarketProduct({ productId }: { productId: string }) {
                     <dd className="mt-0.5 font-medium text-dark">{product.sku}</dd>
                   </div>
                 )}
-                <div>
-                  <dt style={{ color: "var(--muted)" }}>Ships from</dt>
-                  <dd className="mt-0.5 font-medium text-dark">
-                    {store.city}, {store.country}
-                  </dd>
-                </div>
+                {product.kind !== "service" && (
+                  <div>
+                    <dt style={{ color: "var(--muted)" }}>Ships from</dt>
+                    <dd className="mt-0.5 font-medium text-dark">
+                      {[store.city, store.country].filter(Boolean).join(", ")}
+                    </dd>
+                  </div>
+                )}
               </dl>
             )}
 
-            {/* Delivery note */}
-            <div
-              className="mt-6 rounded-lg border p-4 text-custom-sm"
-              style={{ borderColor: "var(--line)", background: "var(--tint)" }}
-            >
-              <p className="font-semibold text-dark">🚚 Delivery</p>
-              <p className="mt-1" style={{ color: "var(--muted)" }}>
-                Ships from {store.city}, {store.country}. Pay on delivery or by bank
-                transfer.{" "}
-                {store.phone && (
-                  <>
-                    Questions?{" "}
-                    <a
-                      href={`tel:${store.phone.replace(/\s/g, "")}`}
-                      className="underline hover:text-dark"
-                    >
-                      {store.phone}
-                    </a>
-                  </>
-                )}
-              </p>
-            </div>
+            {/* Delivery note (not for services) */}
+            {product.kind !== "service" && (
+              <div
+                className="mt-6 rounded-lg border p-4 text-custom-sm"
+                style={{ borderColor: "var(--line)", background: "var(--tint)" }}
+              >
+                <p className="font-semibold text-dark">
+                  <span aria-hidden>🚚 </span>Delivery
+                </p>
+                <p className="mt-1" style={{ color: "var(--muted)" }}>
+                  {[store.city, store.country].filter(Boolean).length > 0 &&
+                    `Ships from ${[store.city, store.country].filter(Boolean).join(", ")}. `}
+                  {payPhrase(store.paymentMethods)}.{" "}
+                  {store.phone && (
+                    <>
+                      Questions?{" "}
+                      <a
+                        href={`tel:${store.phone.replace(/\s/g, "")}`}
+                        className="underline hover:text-dark"
+                      >
+                        {store.phone}
+                      </a>
+                    </>
+                  )}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </section>

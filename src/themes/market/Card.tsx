@@ -25,9 +25,12 @@ export function priceLabel(p: Product, fmt: (n: number) => string) {
 export function ProductPhoto({
   item,
   className = "",
+  alt,
 }: {
   item?: Pick<Product, "title" | "imgs" | "color">;
   className?: string;
+  /** Override the alt text ("" when the title is already next to the photo). */
+  alt?: string;
 }) {
   const src = item?.imgs?.previews?.[0];
   return (
@@ -39,7 +42,7 @@ export function ProductPhoto({
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={src}
-          alt={item?.title ?? ""}
+          alt={alt ?? item?.title ?? ""}
           loading="lazy"
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
@@ -54,17 +57,6 @@ export function ProductPhoto({
   );
 }
 
-/** Horizontal list-style card used in the cart */
-export function MarketCartPhoto({
-  item,
-  className = "",
-}: {
-  item?: Pick<Product, "title" | "imgs" | "color">;
-  className?: string;
-}) {
-  return <ProductPhoto item={item} className={className} />;
-}
-
 export default function MarketCard({ item }: { item: Product }) {
   const ctx = useStore();
   if (!ctx) return null;
@@ -74,52 +66,60 @@ export default function MarketCard({ item }: { item: Product }) {
   const hasOriginal =
     item.price !== undefined && item.price > item.discountedPrice;
 
-  return (
-    <Link href={href(`/product/${item.id}`)} className="group block bg-white rounded border hover:shadow-md transition-shadow duration-200" style={{ borderColor: "var(--line)" }}>
-      {/* Image */}
-      <div className="relative overflow-hidden rounded-t">
-        <ProductPhoto item={item} className="aspect-square w-full" />
-        <FaveButton item={item} className="absolute bottom-2 right-2" />
-        {/* Badge */}
-        {isNew(item) && !soldOut && (
-          <span
-            className="absolute left-2 top-2 rounded px-2 py-0.5 text-2xs font-bold text-white"
-            style={{ background: "var(--brand)" }}
-          >
-            NEW
-          </span>
-        )}
-        {soldOut && (
-          <span className="absolute left-2 top-2 rounded bg-gray-600 px-2 py-0.5 text-2xs font-bold text-white">
-            SOLD OUT
-          </span>
-        )}
-      </div>
+  const low = !soldOut && item.stock !== undefined && item.stock <= 5;
 
-      {/* Info */}
-      <div className="p-3">
-        <h3
-          className="line-clamp-2 text-custom-sm font-medium leading-snug text-dark group-hover:underline underline-offset-2"
-        >
-          {item.title}
-        </h3>
-        {item.category && (
-          <p className="mt-0.5 text-2xs" style={{ color: "var(--muted)" }}>
-            {item.category}
-          </p>
-        )}
-        <div className="mt-2 flex flex-wrap items-baseline gap-1.5">
-          <span className="font-bold text-dark">
-            {price.from && <span className="mr-0.5 text-2xs font-normal">from</span>}
-            {price.text}
-          </span>
-          {hasOriginal && (
-            <span className="text-2xs line-through" style={{ color: "var(--muted)" }}>
-              {fmt(item.price!)}
+  return (
+    <article
+      className="group relative rounded border bg-white transition-shadow duration-200 hover:shadow-md"
+      style={{ borderColor: "var(--line)" }}
+    >
+      <Link href={href(`/product/${item.id}`)} className="block">
+        <div className="relative overflow-hidden rounded-t">
+          <ProductPhoto item={item} alt="" className="aspect-square w-full" />
+          {isNew(item) && !soldOut && (
+            <span
+              className="absolute left-2 top-2 rounded px-2 py-0.5 text-2xs font-bold text-white"
+              style={{ background: "var(--brand)" }}
+            >
+              NEW
+            </span>
+          )}
+          {soldOut && (
+            <span className="absolute left-2 top-2 rounded bg-gray-600 px-2 py-0.5 text-2xs font-bold text-white">
+              SOLD OUT
             </span>
           )}
         </div>
-      </div>
-    </Link>
+
+        <div className="p-3">
+          <h3 className="line-clamp-2 text-custom-sm font-medium leading-snug text-dark underline-offset-2 group-hover:underline">
+            {item.title}
+          </h3>
+          {item.category && (
+            <p className="mt-0.5 text-2xs" style={{ color: "var(--muted)" }}>
+              {item.category}
+            </p>
+          )}
+          <div className="mt-2 flex flex-wrap items-baseline gap-1.5">
+            <span className="font-bold text-dark">
+              {price.from && <span className="mr-0.5 text-2xs font-normal">from</span>}
+              {price.text}
+            </span>
+            {hasOriginal && (
+              <span className="text-2xs line-through" style={{ color: "var(--muted)" }}>
+                {fmt(item.price!)}
+              </span>
+            )}
+          </div>
+          {low && (
+            <p className="mt-1 text-2xs font-semibold" style={{ color: "var(--brand)" }}>
+              Only {item.stock} left
+            </p>
+          )}
+        </div>
+      </Link>
+      {/* Sibling of the link (a button inside an anchor is invalid HTML) */}
+      <FaveButton item={item} iconSize={18} className="absolute right-2 top-2" />
+    </article>
   );
 }

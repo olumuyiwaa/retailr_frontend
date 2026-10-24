@@ -2,7 +2,7 @@
 import React from "react";
 import Link from "next/link";
 import { useStore } from "@/app/context/StoreContext";
-import ShopCard, { ShopPhoto } from "./Card";
+import ShopCard from "./Card";
 import CategoryPicture from "@/components/Store/CategoryPicture";
 
 const Wrap = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
@@ -14,7 +14,7 @@ const SectionHeader = ({ title, href, linkLabel = "See all" }: { title: string; 
     <h2 className="text-xl font-bold text-dark sm:text-2xl">{title}</h2>
     <Link
       href={href}
-      className="flex items-center gap-1 text-custom-sm font-medium text-dark transition-opacity hover:opacity-70"
+      className="flex min-h-10 items-center gap-1 text-custom-sm font-medium text-dark transition-opacity hover:opacity-70"
     >
       {linkLabel}
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -38,7 +38,6 @@ export default function ShopHome() {
 
   const catTiles = categories.slice(0, 6).map((c) => ({
     name: c,
-    item: products.find((p) => p.category === c && p.imgs?.previews?.length) ?? products.find((p) => p.category === c),
   }));
 
   return (
@@ -54,12 +53,12 @@ export default function ShopHome() {
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={featured.imgs.previews[0]}
-                alt={featured.title}
+                alt=""
                 className="h-[300px] w-full object-cover sm:h-[420px] lg:h-[500px]"
               />
             ) : (
               <div className="h-[300px] sm:h-[420px] lg:h-[500px] flex items-center justify-center">
-                <p className="text-4xl font-extrabold text-dark sm:text-6xl lg:text-8xl">{store.name}</p>
+                <p className="text-4xl font-extrabold text-dark sm:text-6xl lg:text-8xl" aria-hidden>{store.name}</p>
               </div>
             )}
             {/* Overlay */}
@@ -120,7 +119,7 @@ export default function ShopHome() {
       {/* Top rated */}
       {topRated.length > 0 && (
         <Wrap className="py-8">
-          <SectionHeader title="Top rated" href={href("/shop")} />
+          <SectionHeader title="Best sellers" href={href("/shop")} />
           <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-4 lg:grid-cols-5">
             {topRated.map((p) => (
               <ShopCard key={p.id} item={p} />
@@ -153,8 +152,7 @@ export default function ShopHome() {
         </Wrap>
       )}
 
-      {/* Spacer for mobile bottom nav */}
-      <div className="h-20 sm:h-8" />
+      <div className="h-8" />
     </main>
   );
 }

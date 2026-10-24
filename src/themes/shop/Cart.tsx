@@ -41,7 +41,7 @@ export default function ShopCart() {
     );
   }
 
-  const qtyBtn = "flex h-8 w-8 items-center justify-center rounded-full text-base font-medium text-dark transition-colors hover:bg-[color:var(--tint)] disabled:opacity-30";
+  const qtyBtn = "flex h-10 w-10 items-center justify-center rounded-full text-base font-medium text-dark transition-colors hover:bg-[color:var(--tint)] disabled:opacity-30";
 
   return (
     <section className={`${WRAP} pb-10 pt-7`}>
@@ -55,7 +55,7 @@ export default function ShopCart() {
         <h1 className="text-3xl font-bold text-dark sm:text-4xl">Your cart</h1>
         <button
           onClick={() => dispatch(removeAllItemsFromCart())}
-          className="pb-0.5 text-custom-sm underline underline-offset-4 transition-colors hover:text-dark"
+          className="py-2 text-custom-sm underline underline-offset-4 transition-colors hover:text-dark"
           style={{ color: "var(--muted)" }}
         >
           Clear cart
@@ -70,7 +70,7 @@ export default function ShopCart() {
             return (
               <li key={item.id} className="flex gap-4 p-4 sm:gap-5 sm:p-5" style={lineStyle}>
                 <Link href={href(`/product/${item.productId ?? item.id}`)} className="block w-20 shrink-0 sm:w-24" aria-label={item.title}>
-                  <ShopPhoto item={item} className="aspect-square w-full rounded-xl" />
+                  <ShopPhoto item={item} decorative className="aspect-square w-full rounded-xl" />
                 </Link>
                 <div className="flex min-w-0 flex-1 flex-col justify-between">
                   <div className="flex items-start justify-between gap-3">
@@ -90,7 +90,7 @@ export default function ShopCart() {
                     </div>
                     <button
                       onClick={() => dispatch(removeItemFromCart(item.id))}
-                      className="text-custom-sm underline underline-offset-4 transition-colors hover:text-dark"
+                      className="py-2 text-custom-sm underline underline-offset-4 transition-colors hover:text-dark"
                       style={{ color: "var(--muted)" }}
                     >
                       Remove

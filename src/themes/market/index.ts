@@ -18,7 +18,7 @@ const market: StoreTheme = {
     tint: "#EEF1F8",
     wash: "#F5F6FA",
     line: "#E2E6EF",
-    muted: "#6B7A99",
+    muted: "#566380",
   },
   header: () => import("./Header"),
   footer: () => import("./Footer"),

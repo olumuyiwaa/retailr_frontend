@@ -16,13 +16,13 @@ export function priceLabel(p: Product, fmt: (n: number) => string) {
   return Math.max(...prices) !== lo ? { from: true, text: fmt(lo) } : { from: false, text: fmt(lo) };
 }
 
-export function ShopPhoto({ item, className = "" }: { item?: Pick<Product, "title" | "imgs" | "color">; className?: string }) {
+export function ShopPhoto({ item, className = "", decorative = false }: { item?: Pick<Product, "title" | "imgs" | "color">; className?: string; decorative?: boolean }) {
   const src = item?.imgs?.previews?.[0];
   return (
     <div className={`relative overflow-hidden bg-[color:var(--tint)] ${className}`}>
       {src ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt={item?.title ?? ""} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+        <img src={src} alt={decorative ? "" : item?.title ?? ""} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
       ) : (
         <ProductArt seed={item?.title ?? "shop"} color={item?.color} showInitial={false} />
       )}
@@ -30,19 +30,20 @@ export function ShopPhoto({ item, className = "" }: { item?: Pick<Product, "titl
   );
 }
 
-/** Heart / save button — backed by Redux + localStorage. */
+/** Product / service card for grids. */
 export default function ShopCard({ item }: { item: Product }) {
   const ctx = useStore();
   if (!ctx) return null;
   const { href, fmt } = ctx;
   const soldOut = item.stock !== undefined && item.stock <= 0;
   const price = priceLabel(item, fmt);
-  const hasDiscount = item.price !== undefined && item.price > item.discountedPrice;
+  const low = !soldOut && item.stock !== undefined && item.stock <= 5;
+  const hasDiscount = !item.variants?.length && item.price !== undefined && item.price > item.discountedPrice;
 
   return (
     <Link href={href(`/product/${item.id}`)} className="group block">
       <div className="relative">
-        <ShopPhoto item={item} className="aspect-square w-full rounded-xl" />
+        <ShopPhoto item={item} decorative className="aspect-square w-full rounded-xl" />
         <FaveButton item={item} className="absolute bottom-2.5 right-2.5" />
         {/* Discount badge */}
         {hasDiscount && !soldOut && (
@@ -55,8 +56,13 @@ export default function ShopCard({ item }: { item: Product }) {
             Sold out
           </span>
         )}
-        {isNew(item) && !soldOut && !hasDiscount && (
-          <span className="absolute left-2.5 top-2.5 rounded-full bg-blue-600 px-2 py-0.5 text-2xs font-medium text-white">
+        {low && !hasDiscount && (
+          <span className="absolute left-2.5 top-2.5 rounded-full bg-white px-2 py-0.5 text-2xs font-semibold text-dark">
+            Only {item.stock} left
+          </span>
+        )}
+        {isNew(item) && !soldOut && !low && !hasDiscount && (
+          <span className="absolute left-2.5 top-2.5 rounded-full bg-dark px-2 py-0.5 text-2xs font-medium text-white">
             New
           </span>
         )}

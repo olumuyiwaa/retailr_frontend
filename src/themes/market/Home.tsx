@@ -2,9 +2,10 @@
 import React from "react";
 import Link from "next/link";
 import { useStore } from "@/app/context/StoreContext";
-import MarketCard, { ProductPhoto, priceLabel, isNew } from "./Card";
+import MarketCard, { ProductPhoto, isNew } from "./Card";
 import CategoryPicture from "@/components/Store/CategoryPicture";
 import type { Product } from "@/types/product";
+import { payPhrase } from "@/lib/paymentCopy";
 
 /* ─────────────────────────────── Layout helpers ─────────────────────── */
 
@@ -117,7 +118,7 @@ function HeroShowcase({ items, href: hrefFn }: { items: Product[]; href: (p: str
         >
           <ProductPhoto item={p} className="aspect-square w-full" />
           {/* Product title chip */}
-          <div className="absolute inset-x-0 bottom-0 translate-y-full bg-dark/80 px-2.5 py-2 text-2xs font-semibold text-white transition-transform duration-200 group-hover:translate-y-0">
+          <div className="absolute inset-x-0 bottom-0 translate-y-full bg-dark/80 px-2.5 py-2 text-2xs font-semibold text-white transition-transform duration-200 group-focus-visible:translate-y-0 group-hover:translate-y-0">
             {p.title}
           </div>
           {i === 0 && isNew(p) && (
@@ -151,7 +152,9 @@ function DealSpotlight({ item, href: hrefFn, fmt }: { item: Product; href: (p: s
     >
       {/* Image */}
       <div className="relative w-40 shrink-0 overflow-hidden sm:w-56">
-        <ProductPhoto item={item} className="absolute inset-0 h-full w-full" />
+        <div className="absolute inset-0">
+          <ProductPhoto item={item} alt="" className="h-full w-full" />
+        </div>
         {hasOriginal && (
           <span
             className="absolute left-2 top-2 rounded px-2 py-0.5 text-custom-sm font-extrabold text-white"
@@ -297,9 +300,9 @@ export default function MarketHome() {
   /* ── Trust bar items ── */
   const trustItems: [React.ReactNode, string, string][] = [
     [<IconShield key="s" />, "Secure Checkout", "Pay safely every time"],
-    [<IconTruck key="t" />, `Ships from ${store.city}`, store.country],
+    [<IconTruck key="t" />, store.city ? `Ships from ${store.city}` : "Delivery available", store.country || "Ask us for details"],
     [<IconPhone key="p" />, "We're here to help", store.phone || "Contact us anytime"],
-    [<IconReturn key="r" />, "Easy Returns", "Hassle-free return policy"],
+    [<IconReturn key="r" />, "Flexible payment", payPhrase(store.paymentMethods, "cash")],
   ];
 
   return (
@@ -327,7 +330,7 @@ export default function MarketHome() {
             </h1>
             <p className="mt-5 max-w-[38rem] text-lg leading-relaxed text-white/70">
               {store.description ||
-                `${store.category} from ${store.city}, ${store.country}. Browse our full catalogue below.`}
+                `${[store.category, [store.city, store.country].filter(Boolean).join(", ")].filter(Boolean).join(" from ")}. Browse our full catalogue below.`}
             </p>
 
             {/* CTA row */}
@@ -353,11 +356,12 @@ export default function MarketHome() {
             {/* Mini stats row */}
             <div className="mt-10 flex flex-wrap gap-8 border-t pt-6" style={{ borderColor: "rgba(255,255,255,.12)" }}>
               {[
-                [String(products.length), "Products"],
+                [String(goods.length), "Products"],
+                ...(services.length ? [[String(services.length), "Services"]] : []),
                 [String(categories.length), "Categories"],
-                [store.city, store.country],
+                ...(store.city ? [[store.city, store.country]] : []),
               ].map(([val, label]) => (
-                <div key={val}>
+                <div key={label || val}>
                   <p className="text-2xl font-extrabold text-white">{val}</p>
                   <p className="text-custom-sm text-white/60">{label}</p>
                 </div>
@@ -375,13 +379,13 @@ export default function MarketHome() {
       {/* ═══════════════════════════ TRUST BAR ═══════════════════════════ */}
       <div className="bg-white shadow-sm">
         <Wrap>
-          <ul className="grid grid-cols-2 divide-x divide-y lg:grid-cols-4 lg:divide-y-0" style={{ borderColor: "var(--line)" }}>
+          <ul className="grid grid-cols-2 divide-x divide-y divide-[color:var(--line)] lg:grid-cols-4 lg:divide-y-0">
             {trustItems.map(([icon, title, sub]) => (
               <li
                 key={title}
                 className="flex items-center gap-3 px-5 py-4"
               >
-                <span className="text-dark" style={{ color: "var(--brand)" }}>{icon}</span>
+                <span style={{ color: "var(--brand)" }}>{icon}</span>
                 <div>
                   <p className="text-custom-sm font-bold text-dark">{title}</p>
                   <p className="text-2xs" style={{ color: "var(--muted)" }}>{sub}</p>
@@ -442,8 +446,8 @@ export default function MarketHome() {
                   <p className="text-xl font-extrabold text-white sm:text-2xl">
                     Explore the full catalogue
                   </p>
-                  <p className="mt-1 text-white/80">
-                    {products.length} products from {store.city} · {store.country}
+                  <p className="mt-1 text-white">
+                    {products.length} item{products.length === 1 ? "" : "s"}{store.city ? ` from ${store.city}` : ""}
                   </p>
                 </div>
                 <Link
@@ -523,7 +527,7 @@ export default function MarketHome() {
                 Everything {store.name} sells, in one place
               </h2>
               <p className="mx-auto mt-3 max-w-md text-lg" style={{ color: "var(--muted)" }}>
-                {products.length} product{products.length === 1 ? "" : "s"} across {categories.length} categor{categories.length === 1 ? "y" : "ies"}.
+                {products.length} item{products.length === 1 ? "" : "s"} across {categories.length} categor{categories.length === 1 ? "y" : "ies"}.
               </p>
               <div className="mt-7 flex flex-wrap justify-center gap-3">
                 <Link

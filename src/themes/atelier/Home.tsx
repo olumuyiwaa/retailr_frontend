@@ -5,6 +5,7 @@ import { useStore } from "@/app/context/StoreContext";
 import AtelierCard, { Photo } from "./Card";
 import CategoryPicture from "@/components/Store/CategoryPicture";
 import { whatsappLink } from "./whatsapp";
+import { payPhrase } from "@/lib/paymentCopy";
 
 const Wrap = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
   <div className={`mx-auto w-full max-w-[1680px] px-5 sm:px-8 lg:px-12 2xl:px-20 ${className}`}>{children}</div>
@@ -29,7 +30,7 @@ export default function AtelierHome() {
 
   const btn = "inline-flex h-[52px] items-center rounded-md px-6 font-medium ease-out duration-200";
   const facts = [
-    ["Pay your way", "Cash on delivery or bank transfer"],
+    ["Pay your way", payPhrase(store.paymentMethods, "cash")],
     [`Ships from ${store.city}`, store.country],
     ["Questions?", store.phone ? `Call ${store.phone}` : `Ask ${store.name}`],
   ];

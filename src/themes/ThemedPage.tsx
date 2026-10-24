@@ -45,8 +45,11 @@ export function ThemedPage<K extends ThemePage>({ page, ...props }: { page: K } 
 
 /** Header / footer slots. */
 export function ThemedChrome({ slot, fallback = null }: { slot: "header" | "footer"; fallback?: React.ReactNode }) {
+  const ctx = useStore();
   const theme = useActiveTheme();
   const C = useMemo(() => resolveSlot(theme, slot), [theme, slot]);
+  // Until the store (and so its theme) is known, don't download the default theme's chrome only to swap it out.
+  if (!ctx?.store) return <>{fallback}</>;
   return (
     <Suspense fallback={fallback}>
       <C />

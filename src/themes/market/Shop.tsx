@@ -8,7 +8,7 @@ import MarketCard from "./Card";
 type Sort = "featured" | "latest" | "price-asc" | "price-desc";
 
 const inputCls =
-  "h-10 rounded border bg-white px-3 text-custom-sm text-dark outline-none focus:ring-2 focus:ring-offset-1";
+  "h-11 rounded border bg-white px-3 text-custom-sm text-dark outline-none focus:ring-2 focus:ring-offset-1";
 
 export default function MarketShop() {
   const ctx = useStore();
@@ -16,7 +16,16 @@ export default function MarketShop() {
   const [sort, setSort] = useState<Sort>("featured");
   const [term, setTerm] = useState(params.get("q") ?? "");
   const category = params.get("category") ?? "";
-  const kind = params.get("kind") === "service" ? "service" : "product";
+  const onlyServices =
+    !!ctx?.products.length && !ctx.products.some((p) => (p.kind ?? "product") === "product");
+  const kind = params.get("kind") === "service" || onlyServices ? "service" : "product";
+  const urlQ = params.get("q") ?? "";
+  // keep the box in step with the URL (e.g. a search submitted from the header)
+  const [prevQ, setPrevQ] = useState(urlQ);
+  if (prevQ !== urlQ) {
+    setPrevQ(urlQ);
+    setTerm(urlQ);
+  }
   const q = term.trim().toLowerCase();
 
   const list = useMemo(() => {
@@ -59,13 +68,17 @@ export default function MarketShop() {
         : "All Products");
 
   const divider = { borderColor: "var(--line)" };
+  // only offer categories that have something of the kind being browsed
+  const cats = categories.filter((c) =>
+    products.some((p) => (p.kind ?? "product") === kind && p.category === c)
+  );
 
   /* Active category pill */
   const catPill = (on: boolean) =>
-    `whitespace-nowrap rounded border px-3.5 py-1.5 text-custom-sm font-medium transition-colors duration-150 ${
+    `whitespace-nowrap rounded border px-3.5 py-2.5 text-custom-sm font-medium transition-colors duration-150 ${
       on
         ? "text-white border-transparent"
-        : "bg-white text-dark hover:border-transparent hover:text-white"
+        : "bg-white text-dark hover:bg-[color:var(--tint)]"
     }`;
 
   return (
@@ -123,7 +136,7 @@ export default function MarketShop() {
             >
               All
             </Link>
-            {categories.map((c) => (
+            {cats.map((c) => (
               <Link
                 key={c}
                 href={href(
@@ -185,7 +198,7 @@ export default function MarketShop() {
             <p className="mb-3 font-semibold text-dark">Nothing matches that search.</p>
             <Link
               href={href(shopBase)}
-              className="inline-flex h-10 items-center rounded px-6 font-semibold text-white"
+              className="inline-flex h-11 items-center rounded px-6 font-semibold text-white"
               style={{ background: "var(--brand)" }}
             >
               Clear filters

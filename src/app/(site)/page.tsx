@@ -3,7 +3,7 @@ import Link from "next/link";
 import { DEMO_ENABLED, DEMO_STORE_HREF } from "@/lib/demo";
 import MarketingShell, { MARKETING_WIDTH } from "@/components/saas/MarketingShell";
 import PricingCards from "@/components/saas/PricingCards";
-import ThemeThumb from "@/components/saas/ThemeThumb";
+import ThemeThumb, { themeLayout } from "@/components/saas/ThemeThumb";
 import HeroMock from "@/components/saas/marketing/HeroMock";
 import { icons } from "@/components/saas/marketing/Icons";
 import { THEMES } from "@/themes/registry";
@@ -208,7 +208,7 @@ export default function LandingPage() {
               <div key={t.id} className="flex flex-col rounded-2xl bg-white p-4 shadow-theme-xs ring-1 ring-gray-200">
                 <ThemeThumb
                   swatches={t.swatches}
-                  layout={t.id === "showcase" ? "showcase" : t.id === "atelier" ? "atelier" : t.id === "market" ? "market" : t.id === "bazaar" ? "bazaar" : t.id === "shop" ? "shop" : t.id === "bazaar" ? "bazaar" : "classic"}
+                  layout={themeLayout(t.id)}
                 />
                 <h3 className="mt-4 font-semibold">{t.name}</h3>
                 <p className="mt-1 flex-1 text-sm text-gray-500">{t.description}</p>

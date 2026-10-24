@@ -15,10 +15,14 @@ export default function ShowcaseHome() {
 
   const goods = products.filter((p) => (p.kind ?? "product") === "product");
   const services = products.filter((p) => p.kind === "service");
-  const newest = [...(goods.length ? goods : products)].sort((a, b) => +new Date(b.createdAt ?? 0) - +new Date(a.createdAt ?? 0));
-  const best = [...goods].filter((p) => (p.sold ?? 0) > 0).sort((a, b) => (b.sold ?? 0) - (a.sold ?? 0)).slice(0, 6);
+  const live = goods.filter((p) => p.stock === undefined || p.stock > 0);
+  const newest = [...goods].sort((a, b) => +new Date(b.createdAt ?? 0) - +new Date(a.createdAt ?? 0));
+  const best = [...live].filter((p) => (p.sold ?? 0) > 0).sort((a, b) => (b.sold ?? 0) - (a.sold ?? 0)).slice(0, 6);
   const topServices = [...services].sort((a, b) => (b.sold ?? 0) - (a.sold ?? 0) || +new Date(b.createdAt ?? 0) - +new Date(a.createdAt ?? 0)).slice(0, 4);
-  const spot = [best[0] ?? newest[0], best[1] ?? newest[1]].filter(Boolean);
+  // spotlight tiles: best sellers first, then in-stock newest, then services; never the same item twice
+  const spot = [...best, ...newest.filter((p) => (p.stock ?? 1) > 0), ...topServices]
+    .filter((p, i, a) => a.findIndex((x) => x.id === p.id) === i)
+    .slice(0, 2);
 
   return (
     <main>
@@ -27,9 +31,9 @@ export default function ShowcaseHome() {
           <div className="flex flex-wrap gap-5">
             <div className="relative w-full overflow-hidden rounded-[10px] bg-white xl:max-w-[800px] xl:flex-1">
               <div className="flex flex-col justify-center px-6 py-12 sm:px-12 sm:py-16">
-                <span className="mb-3 text-custom-sm font-medium text-blue">{store.category}</span>
+                {store.category && <span className="mb-3 text-custom-sm font-medium text-blue">{store.category}</span>}
                 <h1 className="max-w-[520px] text-heading-3 font-bold text-dark sm:text-heading-2">{store.name}</h1>
-                <p className="mt-4 max-w-[460px] text-dark-3">{store.description || `Shop ${store.category.toLowerCase()} from ${store.city}, ${store.country}.`}</p>
+                <p className="mt-4 max-w-[460px] text-dark-3">{store.description || `Shop ${(store.category || "everything").toLowerCase()} from ${store.city}, ${store.country}.`}</p>
                 <Link href={href("/shop")} className="mt-8 inline-flex w-fit rounded-md bg-dark px-9 py-3 font-medium text-white ease-out duration-200 hover:bg-blue">
                   Shop now
                 </Link>
@@ -79,6 +83,7 @@ export default function ShowcaseHome() {
             </section>
           )}
 
+          {newest.length > 0 && (
           <section className="py-14">
             <Wrap>
               <div className="mb-7 flex items-end justify-between">
@@ -92,12 +97,13 @@ export default function ShowcaseHome() {
               </div>
             </Wrap>
           </section>
+          )}
 
           {topServices.length > 0 && (
-            <section className="mt-12">
+            <section className={newest.length > 0 ? "mt-12" : "pt-14"}>
               <Wrap>
                 <div className="mb-6 flex items-end justify-between gap-4">
-                  <h2 className="text-2xl font-semibold text-dark">Services</h2>
+                  <h2 className="text-xl font-semibold text-dark xl:text-heading-5">Services</h2>
                   <Link href={href("/shop?kind=service")} className="text-custom-sm text-blue">
                     View all
                   </Link>
@@ -112,7 +118,7 @@ export default function ShowcaseHome() {
           )}
 
           {best.length > 0 && (
-            <section className="pb-16">
+            <section className="pb-16 pt-2">
               <Wrap>
                 <h2 className="mb-7 text-xl font-semibold text-dark xl:text-heading-5">Best sellers</h2>
                 <div className="grid grid-cols-1 gap-x-7.5 gap-y-9 sm:grid-cols-2 lg:grid-cols-3">

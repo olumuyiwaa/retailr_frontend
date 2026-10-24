@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useStore } from "@/app/context/StoreContext";
 import BazaarCard, { ProductPhoto, isNew } from "./Card";
 import CategoryPicture from "@/components/Store/CategoryPicture";
+import { payPhrase } from "@/lib/paymentCopy";
 
 const Wrap = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
   <div className={`mx-auto w-full max-w-[1440px] px-4 sm:px-6 lg:px-10 ${className}`}>{children}</div>
@@ -21,6 +22,7 @@ export default function BazaarHome() {
   const newest = [...catalog].filter(isNew).slice(0, 8);
   const featured = catalog.slice(0, 12);
   const deal = catalog.find((p) => p.price !== undefined && p.price > p.discountedPrice) ?? catalog[0];
+  const sidePicks = catalog.filter((p) => p.id !== deal?.id).slice(0, 4);
 
   return (
     <div style={{ background: "var(--wash)" }}>
@@ -36,7 +38,7 @@ export default function BazaarHome() {
               <li>
                 <Link href={href("/shop")} className="flex items-center justify-between px-3 py-2 text-sm text-dark hover:bg-[var(--tint)]">
                   All products
-                  <span className="text-[11px]" style={{ color: "var(--muted)" }}>{catalog.length}</span>
+                  <span className="text-[11px]" style={{ color: "var(--muted)" }}>{goods.length || list.length}</span>
                 </Link>
               </li>
               {categories.map((c) => {
@@ -64,10 +66,12 @@ export default function BazaarHome() {
                 className="group relative col-span-1 overflow-hidden rounded border bg-white sm:col-span-2 lg:row-span-2"
                 style={{ borderColor: "var(--line)", minHeight: 220 }}
               >
-                <ProductPhoto item={deal} className="absolute inset-0 h-full w-full" />
+                <div className="absolute inset-0">
+                  <ProductPhoto item={deal} alt="" className="h-full w-full" />
+                </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-white/80">Featured deal</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-white">Featured deal</p>
                   <p className="mt-1 text-lg font-extrabold leading-snug sm:text-xl">{deal.title}</p>
                   <p className="mt-1 text-base font-bold" style={{ color: "#FFD4B0" }}>
                     {fmt(deal.discountedPrice)}
@@ -75,14 +79,14 @@ export default function BazaarHome() {
                 </div>
               </Link>
             )}
-            {catalog.slice(1, 5).map((p) => (
+            {sidePicks.map((p) => (
               <Link
                 key={p.id}
                 href={href(`/product/${p.id}`)}
                 className="group flex gap-3 overflow-hidden rounded border bg-white p-2 transition-shadow hover:shadow-md"
                 style={{ borderColor: "var(--line)" }}
               >
-                <ProductPhoto item={p} className="h-20 w-20 shrink-0 rounded" />
+                <ProductPhoto item={p} alt="" className="h-20 w-20 shrink-0 rounded" />
                 <div className="min-w-0 flex-1 py-0.5">
                   <p className="line-clamp-2 text-sm font-medium text-dark group-hover:underline">{p.title}</p>
                   <p className="mt-1 text-sm font-extrabold" style={{ color: "var(--brand)" }}>
@@ -103,10 +107,12 @@ export default function BazaarHome() {
               <Link
                 key={c}
                 href={href(`/shop?category=${encodeURIComponent(c)}`)}
-                className="flex shrink-0 items-center gap-2 rounded border bg-white px-2.5 py-1.5 text-xs font-medium"
+                className="flex min-h-11 shrink-0 items-center gap-2 rounded border bg-white px-3 py-1.5 text-xs font-medium"
                 style={{ borderColor: "var(--line)" }}
               >
-                <CategoryPicture name={c} className="h-7 w-7 rounded object-cover" />
+                <span className="relative h-7 w-7 shrink-0 overflow-hidden rounded" aria-hidden>
+                  <CategoryPicture name={c} />
+                </span>
                 {c}
               </Link>
             ))}
@@ -172,9 +178,9 @@ export default function BazaarHome() {
       <section className="border-t py-6" style={{ borderColor: "var(--line)", background: "var(--tint)" }}>
         <Wrap className="grid gap-4 text-center sm:grid-cols-3 sm:text-left">
           {[
-            ["Wholesale-ready catalogue", "Dense grids built for large product ranges"],
+            ["Browse the full range", "Dense grids built for large product ranges"],
             ["Clear pricing", "Prices up front so buyers decide faster"],
-            [`Ships from ${store.city || store.country}`, "Local fulfilment and simple checkout"],
+            [store.city || store.country ? `Ships from ${store.city || store.country}` : "Simple checkout", payPhrase(store.paymentMethods, "cash")],
           ].map(([t, d]) => (
             <div key={t}>
               <p className="text-sm font-bold text-dark">{t}</p>

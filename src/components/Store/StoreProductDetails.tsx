@@ -11,6 +11,7 @@ import { useStore } from "@/app/context/StoreContext";
 import { useCartModalContext } from "@/app/context/CartSidebarModalContext";
 import { addItemToCart } from "@/redux/features/cart-slice";
 import { AppDispatch, useAppSelector } from "@/redux/store";
+import { payPhrase } from "@/lib/paymentCopy";
 
 const ring = { ["--tw-ring-color" as string]: "var(--line)" } as React.CSSProperties;
 
@@ -187,7 +188,7 @@ export default function StoreProductDetails({ productId }: { productId: string }
             <dl className="mt-10 divide-y border-y text-custom-sm" style={{ borderColor: "var(--line)" }}>
               {[
                 ...(product.specs ?? []).map((s): [string, string] => [s.label, s.value]),
-                ["Payment", "Cash on delivery or bank transfer"],
+                ["Payment", payPhrase(store.paymentMethods, "cash")],
                 ["Ships from", `${store.city}, ${store.country}`],
                 ...(product.category ? [["Category", product.category]] : []),
                 ...(product.sku ? [["SKU", product.sku]] : []),

@@ -12,7 +12,14 @@ export default function AtelierShop() {
   const ctx = useStore();
   const params = useSearchParams();
   const [sort, setSort] = useState<Sort>("featured");
-  const [term, setTerm] = useState(params.get("q") ?? "");
+  const urlQ = params.get("q") ?? "";
+  const [term, setTerm] = useState(urlQ);
+  const [seenQ, setSeenQ] = useState(urlQ);
+  // follow ?q= when it changes (e.g. a search from the header)
+  if (seenQ !== urlQ) {
+    setSeenQ(urlQ);
+    setTerm(urlQ);
+  }
   const category = params.get("category") ?? "";
   const kind = params.get("kind") === "service" ? "service" : "product";
   const q = term.trim().toLowerCase();
@@ -60,21 +67,20 @@ export default function AtelierShop() {
         <div className="mx-auto flex w-full max-w-[1680px] flex-wrap items-center gap-x-8 gap-y-3 px-5 sm:px-8 lg:px-12 2xl:px-20">
           {goods.length > 0 && services.length > 0 && (
             <nav className="flex gap-6 overflow-x-auto" aria-label="Catalogue type">
-              <Link href={href("/shop")} className={tab(kind === "product")} role="tab" aria-selected={kind === "product"}>
+              <Link href={href("/shop")} className={tab(kind === "product")} aria-current={kind === "product" ? "page" : undefined}>
                 Products
               </Link>
               <Link
                 href={href("/shop?kind=service")}
                 className={tab(kind === "service")}
-                role="tab"
-                aria-selected={kind === "service"}
+                aria-current={kind === "service" ? "page" : undefined}
               >
                 Services
               </Link>
             </nav>
           )}
           <nav className="flex gap-6 overflow-x-auto" aria-label="Categories">
-            <Link href={href(shopBase)} className={tab(!category)}>
+            <Link href={href(shopBase)} className={tab(!category)} aria-current={!category ? "page" : undefined}>
               All
             </Link>
             {categories.map((c) => (
@@ -82,6 +88,7 @@ export default function AtelierShop() {
                 key={c}
                 href={href(`/shop?${kind === "service" ? "kind=service&" : ""}category=${encodeURIComponent(c)}`)}
                 className={tab(category === c)}
+                aria-current={category === c ? "page" : undefined}
               >
                 {c}
               </Link>
@@ -125,10 +132,16 @@ export default function AtelierShop() {
         </p>
         {list.length === 0 ? (
           <div className="py-20 text-center">
-            <p className="font-medium text-dark">Nothing matches that.</p>
-            <Link href={href(shopBase)} className="mt-3 inline-block underline underline-offset-4">
-              Clear filters
-            </Link>
+            {(kind === "service" ? services : goods).length === 0 ? (
+              <p className="font-medium text-dark">{kind === "service" ? "No services listed yet." : "No products listed yet."}</p>
+            ) : (
+              <>
+                <p className="font-medium text-dark">Nothing matches that.</p>
+                <Link href={href(shopBase)} onClick={() => setTerm("")} className="mt-3 inline-block py-2 underline underline-offset-4">
+                  Clear filters
+                </Link>
+              </>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 lg:grid-cols-4">

@@ -9,6 +9,7 @@ import { addItemToCart } from "@/redux/features/cart-slice";
 import { AppDispatch, useAppSelector } from "@/redux/store";
 import AtelierCard, { Photo } from "./Card";
 import { whatsappLink } from "./whatsapp";
+import { payPhrase } from "@/lib/paymentCopy";
 
 const line = { borderColor: "var(--line)" };
 
@@ -32,6 +33,14 @@ export default function AtelierProduct({ productId }: { productId: string }) {
   const [qty, setQty] = useState(1);
   const [variantId, setVariantId] = useState<string | null>(null);
   const [shot, setShot] = useState(0);
+  const [seenId, setSeenId] = useState(productId);
+  // a different product (e.g. from "You might also like") starts fresh
+  if (seenId !== productId) {
+    setSeenId(productId);
+    setQty(1);
+    setVariantId(null);
+    setShot(0);
+  }
 
   if (!ctx?.store) return null;
   const { store, products, href, fmt } = ctx;
@@ -83,8 +92,8 @@ export default function AtelierProduct({ productId }: { productId: string }) {
     ...(product.specs ?? []).map((s): [string, string] => [s.label, s.value]),
     ...(product.category ? ([["Category", product.category]] as [string, string][]) : []),
     ...(product.sku ? ([["SKU", product.sku]] as [string, string][]) : []),
-    ["Ships from", `${store.city}, ${store.country}`],
-    ["Payment", "Cash on delivery or bank transfer"],
+    ...(product.kind === "service" ? [] : ([["Ships from", `${store.city}, ${store.country}`]] as [string, string][])),
+    ["Payment", payPhrase(store.paymentMethods, "cash")],
   ];
 
   return (
@@ -126,7 +135,7 @@ export default function AtelierProduct({ productId }: { productId: string }) {
             <h1 className="text-4xl font-bold leading-tight text-dark sm:text-5xl">{product.title}</h1>
             {product.category && <p className="mt-1 text-xl">{product.category}</p>}
             <p className="mt-6 text-3xl font-bold text-dark">{fmt(unit)}</p>
-            {product.kind === "service" && product.durationMins && <p className="mt-1 text-sm text-body">{product.durationMins} min</p>}
+            {product.kind === "service" && !!product.durationMins && <p className="mt-1 text-sm text-body">{product.durationMins} min</p>}
             {product.description && <p className="mt-5 text-lg leading-relaxed text-dark/85">{product.description}</p>}
 
             {variants.length > 0 && (
@@ -154,7 +163,7 @@ export default function AtelierProduct({ productId }: { productId: string }) {
             )}
 
             {product.bookable ? (
-              <BookingPanel product={product} variantId={variant?.id} price={unit} />
+              <BookingPanel key={String(product.id)} product={product} variantId={variant?.id} price={unit} />
             ) : (
               <>
             <div className="mt-7 flex gap-3">
@@ -185,8 +194,8 @@ export default function AtelierProduct({ productId }: { productId: string }) {
             )}
 
             <dl className="mt-9 grid grid-cols-2 gap-x-6 gap-y-5 border-t pt-7 text-custom-sm" style={line}>
-              {details.map(([k, v]) => (
-                <div key={k}>
+              {details.map(([k, v], i) => (
+                <div key={`${k}-${i}`}>
                   <dt>{k}</dt>
                   <dd className="mt-0.5 text-base text-dark">{v}</dd>
                 </div>
@@ -194,8 +203,8 @@ export default function AtelierProduct({ productId }: { productId: string }) {
             </dl>
 
             <div className="mt-7 border-t" style={line}>
-              <Accordion title="Delivery & payment">
-                Orders ship from {store.city}, {store.country}. Pay on delivery or by bank transfer
+              <Accordion title={product.kind === "service" ? "Payment" : "Delivery & payment"}>
+                {product.kind === "service" ? "" : `Orders ship from ${store.city}, ${store.country}. `}{payPhrase(store.paymentMethods)}
                 {store.phone ? <>; call {store.phone} for anything else.</> : "."}
               </Accordion>
             </div>

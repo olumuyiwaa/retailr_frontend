@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import StoreLogo from "@/components/Store/StoreLogo";
 import { useStore } from "@/app/context/StoreContext";
 import { useCartModalContext } from "@/app/context/CartSidebarModalContext";
@@ -14,6 +14,7 @@ import { selectWishlistItems } from "@/redux/features/wishlist-slice";
  */
 export default function BazaarHeader() {
   const ctx = useStore();
+  const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
   const { openCartModal } = useCartModalContext();
@@ -21,15 +22,33 @@ export default function BazaarHeader() {
   const wishCount = useAppSelector((s) => selectWishlistItems(s).length);
   const [search, setSearch] = useState(params.get("q") ?? "");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const urlQ = params.get("q") ?? "";
+
+  // keep the box in step with the URL, and close the menu after navigating (adjust state while rendering)
+  const loc = `${pathname}?${params.toString()}`;
+  const [prevQ, setPrevQ] = useState(urlQ);
+  const [prevLoc, setPrevLoc] = useState(loc);
+  if (prevQ !== urlQ) {
+    setPrevQ(urlQ);
+    setSearch(urlQ);
+  }
+  if (prevLoc !== loc) {
+    setPrevLoc(loc);
+    setMobileOpen(false);
+  }
 
   if (!ctx?.store) return <div className="h-[120px]" aria-hidden />;
-  const { store, categories, href } = ctx;
+  const { store, categories, href, products } = ctx;
   const cat = params.get("category");
+  const svc = params.get("kind") === "service";
+  const hasServices = (products ?? []).some((p) => p.kind === "service");
   const onShop = pathname === href("/shop");
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (search.trim()) window.location.href = href(`/shop?q=${encodeURIComponent(search.trim())}`);
+    const term = search.trim();
+    router.push(href(term ? `/shop?q=${encodeURIComponent(term)}` : "/shop"));
+    setMobileOpen(false);
   };
 
   return (
@@ -38,7 +57,7 @@ export default function BazaarHeader() {
       <div className="border-b text-[11px]" style={{ background: "#FAFAFA", borderColor: "var(--line)", color: "var(--muted)" }}>
         <div className="mx-auto flex h-8 max-w-[1440px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-10">
           <p className="truncate">
-            Wholesale-style storefront · Ships from {store.city || store.country}
+            {store.city || store.country ? `Ships from ${store.city || store.country}` : store.name}
           </p>
           <div className="hidden items-center gap-4 sm:flex">
             {store.phone && (
@@ -77,7 +96,8 @@ export default function BazaarHeader() {
               />
               <button
                 type="submit"
-                className="flex items-center gap-1.5 px-5 text-sm font-bold text-white transition-opacity hover:opacity-90"
+                aria-label="Search"
+                className="flex min-h-11 items-center gap-1.5 px-5 text-sm font-bold text-white transition-opacity hover:opacity-90"
                 style={{ background: "var(--brand)" }}
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden>
@@ -91,7 +111,7 @@ export default function BazaarHeader() {
           <div className="ml-auto flex items-center gap-3 sm:gap-4">
             <Link
               href={href("/wishlist")}
-              className="relative flex flex-col items-center gap-0.5 text-dark/70 hover:text-dark"
+              className="relative flex min-h-11 min-w-11 flex-col items-center justify-center gap-0.5 text-dark/70 hover:text-dark"
               aria-label={`Favourites${wishCount ? `, ${wishCount} saved` : ""}`}
             >
               <svg width="22" height="22" viewBox="0 0 24 24" fill={wishCount ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" aria-hidden>
@@ -102,13 +122,13 @@ export default function BazaarHeader() {
                   {wishCount > 9 ? "9+" : wishCount}
                 </span>
               )}
-              <span className="hidden text-[10px] sm:block">Saved</span>
+              <span className="hidden text-[11px] sm:block" aria-hidden>Saved</span>
             </Link>
             <button
               type="button"
               onClick={openCartModal}
-              className="relative flex flex-col items-center gap-0.5 text-dark/70 hover:text-dark"
-              aria-label={`Open cart, ${count} items`}
+              className="relative flex min-h-11 min-w-11 flex-col items-center justify-center gap-0.5 text-dark/70 hover:text-dark"
+              aria-label={`Open cart, ${count} item${count === 1 ? "" : "s"}`}
             >
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
                 <path d="M6 6h15l-1.5 9h-12z" />
@@ -118,20 +138,20 @@ export default function BazaarHeader() {
               </svg>
               {count > 0 && (
                 <span className="absolute -right-1.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-0.5 text-[10px] font-bold text-white" style={{ background: "var(--brand)" }}>
-                  {count > 9 ? "9+" : count}
+                  {count > 99 ? "99+" : count}
                 </span>
               )}
-              <span className="hidden text-[10px] sm:block">Cart</span>
+              <span className="hidden text-[11px] sm:block" aria-hidden>Cart</span>
             </button>
             <button
               type="button"
-              className="rounded border px-2 py-1 text-sm md:hidden"
+              className="flex h-11 w-11 items-center justify-center rounded border text-sm md:hidden"
               style={{ borderColor: "var(--line)" }}
               aria-expanded={mobileOpen}
               aria-label="Categories"
               onClick={() => setMobileOpen((v) => !v)}
             >
-              ☰
+              <span aria-hidden>☰</span>
             </button>
           </div>
         </div>
@@ -141,18 +161,30 @@ export default function BazaarHeader() {
           <div className="mx-auto flex max-w-[1440px] items-center gap-1 overflow-x-auto px-4 py-1.5 sm:px-6 lg:px-10">
             <Link
               href={href("/shop")}
-              className={`shrink-0 rounded px-2.5 py-1.5 text-xs font-semibold ${onShop && !cat ? "text-white" : "text-dark hover:bg-black/5"}`}
-              style={onShop && !cat ? { background: "var(--brand)" } : undefined}
+              className={`shrink-0 rounded px-3 py-2.5 text-xs font-semibold ${onShop && !cat && !svc ? "text-white" : "text-dark hover:bg-black/5"}`}
+              style={onShop && !cat && !svc ? { background: "var(--brand)" } : undefined}
+              aria-current={onShop && !cat && !svc ? "page" : undefined}
             >
               All
             </Link>
+            {hasServices && (
+              <Link
+                href={href("/shop?kind=service")}
+                className={`shrink-0 rounded px-3 py-2.5 text-xs font-semibold ${onShop && !cat && svc ? "text-white" : "text-dark hover:bg-black/5"}`}
+                style={onShop && !cat && svc ? { background: "var(--brand)" } : undefined}
+                aria-current={onShop && !cat && svc ? "page" : undefined}
+              >
+                Services
+              </Link>
+            )}
             {categories.map((c) => {
               const on = cat === c;
               return (
                 <Link
                   key={c}
                   href={href(`/shop?category=${encodeURIComponent(c)}`)}
-                  className={`shrink-0 rounded px-2.5 py-1.5 text-xs font-medium ${on ? "text-white" : "text-dark/80 hover:bg-black/5"}`}
+                  aria-current={on ? "page" : undefined}
+                  className={`shrink-0 rounded px-3 py-2.5 text-xs font-medium ${on ? "text-white" : "text-dark/80 hover:bg-black/5"}`}
                   style={on ? { background: "var(--brand)" } : undefined}
                 >
                   {c}
@@ -165,11 +197,23 @@ export default function BazaarHeader() {
         {mobileOpen && (
           <div className="border-t px-4 py-3 md:hidden" style={{ borderColor: "var(--line)" }}>
             <ul className="flex flex-col gap-1">
+              <li>
+                <Link href={href("/shop")} className="block rounded px-2 py-3 text-sm hover:bg-black/5">
+                  All products
+                </Link>
+              </li>
+              {hasServices && (
+                <li>
+                  <Link href={href("/shop?kind=service")} className="block rounded px-2 py-3 text-sm hover:bg-black/5">
+                    Services
+                  </Link>
+                </li>
+              )}
               {categories.map((c) => (
                 <li key={c}>
                   <Link
                     href={href(`/shop?category=${encodeURIComponent(c)}`)}
-                    className="block rounded px-2 py-2 text-sm hover:bg-black/5"
+                    className="block rounded px-2 py-3 text-sm hover:bg-black/5"
                     onClick={() => setMobileOpen(false)}
                   >
                     {c}
