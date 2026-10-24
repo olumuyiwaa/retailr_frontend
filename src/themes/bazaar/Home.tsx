@@ -173,22 +173,6 @@ export default function BazaarHome() {
           </Wrap>
         </section>
       )}
-
-      {/* Trust strip */}
-      <section className="border-t py-6" style={{ borderColor: "var(--line)", background: "var(--tint)" }}>
-        <Wrap className="grid gap-4 text-center sm:grid-cols-3 sm:text-left">
-          {[
-            ["Browse the full range", "Dense grids built for large product ranges"],
-            ["Clear pricing", "Prices up front so buyers decide faster"],
-            [store.city || store.country ? `Ships from ${store.city || store.country}` : "Simple checkout", payPhrase(store.paymentMethods, "cash")],
-          ].map(([t, d]) => (
-            <div key={t}>
-              <p className="text-sm font-bold text-dark">{t}</p>
-              <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>{d}</p>
-            </div>
-          ))}
-        </Wrap>
-      </section>
     </div>
   );
 }
