@@ -20,16 +20,31 @@ const spotlights = [
     t: "A storefront that looks like your brand",
     d: "Pick a theme, add your logo and colours, and share a link customers can buy from. No developer, no hosting, live in minutes.",
     points: ["Four ready-made themes", "Product photos, variants and categories", "Cart, checkout and invoices built in"],
+    photo: {
+      src: "https://images.pexels.com/photos/11739182/pexels-photo-11739182.jpeg?auto=compress&cs=tinysrgb&w=800",
+      alt: "Colourful shirts on a clothing rack in a boutique window",
+      position: "object-center",
+    },
   },
   {
     t: "Every sale in one place",
     d: "Record WhatsApp, Instagram, phone and walk-in sales next to online orders. Stock updates, receipts and reports stay in sync.",
     points: ["Online + offline in one dashboard", "Stock and sold counts stay accurate", "See revenue by channel and payment method"],
+    photo: {
+      src: "https://images.pexels.com/photos/4212951/pexels-photo-4212951.jpeg?auto=compress&cs=tinysrgb&w=800",
+      alt: "Woman managing her small business on a phone at her desk",
+      position: "object-top",
+    },
   },
   {
     t: "Bookings for services, not just products",
     d: "Offer hair, beauty, repairs or consultations with opening hours and free slots. Customers book online; you manage the calendar.",
     points: ["Opening hours and availability", "Public booking link", "Sync to Google, Apple or Outlook"],
+    photo: {
+      src: "https://images.pexels.com/photos/331989/pexels-photo-331989.jpeg?auto=compress&cs=tinysrgb&w=800",
+      alt: "Barber trimming a customer's hair in a salon",
+      position: "object-center",
+    },
   },
 ];
 
@@ -157,14 +172,13 @@ export default function LandingPage() {
                   ))}
                 </ul>
               </div>
-              <div className="flex min-h-[180px] items-center justify-center rounded-2xl bg-white p-8 shadow-theme-xs ring-1 ring-gray-100 lg:min-h-[220px]">
-                <div className="text-center">
-                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-600">
-                    {icons[i === 0 ? "store" : i === 1 ? "receipt" : "chart"]}
-                  </div>
-                  <p className="text-sm font-medium text-gray-800">{s.points[0]}</p>
-                  <p className="mt-1 text-xs text-gray-500">Included on every plan that unlocks this area</p>
-                </div>
+              <div className="h-64 overflow-hidden rounded-2xl shadow-theme-xs ring-1 ring-gray-100 sm:h-72 lg:h-80">
+                <img
+                  src={s.photo.src}
+                  alt={s.photo.alt}
+                  className={`h-full w-full object-cover ${s.photo.position}`}
+                  loading="lazy"
+                />
               </div>
             </div>
           ))}

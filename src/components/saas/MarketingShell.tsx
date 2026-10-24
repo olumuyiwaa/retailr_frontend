@@ -4,8 +4,8 @@ import Logo from "./Logo";
 import MarketingTracker from "@/components/analytics/MarketingTracker";
 import { DEMO_ENABLED, DEMO_STORE_HREF } from "@/lib/demo";
 
-/** Shared max-width + horizontal padding for marketing pages. */
-export const MARKETING_WIDTH = "mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10 2xl:max-w-[90rem]";
+/** Shared max-width + horizontal padding for marketing pages — matches the classic storefront container. */
+export const MARKETING_WIDTH = "mx-auto w-full max-w-[1680px] px-5 sm:px-8 lg:px-12 2xl:px-20";
 
 export default function MarketingShell({ children }: { children: React.ReactNode }) {
   return (
