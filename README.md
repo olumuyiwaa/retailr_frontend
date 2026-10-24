@@ -60,17 +60,18 @@ Each business gets a store at `/s/<slug>`. Only `active` and `trial` businesses 
 
 **Favourites** — shoppers can heart any product card to save it. The wishlist persists in `localStorage` across sessions. A heart icon in every theme's header links to `/s/<slug>/wishlist`.
 
-**Themes** — five storefront looks ship today:
+**Themes** — six storefront looks ship today:
 
 | Theme | Style | Best for |
 |---|---|---|
 | **Classic** | Soft, rounded, follows brand colour | Any business |
-| **Showcase** | Marketplace grid with filter sidebar | Fashion, beauty, large catalogues |
+| **Showcase** | Marketplace grid with search bar and category strip | Fashion, beauty, large catalogues |
 | **Atelier** | Warm editorial boutique, cream & brown, portrait cards | Boutiques, jewellery, hair & beauty |
-| **Market** | Bold navy header, dense grid, search bar | Electronics, FMCG, 50+ products |
+| **Market** | Bold navy header, red accents, dense grid, search bar | Electronics, FMCG, 50+ products |
 | **Shop** | Clean white, pill category strip, square cards with heart button | Beauty, fashion, sporting goods |
+| **Bazaar** | Wholesale marketplace, orange search bar, dense grid, price-first cards | High-SKU / bulk-selling stores |
 
-Every theme has its own header, footer, home page, shop page, product page and cart page. Any page a theme doesn't implement falls back to Classic. Themes are gated per plan: the platform admin sets which themes each plan includes. Adding a new theme is a new folder in `src/themes/` plus one line in `registry.ts` — see `src/themes/README.md`.
+Every theme has its own header, footer, home page, shop page, product page and cart page. Any page a theme doesn't implement falls back to Classic. All themes share the same max content width (`1680 px`) and responsive horizontal padding (`20 px → 32 px → 48 px → 80 px`) so layout feels consistent across theme switches. Themes are gated per plan: the platform admin sets which themes each plan includes. Adding a new theme is a new folder in `src/themes/` plus one line in `registry.ts` — see `src/themes/README.md`.
 
 ---
 
@@ -211,7 +212,7 @@ Any page a theme doesn't provide falls back to Classic. Never rename a theme `id
 - [x] Invoices and receipts
 - [x] Product variants and photo upload
 - [x] Customer groups and messaging (email + SMS)
-- [x] Storefront themes (Classic, Showcase, Atelier, Market, Shop)
+- [x] Storefront themes (Classic, Showcase, Atelier, Market, Shop, Bazaar)
 - [x] Theme marketplace page (`/themes`) with filter, search and per-theme deep-dive
 - [x] Gating themes by plan (platform admin sets which themes each plan includes)
 - [x] Site analytics for businesses and the platform
