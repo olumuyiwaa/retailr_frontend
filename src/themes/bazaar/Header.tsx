@@ -55,7 +55,7 @@ export default function BazaarHeader() {
     <>
       {/* Utility bar */}
       <div className="border-b text-[11px]" style={{ background: "#FAFAFA", borderColor: "var(--line)", color: "var(--muted)" }}>
-        <div className="mx-auto flex h-8 max-w-[1440px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-10">
+        <div className="mx-auto flex h-8 max-w-[1680px] items-center justify-between gap-3 px-5 sm:px-8 lg:px-12 2xl:px-20">
           <p className="truncate">
             {store.city || store.country ? `Ships from ${store.city || store.country}` : store.name}
           </p>
@@ -74,7 +74,7 @@ export default function BazaarHeader() {
 
       {/* Main header */}
       <header className="sticky top-0 z-50 border-b bg-white shadow-sm" style={{ borderColor: "var(--line)" }}>
-        <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-3 px-4 py-3 sm:px-6 lg:gap-5 lg:px-10">
+        <div className="mx-auto flex max-w-[1680px] flex-wrap items-center gap-3 px-5 py-3 sm:px-8 lg:gap-5 lg:px-12 2xl:px-20">
           <Link href={href("/")} className="flex shrink-0 items-center gap-2" aria-label={`${store.name} home`}>
             {store.logo && <StoreLogo name={store.name} logo={store.logo} size={36} />}
             <span className="text-lg font-extrabold tracking-tight text-dark sm:text-xl">{store.name}</span>
@@ -158,7 +158,7 @@ export default function BazaarHeader() {
 
         {/* Category strip */}
         <div className="border-t" style={{ borderColor: "var(--line)", background: "#FFF" }}>
-          <div className="mx-auto flex max-w-[1440px] items-center gap-1 overflow-x-auto px-4 py-1.5 sm:px-6 lg:px-10">
+          <div className="mx-auto flex max-w-[1680px] items-center gap-1 overflow-x-auto px-5 py-1.5 sm:px-8 lg:px-12 2xl:px-20">
             <Link
               href={href("/shop")}
               className={`shrink-0 rounded px-3 py-2.5 text-xs font-semibold ${onShop && !cat && !svc ? "text-white" : "text-dark hover:bg-black/5"}`}
