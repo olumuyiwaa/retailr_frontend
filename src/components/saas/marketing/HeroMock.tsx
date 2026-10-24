@@ -4,7 +4,7 @@ export default function HeroMock() {
   const tiles = DEMO_PRODUCTS.slice(0, 4);
 
   return (
-    <div className="relative mx-auto w-full max-w-[620px] pb-10 pl-0 sm:pl-8" aria-hidden>
+    <div className="relative mx-auto w-full max-w-[620px] pb-14 pl-0 sm:pl-8" aria-hidden>
       <div className="overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-white/20">
         <div className="flex items-center gap-2 border-b border-gray-100 bg-gray-50 px-4 py-3">
           <span className="h-2.5 w-2.5 rounded-full bg-[#FF5F57]" />
@@ -33,19 +33,19 @@ export default function HeroMock() {
         </div>
       </div>
 
-      <div className="absolute -bottom-0 left-0 hidden w-56 rounded-xl bg-white p-4 shadow-xl ring-1 ring-gray-100 sm:block">
+      <div className="absolute -bottom-0 left-0 w-44 rounded-xl bg-white p-3 shadow-xl ring-1 ring-gray-100 sm:w-56 sm:p-4">
         <p className="text-xs text-gray-500">New order · WhatsApp</p>
-        <p className="mt-1 text-lg font-semibold text-gray-800">₦96,000</p>
+        <p className="mt-1 text-base font-semibold text-gray-800 sm:text-lg">₦96,000</p>
         <p className="mt-1 text-xs font-medium text-success-600">Paid · stock updated</p>
       </div>
-      <div className="absolute -right-2 top-20 hidden w-48 rounded-xl bg-white p-4 shadow-xl ring-1 ring-gray-100 md:block">
+      <div className="absolute -right-2 top-16 w-40 rounded-xl bg-white p-3 shadow-xl ring-1 ring-gray-100 sm:top-20 sm:w-48 sm:p-4">
         <p className="text-xs text-gray-500">Sales this week</p>
-        <p className="mt-1 text-lg font-semibold text-gray-800">+24%</p>
+        <p className="mt-1 text-base font-semibold text-gray-800 sm:text-lg">+24%</p>
         <svg viewBox="0 0 120 32" className="mt-2 h-8 w-full text-brand-500" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M2 26 L22 20 L42 23 L62 12 L82 15 L102 5 L118 8" />
         </svg>
       </div>
-      <div className="absolute right-6 -bottom-2 hidden rounded-full bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white shadow-lg sm:block">
+      <div className="absolute right-6 -bottom-2 rounded-full bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white shadow-lg">
         Live in minutes
       </div>
     </div>
